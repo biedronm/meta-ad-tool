@@ -465,6 +465,15 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .fv{text-align:right;font-weight:600}.fv small{font-weight:400;color:var(--muted)}
 .rp .lr{grid-template-columns:40px 1fr 160px;font-size:9pt}.rp .fr{grid-template-columns:110px 1fr 110px;font-size:8.5pt}
 @media (max-width:560px){.lr{grid-template-columns:40px 1fr;}.lr span{grid-column:1/-1;text-align:left}.fr{grid-template-columns:80px 1fr}.fr .fv{grid-column:1/-1;text-align:left}}
+
+.limits{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px}
+.limhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.limhead label{font-weight:600;color:var(--text);font-size:14px}
+.limrows{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px 18px;margin-top:10px}
+.limrow{display:grid;grid-template-columns:minmax(90px,1fr) 185px;gap:8px;align-items:center;margin:0;color:var(--text);font-size:13px}
+.limrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.limrow select{padding:7px 8px;font-size:13px}
+.limwarn{margin-top:8px;padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--c5) 14%,transparent);border:1px solid color-mix(in srgb,var(--c5) 50%,transparent);font-size:13px;color:var(--text)}
+.rp .limwarn{font-size:8.5pt}
 </style>
 </head>
 <body>
@@ -633,6 +642,13 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
       <label for="comp">Konkurenci do porównania (opcjonalnie, jeden w linii)</label>
       <textarea id="comp" placeholder="Rossmann&#10;Hebe; 123456789&#10;Super-Pharm; https://www.facebook.com/ads/library/?...view_all_page_id=987654321"></textarea>
       <div class="hint">Sama nazwa albo „Nazwa; ID strony lub link”. Nie wiesz, kogo wpisać? Użyj „Odkryj konkurentów po frazie” niżej.</div>
+    </div>
+    <div class="limits">
+      <div class="limhead"><label for="limDef" style="margin:0">Ile reklam analizować na konto</label>
+        <select id="limDef" style="width:auto"><option value="0">wszystkie (bez limitu)</option><option value="100">100</option><option value="250">250</option><option value="500">500</option><option value="1000">1000</option><option value="2000">2000</option><option value="5000">5000</option></select>
+        <span class="hint" style="margin:0">— domyślnie dla wszystkich; niżej możesz ustawić inaczej dla każdego konta.</span></div>
+      <div id="limRows" class="limrows"></div>
+      <div class="hint">Przy limicie bot bierze najpierw <b>aktywne</b> reklamy, potem zakończone (w kolejności zwracanej przez Meta). Wyniki dotyczą wtedy próby, nie całej biblioteki — bot to wyraźnie oznaczy. Limit przyspiesza analizę dużych marek.</div>
     </div>
 
     <details>
@@ -886,8 +902,8 @@ async function fetchAll(params, max, label, onStatus = setStatus){
       out.push(a);
     }
     onStatus(`${label}: pobrano ${out.length} reklam...`);
-    if (max && out.length >= max) return out.slice(0, max);
     const next = data.paging && data.paging.next;
+    if (max && out.length >= max){ const cut = out.slice(0, max); cut.truncated = out.length > max || !!next; return cut; }
     if (!next || ++pages > 400) return out;
     data = await getPage(next);
   }
@@ -1534,6 +1550,7 @@ function brandHead(res, idx){
       <div>
         <h2><span class="dot" style="background:${color(idx)}"></span>${esc(res.pageName)}${res.isMain ? '<span class="tag">Twoja marka</span>' : '<span class="tag">konkurent</span>'}</h2>
         <div class="sub">Zapytanie: „${esc(res.brand)}” · page_id ${esc(res.pageId)} · emisja: ${esc(regionLabel(res.region))}${res.lang ? ` · język: ${esc(res.lang)}` : ""} · ${iso(todayUTC)}${fl ? ` · filtr: ${esc(fl)}` : ""}</div>
+        ${res.limited ? `<div class="limwarn">⚠ Próba: ${fmt(res.limited.n)} reklam (limit ${fmt(res.limited.limit)}; ${fmt(res.limited.active)} aktywnych). Marka ma więcej reklam — liczby dotyczą próby, nie całej biblioteki.</div>` : ""}
       </div>
       <span class="pill ${res.dir}" data-k="p">Tendencja: ${esc(res.trend)}</span>
     </div>`;
@@ -1703,6 +1720,7 @@ P.calendar = (r) => {
 P.changes = (r) => {
   const c = r.changes;
   if (!c) return NODATA;
+  if (c.limitedSkip) return see(`Porównanie zmian jest wyłączone, bo ta analiza objęła tylko próbę ${r.limited ? r.limited.n : ""} reklam (limit). Przy próbie nie da się rzetelnie stwierdzić, które reklamy są nowe, a które wyłączone — uruchom analizę bez limitu, żeby zapisać migawkę.`);
   if (c.first) return see(`To pierwsza analiza tej strony na tym obszarze — zapisano migawkę z ${c.saved}. Przy kolejnej analizie (najwcześniej jutro) zobaczysz tu, co się zmieniło: nowe i wyłączone reklamy, zmianę budżetu i nowe evergreeny.`);
   const d = (a, b, f = fmt, u = "") => { const x = a - b; return `<span class="${x > 0 ? "up" : x < 0 ? "down" : ""}">${x > 0 ? "+" : ""}${f(x)}${u}</span>`; };
   return `${see(`Porównanie z migawką z <b>${c.prevDate}</b> (${c.days} dni temu): <b>+${c.newAds.length}</b> nowych reklam w bibliotece, <b>${c.ended.length}</b> wyłączonych, aktywnych ${d(c.now.aktywne, c.prev.aktywne)}, szacowany koszt ${d(c.now.miesSr, c.prev.miesSr, fmtK, " zł")}/mies.`)}
@@ -2159,7 +2177,7 @@ function renderAll(){
       ${results.length > 1 ? `<button class="t1 ${isCmp ? "on" : ""}" data-top="cmp">📊 Porównanie</button>` : ""}
       ${results.map((x, i) => `<button class="t1 ${x.uid === view.top ? "on" : ""}" data-top="${x.uid}"><span class="dot" style="background:${color(i)}"></span>${esc(x.pageName)}${x.isMain ? " ★" : ""}<span class="t1i">${x.idx.index}</span></button>`).join("")}
     </div>
-    ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div></div>` : ""}
+    ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div>${limitWarn(results)}</div>` : ""}
     <div class="tabs2" role="tablist">${tabs.map(([k, l]) => `<button class="t2 ${k === active ? "on" : ""}" data-tab="${k}">${l}${isCmp ? "" : badge(k, r)}</button>`).join("")}</div>
     <div id="resLegend">${marksLegend()}</div>
     <div class="panel">${isCmp ? cmpPanel(active, results) : brandPanel(active, r, idx)}</div>`;
@@ -2184,11 +2202,25 @@ async function analyzeOne(job, region, label){
   }
   const withDemo = $("withDemo").checked;
   const params = {...baseParams(region), search_page_ids: JSON.stringify([pageId])};
-  let ads = null, demoMissing = false;
+  let demoMissing = false, fieldsIdx = 0;
   const tries = withDemo ? [[FIELDS_DEMO + ",beneficiary_payers", 100], [FIELDS_DEMO, 100], [FIELDS_BASIC, 250]] : [[FIELDS_BASIC, 250]];
-  for (let i = 0; i < tries.length && !ads; i++){
-    try { ads = await fetchAll({...params, fields: tries[i][0], limit: tries[i][1]}, null, `${label}: pobieram reklamy ${pageName || pageId}`); }
-    catch(e){ if (e instanceof FatalApiError || i === tries.length - 1) throw e; if (tries[i + 1][0] === FIELDS_BASIC) demoMissing = true; }
+  const fetchAds = async (extra, max, lbl) => {
+    for (let i = fieldsIdx; i < tries.length; i++){
+      try { const res = await fetchAll({...params, ...extra, fields: tries[i][0], limit: max ? Math.min(tries[i][1], max) : tries[i][1]}, max || null, lbl); fieldsIdx = i; return res; }
+      catch(e){ if (e instanceof FatalApiError || i === tries.length - 1) throw e; if (tries[i + 1][0] === FIELDS_BASIC) demoMissing = true; }
+    }
+  };
+  const lim = job.limit || 0;
+  let ads, truncated = false;
+  if (!lim) ads = await fetchAds({}, null, `${label}: pobieram reklamy ${pageName || pageId}`);
+  else {
+    const a = await fetchAds({ad_active_status: "ACTIVE"}, lim, `${label}: pobieram aktywne reklamy (limit ${lim})`);
+    ads = [...a]; truncated = !!a.truncated;
+    if (ads.length < lim){
+      const b = await fetchAds({ad_active_status: "INACTIVE"}, lim - ads.length, `${label}: pobieram zakończone reklamy (limit ${lim})`);
+      const seen = new Set(ads.map(x => x.id)); for (const x of b) if (!seen.has(x.id)) ads.push(x);
+      truncated = truncated || !!b.truncated;
+    } else truncated = true;
   }
   if (ads.length && ads[0].page_name) pageName = ads[0].page_name;
   const rowsAll = buildRows(ads);
@@ -2216,9 +2248,11 @@ async function analyzeOne(job, region, label){
   }
   const langOpt = $("lang").selectedOptions[0];
   const res = {uid: ++uidSeq, isMain: job.isMain, brand: job.brand || pageName, pageName: pageName || pageId, pageId, region,
-    lang: langOpt.value ? langOpt.text : "", langCode: langOpt.value, cands, demoMissing, mediaLoaded, pol, polLoaded, rowsAll};
+    lang: langOpt.value ? langOpt.text : "", langCode: langOpt.value, cands, demoMissing, mediaLoaded, pol, polLoaded, rowsAll,
+    limit: lim, limited: lim && truncated ? {limit: lim, n: rowsAll.length, active: rowsAll.filter(x => x.active).length} : null};
   reanalyze(res);
-  try { res.changes = handleSnapshot(res); } catch(e){ res.changes = null; }
+  if (res.limited) res.changes = {first: true, limitedSkip: true};
+  else { try { res.changes = handleSnapshot(res); } catch(e){ res.changes = null; } }
   return res;
 }
 function parseCompetitors(){
@@ -2230,7 +2264,7 @@ function parseCompetitors(){
     let pid = parsePageId(rest.join(";").trim());
     if (pid === undefined){ bad.push(line); pid = null; }
     if (!name.trim() && !pid) continue;
-    jobs.push({brand: name.trim(), pageId: pid, isMain: false});
+    jobs.push({brand: name.trim(), pageId: pid, isMain: false, limit: limitFor(limKey(name.trim(), pid))});
   }
   return {jobs, bad};
 }
@@ -2245,7 +2279,7 @@ async function run(){
   if (mainPid === undefined) return setStatus("Nie rozpoznano ID strony w polu „ID strony lub link”.", true);
   const {jobs: comp, bad} = parseCompetitors();
   const jobs = [];
-  if (brand || mainPid) jobs.push({brand, pageId: mainPid, isMain: true});
+  if (brand || mainPid) jobs.push({brand, pageId: mainPid, isMain: true, limit: limitFor("__main__")});
   jobs.push(...comp);
   if (!jobs.length) return setStatus("Wpisz markę albo konkurentów.", true);
   if ($("remember").checked) store.set("metaAdsBotToken", token()); else store.del("metaAdsBotToken");
@@ -2480,6 +2514,7 @@ function buildReport(o){
         <li><b>Oznaczenia „lupy detektywa”:</b> <span style="color:var(--kd)">■</span> czyste dane — wartości wprost z Meta API; <span style="color:var(--kc)">■</span> obliczenia — średnie, udziały, trendy; <span style="color:var(--kp)">■</span> poszlaki — szacunki, modele, przyjęte progi i automatyczne wykrywanie w tekstach (dyskusyjne); <span style="color:var(--kx)">■</span> dedukcja detektywa — interpretacje, wnioski i rekomendacje. ${activeMarks().length ? "W tym raporcie oznaczono: " + activeMarks().map(k => MARKS[k][0].toLowerCase()).join(", ") + "." : "W tym raporcie oznaczenia są wyłączone."}</li>
         <li><b>Rekomendacje:</b> generowane automatycznie regułami na podstawie powyższych danych — punkt wyjścia do decyzji, nie gotowa strategia.</li>
         ${fl ? `<li><b>Zastosowane filtry:</b> ${esc(fl)}.</li>` : ""}
+        ${sel.some(r => r.limited) ? `<li><b>Próba danych (limit reklam):</b> ${sel.filter(r => r.limited).map(r => `${esc(r.pageName)} — ${fmt(r.limited.n)} reklam (limit ${fmt(r.limited.limit)}, najpierw aktywne)`).join("; ")}. Liczby bezwzględne dla tych marek są zaniżone.</li>` : ""}
       </ul>
     </section>`);
   }
@@ -2509,6 +2544,7 @@ function exportXlsx(){
   const demo = sheet("Demografia", ["Strona","Wymiar","Wartość","Zasięg","Udział (%)"]);
   const gapsS = sheet("Luki demograficzne", ["Grupa","Różnica: konkurencja − Ty (pp)"]);
   const targ = sheet("Targetowanie", ["Strona","Wymiar","Wartość","Typ","Liczba reklam","Udział (%)"]);
+  const limS = sheet("Zakres danych", ["Strona", "Limit reklam", "Pobrano reklam", "W tym aktywnych", "Próba (niepełne dane)"]);
   const probS = sheet("Budżet — prawdopodobieństwo", ["Strona", "Okres", "CPM min", "CPM max", "Częstotl. min", "Częstotl. max", "Pewność zakresów (%)", "Dokładność zasięgu (±%)", "Mediana (zł)", ...PROB_LEVELS.flatMap(L => [`${L}% od (zł)`, `${L}% do (zł)`]), "Założenia lokalne"]);
   const chg = sheet("Zmiany", ["Strona","Poprzednia migawka","Status","ID reklamy","Start","Stop","Dni","Zasięg","Tekst","Link"]);
   const pol = sheet("Społeczne i polityczne", ["Strona","Reklamy","Aktywne","Wydatki min","Wydatki max","Waluta","Wyświetlenia min","Wyświetlenia max","Płacący"]);
@@ -2554,6 +2590,7 @@ function exportXlsx(){
       const row = (st, a) => chg.push([r.pageName, r.changes.prevDate, st, a.id, iso(a.start), iso(a.stop), a.days, a.reach, a.text, `https://www.facebook.com/ads/library/?id=${a.id}`]);
       r.changes.newAds.forEach(a => row("nowa", a)); r.changes.ended.forEach(a => row("wyłączona", a));
     }
+    limS.push([r.pageName, r.limit || "bez limitu", r.rowsAll.length, r.rowsAll.filter(x => x.active).length, r.limited ? "tak — marka ma więcej reklam" : "nie — pobrano wszystkie"]);
     { const st = probGet(r), m = probModel(r, st); if (m.base > 0) probS.push([r.pageName, periodLabel(st.period), st.cpmMin, st.cpmMax, st.freqMin, st.freqMax, st.conf, st.reachU, Math.round(m.median), ...m.levels.flatMap(lv => [Math.round(lv.lo), Math.round(lv.hi)]), st.touched ? "tak" : "nie"]); }
     if (r.polLoaded) pol.push([r.pageName, r.pol.n, r.pol.active, r.pol.spLo, r.pol.spHi, r.pol.currency, r.pol.imLo, r.pol.imHi, r.pol.bylines.map(x => x[0]).join(", ")]);
     for (const a of [...r.rows].sort((x,y) => y.start - x.start))
@@ -2627,6 +2664,7 @@ function addDiscovered(){
   if (!lines.length){ $("discStatus").textContent = "Nic nowego do dodania."; return; }
   ta.value = (ta.value.trim() ? ta.value.trim() + "\n" : "") + lines.join("\n");
   $("discStatus").textContent = `Dodano ${lines.length} do listy konkurentów. Kliknij „Analizuj”, żeby je porównać.`;
+  renderLimits();
   ta.scrollIntoView({behavior: "smooth", block: "center"});
 }
 
@@ -2642,7 +2680,7 @@ function saveSet(){
   const name = prompt("Nazwa zestawu (np. „Natura — drogerie”):", $("sets").value || $("brand").value.trim());
   if (!name) return;
   const sets = loadSets();
-  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, savedAt: iso(todayUTC)};
+  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, limDef: $("limDef").value, limits: {...limMap}, savedAt: iso(todayUTC)};
   if (!store.set(SETS_KEY, JSON.stringify(sets))) return setStatus("Przeglądarka nie pozwala zapisywać danych — użyj „Eksport”, żeby zachować zestaw w pliku.", true);
   refreshSets(name.trim());
   setStatus(`Zapisano zestaw „${name.trim()}”.`);
@@ -2653,6 +2691,9 @@ function loadSet(){
   $("brand").value = s.brand || ""; $("page").value = s.page || ""; $("comp").value = s.comp || "";
   $("lang").value = s.lang || "";
   $("world").checked = !!s.world; selected.clear(); (s.countries || ["PL"]).forEach(c => selected.add(c));
+  if (s.limDef != null) $("limDef").value = s.limDef;
+  if (s.limits){ Object.assign(limMap, s.limits); store.set(LIM_KEY, JSON.stringify(limMap)); }
+  renderLimits();
   regionChanged();
   setStatus(`Wczytano zestaw „${name}”. Kliknij „Analizuj”.`);
 }
@@ -2857,7 +2898,8 @@ function buildAiMd(o){
     `- Filtr wyników: ${fl || "brak (cała biblioteka)"}`,
     `- Evergreen = reklama emitowana co najmniej ${f.evDays} dni; „aktywna” = bez daty zakończenia lub z datą od dziś`,
     `- Założenia kosztu: ${main.s.zalozenia}`,
-    main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`
+    main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`,
+    sel.some(r => r.limited) ? `- **UWAGA — próba danych:** ${sel.filter(r => r.limited).map(r => `${r.pageName}: przeanalizowano ${r.limited.n} reklam (limit ${r.limited.limit}, najpierw aktywne), marka ma ich więcej`).join("; ")}. Liczby bezwzględne (reklamy, zasięg, koszt, udział w głosie) są dla tych marek zaniżone — opieraj porównania na wskaźnikach procentowych i zaznacz to w analizie.` : `- Pobrano wszystkie dostępne reklamy każdej marki (bez limitu)`
   ].join("\n"));
 
   h(`### Podsumowanie marek ${TAG.c}`);
@@ -2995,6 +3037,47 @@ const marksLegend = () => { const a = activeMarks(); return a.length ? `<div cla
       const lg = document.getElementById("resLegend"); if (lg) lg.innerHTML = marksLegend();
     });
   });
+})();
+
+// ================================================================ limity reklam na konto
+const LIM_KEY = "metaAdsBotLimits";
+let limMap = {}; try { limMap = JSON.parse(store.get(LIM_KEY) || "{}"); } catch(e){}
+const limKey = (name, pid) => pid ? "id:" + pid : "n:" + String(name || "").toLowerCase().trim();
+const limDefault = () => +$("limDef").value || 0;
+const limitFor = key => (key in limMap && limMap[key] !== "") ? +limMap[key] : limDefault();
+const LIM_OPTS = [0, 50, 100, 250, 500, 1000, 2000, 5000];
+function limitWarn(list){
+  const l = list.filter(r => r.limited);
+  if (!l.length) return "";
+  return `<div class="limwarn">⚠ ${l.map(r => `${esc(r.pageName)}: próba ${fmt(r.limited.n)} reklam`).join(" · ")}. Porównania liczb bezwzględnych (liczba reklam, zasięg, koszt, udział w głosie) mogą być zaniżone dla tych marek — wskaźniki procentowe są bardziej miarodajne.</div>`;
+}
+function renderLimits(){
+  const box = $("limRows"); if (!box) return;
+  const rows = [];
+  const mb = $("brand").value.trim(), mp = parsePageId($("page").value);
+  if (mb || mp) rows.push({key: "__main__", label: (mb || "ID " + mp) + " ★"});
+  for (const raw of $("comp").value.split("\n")){
+    const line = raw.trim(); if (!line) continue;
+    const [name, ...rest] = line.split(";"); const pid = parsePageId(rest.join(";").trim()) || null;
+    if (!name.trim() && !pid) continue;
+    rows.push({key: limKey(name.trim(), pid), label: name.trim() || "ID " + pid});
+  }
+  const d = limDefault();
+  box.innerHTML = rows.length ? rows.map(r => { const v = r.key in limMap && limMap[r.key] !== "" ? String(limMap[r.key]) : "";
+    return `<label class="limrow"><span title="${esc(r.label)}">${esc(r.label)}</span><select data-lim="${esc(r.key)}">
+      <option value="" ${v === "" ? "selected" : ""}>${d ? `domyślny: ${fmt(d)}` : "domyślny: wszystkie"}</option>
+      ${LIM_OPTS.map(o => `<option value="${o}" ${v === String(o) ? "selected" : ""}>${o ? fmt(o) + " reklam" : "wszystkie"}</option>`).join("")}</select></label>`; }).join("")
+    : `<div class="sub">Wpisz markę i konkurentów — tu pojawią się pola limitu dla każdego konta.</div>`;
+  box.querySelectorAll("select[data-lim]").forEach(sel => sel.onchange = () => {
+    if (sel.value === "") delete limMap[sel.dataset.lim]; else limMap[sel.dataset.lim] = +sel.value;
+    store.set(LIM_KEY, JSON.stringify(limMap));
+  });
+}
+(function initLimits(){
+  const sv = store.get("metaAdsBotLimDef"); if (sv != null && [...$("limDef").options].some(o => o.value === sv)) $("limDef").value = sv;
+  $("limDef").onchange = () => { store.set("metaAdsBotLimDef", $("limDef").value); renderLimits(); };
+  let t; ["brand", "page", "comp"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(t); t = setTimeout(renderLimits, 250); }));
+  renderLimits();
 })();
 // ================================================================ podpięcia
 $("go").onclick = run;
