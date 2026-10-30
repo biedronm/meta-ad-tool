@@ -1,0 +1,2435 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta Ads Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --text:#14171c; --muted:#646b78; --line:#e3e6eb;
+  --accent:#1f5eff; --accent-soft:#e8eeff; --good:#12805c; --bad:#c2372f;
+  --bar1:#1f5eff; --bar2:#9db6ff; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --c0:#1f5eff; --c1:#e8590c; --c2:#0f9d76; --c3:#c2255c; --c4:#7048e8; --c5:#b08800; --c6:#1098ad; --c7:#5c636e;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1115; --card:#171a21; --text:#e9ecf1; --muted:#9aa2b1; --line:#2a2f3a;
+    --accent:#6f95ff; --accent-soft:#1d2640; --good:#3ccf97; --bad:#ff7a70;
+    --bar1:#6f95ff; --bar2:#34437a; --shadow:none;
+    --c0:#6f95ff; --c1:#ff922b; --c2:#38d9a9; --c3:#f06595; --c4:#9775fa; --c5:#fcc419; --c6:#3bc9db; --c7:#adb5bd;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --card:#171a21; --text:#e9ecf1; --muted:#9aa2b1; --line:#2a2f3a;
+  --accent:#6f95ff; --accent-soft:#1d2640; --good:#3ccf97; --bad:#ff7a70;
+  --bar1:#6f95ff; --bar2:#34437a; --shadow:none;
+  --c0:#6f95ff; --c1:#ff922b; --c2:#38d9a9; --c3:#f06595; --c4:#9775fa; --c5:#fcc419; --c6:#3bc9db; --c7:#adb5bd;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 22px;box-shadow:var(--shadow)}
+.hero .kicker{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+header h1{margin:2px 0 0;font-size:28px;letter-spacing:-.02em}
+header p{margin:6px 0 0;color:var(--muted);max-width:560px}
+.detective{width:270px;flex:none}
+.detective .float1{animation:bob 3.2s ease-in-out infinite}
+.detective .float2{animation:bob 3.8s ease-in-out infinite .6s}
+.detective .float3{animation:bob 2.6s ease-in-out infinite .3s}
+.detective .lens{transform-origin:150px 140px;animation:peek 4.5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes peek{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){.detective *{animation:none!important}}
+@media (max-width:640px){.hero{flex-direction:column-reverse;align-items:flex-start}.detective{width:170px;align-self:center}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:18px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:16px}
+h3{font-size:14px;margin:22px 0 10px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);font:inherit}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+.check input{width:auto}
+button{padding:11px 18px;border-radius:9px;border:1px solid transparent;background:var(--accent);color:#fff;font:600 15px Inter,system-ui,sans-serif;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent);border-color:var(--line)}
+button:disabled{opacity:.55;cursor:wait}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:14px}
+details .grid{margin-top:12px}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+#status{margin-top:14px;font-size:14px;color:var(--muted);min-height:20px;white-space:pre-line}
+#status.err{color:var(--bad);font-weight:500}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+.title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.title-row h2{margin:0;font-size:20px}
+.sub{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent)}
+.pill.up{color:var(--good)} .pill.down{color:var(--bad)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:3px}
+.chart{display:flex;align-items:flex-end;gap:6px;height:170px;margin-top:16px;padding-top:10px;border-bottom:1px solid var(--line)}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars{display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+.bar{width:45%;border-radius:4px 4px 0 0;min-height:1px}
+.bar.a{background:var(--bar1)} .bar.b{background:var(--bar2)}
+.col .n{font-size:11px;color:var(--muted);margin-bottom:2px}
+.xl{display:flex;gap:6px;margin-top:6px}
+.xl span{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+ul.lines{list-style:none;padding:0;margin:0}
+ul.lines li{padding:7px 0;border-bottom:1px solid var(--line)}
+ul.lines li:last-child{border-bottom:none}
+ul.lines li::before{content:"— ";color:var(--muted)}
+.rank{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.rank ol{margin:0;padding-left:20px}
+.rank li{padding:4px 0;font-size:14px}
+.rank .d{font-size:12px;color:var(--muted)}
+.rank .d.up{color:var(--good)} .rank .d.down{color:var(--bad)}
+.share{display:grid;grid-template-columns:minmax(110px,180px) 1fr 56px;gap:8px 10px;align-items:center;font-size:13px}
+.share .track{height:14px;background:var(--bg);border-radius:7px;overflow:hidden}
+.share .fill{height:100%;border-radius:7px}
+.share .pct{text-align:right;font-weight:600}
+.share .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+svg.lc{width:100%;height:auto;display:block}
+svg.lc text{fill:var(--muted);font:11px Inter,system-ui,sans-serif}
+svg.lc .grid{stroke:var(--line)}
+.cost{font-size:22px;font-weight:700}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.ad{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ad:last-child{border-bottom:none}
+.ad .t{font-size:14px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ad .m{font-size:12px;color:var(--muted);white-space:nowrap;text-align:right}
+a{color:var(--accent)}
+.cands{margin-top:14px}
+.cands button{padding:6px 10px;font-size:13px;margin:4px 6px 0 0}
+.hidden{display:none}
+@media (max-width:560px){.chart{gap:3px}.xl{gap:3px}.xl span{font-size:9px}.kpi .v{font-size:20px}.share{grid-template-columns:90px 1fr 46px}}
+:root{--a0:#dbe5ff;--a1:#b3c8ff;--a2:#7fa1ff;--a3:#4f7bff;--a4:#2a57e6;--a5:#1a3db0;--a6:#0f2675;--a7:#c8ccd4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--a0:#1c2a55;--a1:#25397a;--a2:#2f4ca3;--a3:#4166d1;--a4:#6488f0;--a5:#93acff;--a6:#c4d3ff;--a7:#454b57}}
+:root[data-theme="dark"]{--a0:#1c2a55;--a1:#25397a;--a2:#2f4ca3;--a3:#4166d1;--a4:#6488f0;--a5:#93acff;--a6:#c4d3ff;--a7:#454b57}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:500 13px Inter,system-ui,sans-serif;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips.off{opacity:.4;pointer-events:none}
+.mini{padding:6px 11px;font-size:13px}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+.toolbar > div{min-width:150px;flex:1}
+.toolbar .check{margin-top:0;padding-bottom:10px}
+details.sec{border-top:1px solid var(--line);margin-top:18px;padding-top:4px}
+details.sec > summary{font-size:15px;font-weight:600;color:var(--text);margin-top:10px;list-style:none;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+details.sec > summary::-webkit-details-marker{display:none}
+details.sec > summary::before{content:"▸";color:var(--muted);margin-right:6px}
+details.sec[open] > summary::before{content:"▾"}
+details.sec > summary .teaser{font-weight:400;font-size:13px;color:var(--muted)}
+details.sec > summary > span:first-child{flex:1}
+.wordchips{display:flex;flex-wrap:wrap;gap:6px}
+.wc{padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:500}
+.wc b{font-weight:700;margin-left:4px;opacity:.75}
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--bg)}
+.stack span{height:100%}
+.stackrow{display:grid;grid-template-columns:minmax(110px,180px) 1fr;gap:10px;align-items:center;font-size:13px;margin:6px 0}
+.hbar{display:grid;grid-template-columns:70px 1fr 48px;gap:8px;align-items:center;font-size:13px;margin:4px 0}
+.hbar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.hbar .fill{height:100%;background:var(--accent);border-radius:6px}
+.hbar .pct{text-align:right;color:var(--muted)}
+.two{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.disc-row{color:var(--text);margin:0;display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.disc-row:last-child{border-bottom:none}
+.disc-row input{width:auto}
+.disc-row .m{font-size:12px;color:var(--muted);text-align:right}
+.evbadge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:6px;background:var(--accent-soft);color:var(--good)}
+.optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 16px}
+.optgrid .check span{color:var(--text)}
+#report{display:none}
+@page{size:A4;margin:13mm 13mm 15mm;
+  @bottom-left{content:"Meta Ads Bot · raport konkurencji";font:7.5pt Inter,Arial,sans-serif;color:#8a909c}
+  @bottom-right{content:"str. " counter(page) " / " counter(pages);font:7.5pt Inter,Arial,sans-serif;color:#8a909c}}
+@page cover{margin:0;@bottom-left{content:none}@bottom-right{content:none}}
+@media print{
+  html,body{background:#fff!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body > .wrap{display:none!important}
+  #report{display:block}
+}
+.rp{font-size:9.5pt;line-height:1.45;color:var(--text)}
+.rp-page{break-after:page}
+.rp-page:last-child,.rp-cover:last-child{break-after:auto}
+.rp-top{display:flex;justify-content:space-between;gap:10px;font-size:7.5pt;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:14px}
+.rp-h{font-size:17pt;letter-spacing:-.02em;margin:0 0 14px;padding-bottom:8px;border-bottom:3px solid var(--accent);display:inline-block}
+.rp h3{font-size:10.5pt;margin:14px 0 8px}
+.rp-block{break-inside:avoid}
+.rp-label{font-size:7.5pt;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.rp-note{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px;margin-bottom:6px}
+.rp .kpis{grid-template-columns:repeat(5,1fr);gap:8px}
+.rp .kpi{padding:10px}
+.rp .kpi .v{font-size:15pt}
+.rp .kpi .l{font-size:7.5pt}
+.rp .cost{font-size:12.5pt}
+.rp .costgrid{grid-template-columns:repeat(3,1fr);gap:8px}
+.rp .two,.rp-two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.rp .rank{grid-template-columns:repeat(3,1fr);gap:12px}
+.rp .rank > div{break-inside:avoid}
+.rp .rank li{font-size:8.5pt;padding:2px 0}
+.rp .chart{height:130px}
+.rp .title-row h2{font-size:16pt}
+.rp .pill{font-size:8pt}
+.rp ul.lines li{padding:5px 0}
+.rp .ad{padding:7px 0;break-inside:avoid}
+.rp .ad .t{font-size:9pt}
+.rp .ad .m{font-size:7.5pt}
+.rp a{color:var(--accent);text-decoration:none}
+.rp .share{grid-template-columns:minmax(90px,140px) 1fr 40px;font-size:8.5pt}
+.rp .stackrow{grid-template-columns:minmax(90px,150px) 1fr;font-size:8.5pt}
+.rp .hbar{font-size:8.5pt}
+.rp .wc{font-size:8pt;padding:3px 8px}
+.rp-brandhead{padding:12px 14px;border-radius:12px;background:var(--accent-soft);margin-bottom:12px;break-inside:avoid}
+.rp-scgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rp-sc{border:1px solid var(--line);border-radius:12px;padding:12px;break-inside:avoid}
+.rp-sc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:10pt}
+.rp-sc-g{display:grid;grid-template-columns:.8fr 1.35fr .8fr .85fr;gap:8px 8px}
+.rp-sc-g b{display:block;white-space:nowrap;font-size:10.5pt;letter-spacing:-.01em}
+.rp-sc-g span{display:block;font-size:7pt;color:var(--muted);line-height:1.25}
+.rp-method li{font-size:9pt}
+/* okładka */
+.rp-cover{page:cover;width:210mm;height:296.5mm;box-sizing:border-box;padding:16mm 16mm 0;display:flex;flex-direction:column;position:relative;overflow:hidden;break-after:page;background:var(--card)}
+.rp-cover::after{content:"";position:absolute;left:0;right:0;bottom:0;height:7mm;background:linear-gradient(90deg,var(--c0),var(--c4) 55%,var(--c3))}
+.rp-cover-top{display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--muted)}
+.rp-logo{max-height:16mm;max-width:60mm;object-fit:contain}
+.rp-wordmark{font-weight:700;font-size:12pt;color:var(--text);letter-spacing:-.01em}
+.rp-wordmark::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--accent);margin-right:8px}
+.rp-hero{margin-top:22mm;background:linear-gradient(135deg,var(--accent-soft),transparent 75%);border-radius:18px;padding:12mm 10mm;display:flex;align-items:center;gap:8mm}
+.rp-hero-txt{flex:1}
+.rp-hero .kicker{font-size:8pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.rp-hero h1{font-size:28pt;line-height:1.1;letter-spacing:-.03em;margin:4mm 0 4mm}
+.rp-hero p{color:var(--muted);font-size:10.5pt;margin:0}
+.rp-det{width:62mm;flex:none}
+.rp-det *{animation:none!important}
+.rp-cover-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-top:12mm}
+.rp-cover-kpis > div{border:1px solid var(--line);border-radius:12px;padding:5mm 4mm}
+.rp-cover-kpis .v{font-size:18pt;font-weight:700;letter-spacing:-.02em}
+.rp-cover-kpis .l{font-size:8pt;color:var(--muted);margin-top:1mm}
+.rp-cover-brands{margin-top:12mm}
+.rp-brandchip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:99px;padding:2mm 4mm;margin:0 2mm 2mm 0;font-size:9.5pt;font-weight:500}
+.rp-cover-foot{margin-top:auto;margin-bottom:14mm;display:flex;justify-content:space-between;gap:10mm;font-size:8.5pt;color:var(--muted);border-top:1px solid var(--line);padding-top:5mm}
+.rp-cover-foot b{color:var(--text)}
+/* ---- zakładki ---- */
+.tabs1{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.t1{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;background:var(--bg);color:var(--text);border:1px solid var(--line);font:600 14px Inter,system-ui,sans-serif}
+.t1 .dot{margin:0}
+.t1.on{background:var(--text);color:var(--card);border-color:var(--text)}
+.t1i{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);margin-left:2px}
+.t1.on .t1i{background:var(--accent);color:#fff}
+.tabs2{display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;margin:14px 0 4px;border-bottom:2px solid var(--line);scrollbar-width:thin;position:sticky;top:0;background:var(--card);z-index:2}
+.t2{flex:none;padding:10px 14px;background:transparent;color:var(--muted);border:none;border-bottom:3px solid transparent;margin-bottom:-2px;border-radius:0;font:600 14px Inter,system-ui,sans-serif;white-space:nowrap}
+.t2:hover{color:var(--text)}
+.t2.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tb{display:inline-block;margin-left:6px;font-size:11px;padding:0 6px;border-radius:99px;background:var(--c1);color:#fff}
+.panel{padding-top:8px}
+.cmphead{margin-top:14px}.cmphead h2{margin:0;font-size:20px}
+/* ---- bloki ---- */
+.blk{margin-top:18px}
+.blk > h3{margin:0 0 10px;font-size:15px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px 28px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 24px}
+.see{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14px;line-height:1.5}
+.see > span{font-size:16px;line-height:1.3}
+.mkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.mk{border:1px solid var(--line);border-radius:12px;padding:12px}
+.mk b{display:block;font-size:20px;letter-spacing:-.02em}
+.mk b small{font-size:12px;font-weight:600}
+.mk span{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3}
+.up{color:var(--good)} .down{color:var(--bad)}
+.nodata{padding:8px 0}
+.trendline{display:flex;gap:20px;flex-wrap:wrap;font-size:14px}
+/* ---- wykresy ---- */
+.chart.single .bar{width:62%;border-radius:5px 5px 0 0}
+.donutwrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut .dc{font:700 22px Inter,system-ui,sans-serif;fill:var(--text)}
+.donut .ds{font:500 11px Inter,system-ui,sans-serif;fill:var(--muted)}
+.dleg{display:grid;gap:5px;font-size:13px;min-width:170px;flex:1}
+.dleg div{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center}
+.dleg i{width:10px;height:10px;border-radius:3px;display:block}
+.gauge .gv{font:700 30px Inter,system-ui,sans-serif;fill:var(--text)}
+.gauge .gl{font:500 11px Inter,system-ui,sans-serif;fill:var(--muted)}
+.idxwrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.idxparts{flex:1;min-width:220px}
+.gauges{display:flex;flex-wrap:wrap;gap:14px}
+.gw{border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center}
+.gn{font-size:13px;font-weight:600;margin-bottom:4px}
+.idxchip{font-weight:700;font-size:15px;color:var(--accent)}.idxchip small{font-size:10px;color:var(--muted)}
+.heat{display:block}
+.heat .hl,.lc .hl{fill:var(--muted);font:10px Inter,system-ui,sans-serif}
+.lc .sl{fill:var(--text);font:600 11px Inter,system-ui,sans-serif}
+.bbars{display:grid;gap:8px}
+.bb{display:grid;grid-template-columns:minmax(110px,170px) 1fr 70px;gap:10px;align-items:center;font-size:13px}
+.bb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bb .track{height:14px;background:var(--bg);border-radius:7px;overflow:hidden}
+.bb .fill{height:100%;border-radius:7px}
+.bb b{text-align:right}
+.stack.lab span{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;overflow:hidden}
+.stack.lab{height:20px;border-radius:6px}
+.divg{display:grid;gap:6px}
+.divg .dh{display:grid;grid-template-columns:1fr 110px 1fr;font-size:12px;color:var(--muted)}
+.divg .dh span:last-child{text-align:right}
+.divg .dr{display:grid;grid-template-columns:1fr 110px 1fr;align-items:center}
+.divg .dl{display:flex;justify-content:flex-end;height:16px}
+.divg .dl.right{justify-content:flex-start}
+.divg .db{height:100%;border-radius:4px}
+.divg .db.neg{background:var(--accent)}
+.divg .db.pos{background:var(--c1)}
+.divg .dm{text-align:center;font-size:12px;line-height:1.2}
+.pyr{display:grid;gap:5px}
+.pyr .ph{display:grid;grid-template-columns:1fr 54px 1fr;font-size:12px;color:var(--muted)}
+.pyr .ph span:first-child{text-align:right;color:var(--c3)} .pyr .ph span:last-child{color:var(--c0)}
+.pyr .pr{display:grid;grid-template-columns:1fr 54px 1fr;align-items:center}
+.pyr .pl{display:flex;justify-content:flex-end;align-items:center;gap:6px;height:16px;font-size:11px;color:var(--muted)}
+.pyr .pl.right{justify-content:flex-start}
+.pyr .pb{height:100%;border-radius:4px}
+.pyr .pb.f{background:var(--c3)} .pyr .pb.m{background:var(--c0)}
+.pyr .pm{text-align:center;font-size:12px;font-weight:600}
+.matrix{display:grid;gap:3px;font-size:12px}
+.matrix .mh{font-weight:600;padding:4px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.matrix .ml{padding:6px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.matrix .mc{text-align:center;padding:6px 4px;border-radius:5px;font-weight:600;border:1px solid var(--line)}
+/* ---- treści ---- */
+.concept{padding:8px 0;border-bottom:1px solid var(--line)}
+.concept:last-child{border-bottom:none}
+.concept .t{font-size:14px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cbar{height:8px;background:var(--bg);border-radius:4px;margin:5px 0;overflow:hidden}
+.cbar div{height:100%;background:var(--c4);border-radius:4px}
+.waves{display:grid;gap:8px}
+.wave{display:grid;grid-template-columns:100px 120px 1fr;gap:12px;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line)}
+.wave:last-child{border-bottom:none}
+.wb{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}.wb div{height:100%;background:var(--c1);border-radius:6px}
+.wc.alt{background:color-mix(in srgb, var(--c4) 16%, transparent);color:var(--c4)}
+.wc.warn{background:color-mix(in srgb, var(--c1) 16%, transparent);color:var(--c1)}
+.wc.good{background:color-mix(in srgb, var(--c2) 16%, transparent);color:var(--c2)}
+.mtag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:6px;background:var(--bg);color:var(--muted)}
+.recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.rec{border:1px solid var(--line);border-left:5px solid;border-radius:12px;padding:12px 14px;break-inside:avoid}
+.rh{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.rprio{font-size:11px;font-weight:700;color:#fff;padding:2px 8px;border-radius:99px}
+.ra{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.rt{font-weight:700;font-size:15px;margin-bottom:4px}
+.rw{font-size:13px;color:var(--muted);margin-bottom:6px}
+.rd{font-size:13px}
+.rp-scgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.rp-sc{border:1px solid var(--line);border-radius:12px;padding:12px;break-inside:avoid}
+.rp-sc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:14px}
+.rp-sc-g{display:grid;grid-template-columns:.8fr 1.35fr .8fr .9fr;gap:8px}
+.rp-sc-g b{display:block;white-space:nowrap;font-size:15px;letter-spacing:-.01em}
+.rp-sc-g span{display:block;font-size:11px;color:var(--muted);line-height:1.25}
+@media (max-width:560px){
+  .t1{padding:7px 10px;font-size:13px}.t2{padding:9px 10px;font-size:13px}
+  .wave{grid-template-columns:80px 1fr}.wave .wn{grid-column:1/-1}
+  .bb{grid-template-columns:90px 1fr 56px}
+  .rp-sc-g{grid-template-columns:1fr 1fr}
+}
+/* ---- PDF: nowe elementy ---- */
+.rp .blk{break-inside:avoid;margin-top:12px}
+.rp .blk > h3{font-size:10.5pt;margin-bottom:7px}
+.rp .two{grid-template-columns:1fr 1fr;gap:4px 18px}
+.rp .three{grid-template-columns:repeat(3,1fr);gap:4px 14px}
+.rp .see{font-size:9pt;padding:8px 10px;margin-top:8px;break-inside:avoid}
+.rp .mkpis{grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.rp .mk{padding:7px}.rp .mk b{font-size:12pt}.rp .mk span{font-size:7pt}
+.rp .recs{grid-template-columns:1fr 1fr;gap:8px}
+.rp .rec{padding:8px 10px}.rp .rt{font-size:10pt}.rp .rw,.rp .rd{font-size:8.3pt}
+.rp .bb{grid-template-columns:120px 1fr 62px;font-size:8.5pt;gap:8px}
+.rp .bbars{gap:5px}
+.rp .dleg{font-size:8.5pt;min-width:120px}
+.rp .donutwrap{gap:12px}
+.rp-newpage{break-before:page}
+.rp-kicker{font-size:7.5pt;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.rp-h2{font-size:15pt;margin:0 0 4px;letter-spacing:-.02em}
+.rp .idxparts .hbar{font-size:8pt}
+.rp .concept{padding:5px 0}.rp .concept .t{font-size:9pt}
+.rp .wave{font-size:8.3pt;grid-template-columns:80px 100px 1fr;padding:4px 0}
+.rp .matrix{font-size:8pt}
+.rp .gauges{gap:8px}.rp .gw{padding:6px}
+.rp .rp-scgrid{grid-template-columns:1fr 1fr}
+.rp .rp-sc-g b{font-size:10.5pt}.rp .rp-sc-g span{font-size:7pt}
+.rp .trendline{font-size:9pt}
+.rp .stack.lab{height:16px}
+.rp .pyr .pr,.rp .divg .dr{font-size:8pt}
+.rp .cands{display:none}
+
+.three .share,.blk .share{grid-template-columns:minmax(90px,130px) 1fr 42px}
+.rp-scgrid{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.idxparts{min-width:280px}
+
+.rp .blk:has(.ad),.rp .blk:has(.concept),.rp .blk:has(.wave),.rp .blk:has(.rec){break-inside:auto}
+.rp .ad,.rp .concept,.rp .wave,.rp .rec,.rp svg,.rp .chart,.rp .xl{break-inside:avoid}
+.rp .blk > h3{break-after:avoid}
+.rp-cover-kpis .v{font-size:16pt!important}
+
+@media (max-width:560px){.stackrow{grid-template-columns:84px 1fr;font-size:12px}.stack.lab span{font-size:0}.share,.three .share,.blk .share{grid-template-columns:84px 1fr 38px}.divg .dh,.divg .dr{grid-template-columns:1fr 80px 1fr}}
+
+.bench{display:grid;grid-template-columns:minmax(220px,300px) minmax(180px,240px) 1fr;gap:14px;align-items:end;margin:12px 0 4px}
+.bench .hint{align-self:center}
+@media (max-width:700px){.bench{grid-template-columns:1fr}}
+
+:root{--kd:#0f9d76;--kc:#1f5eff;--kp:#c27c00;--kx:#8a3ffc;--kt:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--kd:#38d9a9;--kc:#6f95ff;--kp:#fcc419;--kx:#b197fc;--kt:#111}}
+:root[data-theme="dark"]{--kd:#38d9a9;--kc:#6f95ff;--kp:#fcc419;--kx:#b197fc;--kt:#111}
+.marksbar{padding:14px 18px}
+.mbt{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;font-size:14px}.mbt span{color:var(--muted);font-size:13px}
+.mchks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px}
+.mchk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;color:var(--text);transition:background .15s}
+.mchk input{width:auto;margin-top:3px;accent-color:var(--k)}
+.mchk i{flex:none;width:12px;height:12px;border-radius:4px;background:var(--k);margin-top:4px}
+.mchk b{display:block;font-size:14px}.mchk small{display:block;font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
+.mchk[data-c="d"]{--k:var(--kd)}.mchk[data-c="c"]{--k:var(--kc)}.mchk[data-c="p"]{--k:var(--kp)}.mchk[data-c="x"]{--k:var(--kx)}
+.mchk:has(input:checked){background:color-mix(in srgb,var(--k) 10%,transparent);border-color:var(--k)}
+[data-k="d"]{--k:var(--kd);--kl:"Czyste dane"}[data-k="c"]{--k:var(--kc);--kl:"Obliczenia"}[data-k="p"]{--k:var(--kp);--kl:"Poszlaki"}[data-k="x"]{--k:var(--kx);--kl:"Dedukcja detektywa"}
+.blk[data-k],.see[data-k]{position:relative}
+body.mk-d [data-k="d"],body.mk-c [data-k="c"],body.mk-p [data-k="p"],body.mk-x [data-k="x"]{background:color-mix(in srgb,var(--k) 7%,var(--card));box-shadow:0 0 0 2px var(--k);border-radius:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.mk-d .blk[data-k="d"],body.mk-c .blk[data-k="c"],body.mk-p .blk[data-k="p"],body.mk-x .blk[data-k="x"]{padding:14px 14px 12px;margin-top:24px}
+body.mk-d .blk[data-k="d"]::before,body.mk-c .blk[data-k="c"]::before,body.mk-p .blk[data-k="p"]::before,body.mk-x .blk[data-k="x"]::before,
+body.mk-x .see[data-k="x"]::before{content:var(--kl);position:absolute;top:-10px;right:12px;font:700 10px/1 Inter,system-ui,sans-serif;letter-spacing:.03em;text-transform:uppercase;background:var(--k);color:var(--kt);padding:4px 8px;border-radius:99px;z-index:1}
+body.mk-x .see[data-k="x"]{margin-top:20px}
+body.mk-d .mk[data-k="d"],body.mk-c .mk[data-k="c"],body.mk-p .mk[data-k="p"],body.mk-x .mk[data-k="x"],
+body.mk-d .kpi[data-k="d"],body.mk-c .kpi[data-k="c"],body.mk-p .kpi[data-k="p"],body.mk-x .kpi[data-k="x"]{border-color:transparent}
+body.mk-p .pill[data-k="p"]{border-radius:99px}
+.mk[data-k],.kpi[data-k]{position:relative}
+body.mk-d .mk[data-k="d"]::after,body.mk-c .mk[data-k="c"]::after,body.mk-p .mk[data-k="p"]::after,body.mk-x .mk[data-k="x"]::after,
+body.mk-d .kpi[data-k="d"]::after,body.mk-c .kpi[data-k="c"]::after,body.mk-p .kpi[data-k="p"]::after,body.mk-x .kpi[data-k="x"]::after{content:"";position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--k)}
+.mklegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:10px}
+.mklegend span{display:inline-flex;align-items:center;gap:6px}.mklegend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.rp .mklegend{font-size:8pt}
+body.mk-d .rp .blk[data-k="d"],body.mk-c .rp .blk[data-k="c"],body.mk-p .rp .blk[data-k="p"],body.mk-x .rp .blk[data-k="x"]{padding:10px 10px 8px;margin-top:16px}
+@media print{.marksbar{display:none}}
+
+body[class*="mk-"] .rp .blk[data-k]::before,body.mk-x .rp .see[data-k="x"]::before{top:6px;right:8px;font-size:7pt;padding:3px 7px}
+body.mk-d .rp .blk[data-k="d"],body.mk-c .rp .blk[data-k="c"],body.mk-p .rp .blk[data-k="p"],body.mk-x .rp .blk[data-k="x"]{padding-top:12px;margin-top:12px}
+body.mk-x .rp .see[data-k="x"]{padding-right:120px;margin-top:10px}
+
+body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"],body.mk-x .rp [data-k="x"]{box-shadow:none;outline:2px solid var(--k);outline-offset:-2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="kicker">Śledztwo w Bibliotece Reklam</div>
+      <h1>Meta Ads Bot</h1>
+      <p>Wpisz markę, a detektyw sprawdzi, ile reklam puszcza, do kogo trafia, co komunikuje, które kreacje działają najdłużej i ile mniej więcej na to wydaje. Konkurencję też prześwietli.</p>
+    </div>
+    <svg class="detective" viewBox="0 0 230 190" role="img" aria-label="Detektyw z lupą przygląda się reklamom">
+      <circle cx="105" cy="105" r="80" fill="var(--accent-soft)"/>
+      <!-- unoszące się „dowody” -->
+      <g class="float1">
+        <rect x="162" y="22" width="52" height="40" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
+        <rect x="171" y="44" width="7" height="10" rx="2" fill="var(--c1)"/>
+        <rect x="182" y="36" width="7" height="18" rx="2" fill="var(--c2)"/>
+        <rect x="193" y="29" width="7" height="25" rx="2" fill="var(--accent)"/>
+      </g>
+      <g class="float2">
+        <rect x="172" y="76" width="44" height="26" rx="7" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
+        <text x="194" y="94" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="var(--c3)">AD</text>
+      </g>
+      <g class="float3">
+        <text x="20" y="48" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="26" fill="var(--accent)" opacity=".55">?</text>
+      </g>
+      <!-- płaszcz -->
+      <path d="M48 190 L56 140 Q90 122 124 140 L132 190 Z" fill="#c69a5c"/>
+      <path d="M72 132 L90 162 L108 132 Q90 126 72 132 Z" fill="#f4ece0"/>
+      <path d="M68 134 L90 166 L80 140 Z M112 134 L90 166 L100 140 Z" fill="#a87d43"/>
+      <rect x="86" y="150" width="8" height="28" rx="3" fill="#3b3f4a"/>
+      <!-- głowa -->
+      <circle cx="90" cy="96" r="31" fill="#f2c79d"/>
+      <circle cx="60" cy="98" r="6" fill="#e9b788"/>
+      <!-- lewe oko zmrużone -->
+      <path d="M72 92 Q78 88 84 92" stroke="#2b2f38" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M71 84 L85 86" stroke="#6b4b2a" stroke-width="3" stroke-linecap="round"/>
+      <!-- nos i wąsy -->
+      <circle cx="91" cy="104" r="5" fill="#e6a979"/>
+      <path d="M74 113 Q83 106 91 112 Q99 106 108 113 Q100 118 91 114 Q82 118 74 113 Z" fill="#6b4b2a"/>
+      <!-- kapelusz -->
+      <path d="M58 72 Q60 36 90 34 Q120 36 122 72 Z" fill="#3b3f4a"/>
+      <path d="M78 36 Q90 46 102 36" stroke="#2b2f38" stroke-width="3" fill="none"/>
+      <rect x="59" y="61" width="62" height="9" fill="var(--accent)"/>
+      <ellipse cx="90" cy="73" rx="48" ry="9" fill="#2b2f38"/>
+      <!-- lupa z powiększonym okiem -->
+      <g class="lens">
+        <line x1="128" y1="114" x2="152" y2="146" stroke="#7a5230" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="148" cy="140" r="8" fill="#f2c79d"/>
+        <circle cx="112" cy="92" r="24" fill="#dff1ff" fill-opacity=".85" stroke="#2b2f38" stroke-width="6"/>
+        <circle cx="110" cy="92" r="13" fill="#fff" stroke="#2b2f38" stroke-width="1.5"/>
+        <circle cx="114" cy="93" r="6.5" fill="#2b2f38"/>
+        <circle cx="116.5" cy="90.5" r="2" fill="#fff"/>
+        <path d="M98 80 Q104 74 112 74" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>
+        <path d="M100 66 L120 69" stroke="#6b4b2a" stroke-width="3.5" stroke-linecap="round"/>
+      </g>
+      <!-- linie „skanowania” w stronę dowodów -->
+      <path d="M138 80 L160 56 M140 92 L168 90" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round" opacity=".7"/>
+    </svg>
+  </header>
+  <div class="card marksbar" id="marksBar">
+    <div class="mbt"><b>🔍 Lupa detektywa</b><span>oznacz na wynikach (na ekranie i w PDF), skąd pochodzi każda informacja:</span></div>
+    <div class="mchks">
+      <label class="mchk" data-c="d"><input type="checkbox" data-mk="d"><i></i><span><b>Czyste dane</b><small>prosto z Meta API: daty, teksty, zasięg, demografia, targetowanie, płatnik</small></span></label>
+      <label class="mchk" data-c="c"><input type="checkbox" data-mk="c"><i></i><span><b>Obliczenia</b><small>matematyka na danych: średnie, udziały, trendy, rozkłady</small></span></label>
+      <label class="mchk" data-c="p"><input type="checkbox" data-mk="p"><i></i><span><b>Poszlaki</b><small>dyskusyjne: szacunki kosztu, indeks, przyjęte progi, wykrywanie w tekstach</small></span></label>
+      <label class="mchk" data-c="x"><input type="checkbox" data-mk="x"><i></i><span><b>Dedukcja detektywa</b><small>interpretacje, wnioski w ramkach 💡 i rekomendacje</small></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title-row">
+      <h2 style="margin:0">Dane wejściowe</h2>
+      <div class="row">
+        <select id="sets" style="width:auto;min-width:200px"><option value="">— zapisane zestawy —</option></select>
+        <button class="ghost mini" id="setLoad">Wczytaj</button>
+        <button class="ghost mini" id="setSave">Zapisz zestaw</button>
+        <button class="ghost mini" id="setDel">Usuń</button>
+        <button class="ghost mini" id="setExport" title="Kopia zapasowa zestawów do pliku">Eksport</button>
+        <button class="ghost mini" id="setImport" title="Wczytaj zestawy z pliku">Import</button>
+        <input type="file" id="setFile" accept=".json" class="hidden">
+      </div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div>
+        <label for="token">Token dostępu Meta</label>
+        <input id="token" type="password" placeholder="EAAG..." autocomplete="off">
+        <div class="check"><input type="checkbox" id="remember"><span>Zapamiętaj token na tym komputerze</span></div>
+      </div>
+      <div>
+        <label for="brand">Twoja marka</label>
+        <input id="brand" placeholder="np. Drogerie Natura">
+      </div>
+      <div>
+        <label for="page">ID strony lub link z Biblioteki Reklam (opcjonalnie)</label>
+        <input id="page" placeholder="123456789 lub ...view_all_page_id=123...">
+        <div class="hint">Pewniejsze niż sama nazwa marki.</div>
+      </div>
+      <div>
+        <label for="lang">Język reklam</label>
+        <select id="lang">
+          <option value="">dowolny</option><option value="pl">polski</option><option value="en">angielski</option>
+          <option value="de">niemiecki</option><option value="cs">czeski</option><option value="sk">słowacki</option>
+          <option value="uk">ukraiński</option><option value="fr">francuski</option><option value="es">hiszpański</option><option value="it">włoski</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <label>Obszar emisji</label>
+      <div class="row">
+        <div class="check" style="margin:0"><input type="checkbox" id="world"><span style="color:var(--text);font-weight:600">🌍 Cały świat</span></div>
+        <button class="ghost mini" id="pickEU">Cała UE + UK</button>
+        <button class="ghost mini" id="pickPL">Tylko Polska</button>
+        <button class="ghost mini" id="pickNone">Wyczyść</button>
+      </div>
+      <div class="chips" id="countries"></div>
+      <div class="hint" id="regionHint"></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <label for="comp">Konkurenci do porównania (opcjonalnie, jeden w linii)</label>
+      <textarea id="comp" placeholder="Rossmann&#10;Hebe; 123456789&#10;Super-Pharm; https://www.facebook.com/ads/library/?...view_all_page_id=987654321"></textarea>
+      <div class="hint">Sama nazwa albo „Nazwa; ID strony lub link”. Nie wiesz, kogo wpisać? Użyj „Odkryj konkurentów po frazie” niżej.</div>
+    </div>
+
+    <details>
+      <summary>Założenia do szacowania kosztu i ustawienia</summary>
+      <div class="bench">
+        <div><label for="bench">Benchmark branżowy</label><select id="bench"></select></div>
+        <div class="hint" id="benchHint" style="margin:0"></div>
+      </div>
+      <div class="grid">
+        <div><label for="cpmMin">CPM min (PLN)</label><input id="cpmMin" type="number" step="0.5" value="10"></div>
+        <div><label for="cpmMax">CPM max (PLN)</label><input id="cpmMax" type="number" step="0.5" value="25"></div>
+        <div><label for="freqMin">Częstotliwość min</label><input id="freqMin" type="number" step="0.1" value="1.3"></div>
+        <div><label for="freqMax">Częstotliwość max</label><input id="freqMax" type="number" step="0.1" value="2.0"></div>
+        <div><label for="ver">Wersja Graph API</label><input id="ver" value="v25.0"><div class="hint">Przy błędzie wersji wpisz np. v24.0</div></div>
+      </div>
+      <div class="hint" id="cpmHint"></div>
+      <div class="check"><input type="checkbox" id="withDemo" checked><span>Pobieraj demografię, targetowanie i płatników (wolniej przy dużych markach)</span></div>
+      <div class="check"><input type="checkbox" id="withMedia" checked><span>Pobieraj typ mediów — wideo / grafika (3 dodatkowe zapytania na markę)</span></div>
+      <div class="check"><input type="checkbox" id="withPol" checked><span>Sprawdzaj reklamy społeczne i polityczne (z prawdziwymi wydatkami)</span></div>
+      <div class="row" style="margin-top:10px"><span class="hint" style="margin:0">Migawki do śledzenia zmian zapisują się automatycznie w tej przeglądarce:</span>
+        <button class="ghost mini" id="snapExport">Eksport migawek</button><button class="ghost mini" id="snapImport">Import migawek</button><input type="file" id="snapFile" accept=".json" class="hidden"></div>
+    </details>
+    <div class="row" style="margin-top:16px">
+      <button id="go">Analizuj</button>
+      <button id="xlsx" class="ghost hidden">Pobierz Excel</button>
+      <button id="pdf" class="ghost hidden">Raport PDF</button>
+      <button id="clear" class="ghost hidden">Wyczyść wyniki</button>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <div class="card">
+    <details id="discBox">
+      <summary style="font-size:16px;font-weight:600;color:var(--text);margin-top:0">🔎 Odkryj konkurentów po frazie</summary>
+      <div class="row" style="margin-top:14px">
+        <input id="phrase" placeholder="np. krem z filtrem, buty robocze, catering dietetyczny" style="flex:1;min-width:220px">
+        <button id="discGo">Szukaj reklamodawców</button>
+      </div>
+      <div class="hint">Szuka fraz w treści reklam na wybranym obszarze emisji i zestawia strony, które reklamują się najwięcej.</div>
+      <div id="discStatus" class="hint"></div>
+      <div id="discList" style="margin-top:10px"></div>
+      <div class="row hidden" id="discActions" style="margin-top:12px">
+        <button class="ghost" id="discAdd">Dodaj zaznaczone do konkurentów</button>
+      </div>
+    </details>
+  </div>
+
+  <div id="filtersCard" class="card hidden">
+    <h2>Filtry wyników <span class="sub" style="font-weight:400">— przeliczają się od razu, bez ponownego pobierania</span></h2>
+    <div class="toolbar">
+      <div><label for="fDays">Okres emisji</label>
+        <select id="fDays"><option value="0">cała biblioteka</option><option value="30">ostatnie 30 dni</option><option value="90">ostatnie 90 dni</option><option value="180">ostatnie 180 dni</option><option value="365">ostatnie 365 dni</option></select></div>
+      <div><label for="fPlat">Platforma</label>
+        <select id="fPlat"><option value="">wszystkie</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="messenger">Messenger</option><option value="audience_network">Audience Network</option><option value="threads">Threads</option></select></div>
+      <div><label for="fEv">Evergreen od</label>
+        <select id="fEv"><option value="30">30 dni emisji</option><option value="45">45 dni</option><option value="60">60 dni</option><option value="90">90 dni</option></select></div>
+      <div id="fMediaWrap" class="hidden"><label for="fMedia">Format</label>
+        <select id="fMedia"><option value="">wszystkie</option><option value="VIDEO">wideo</option><option value="IMAGE">grafika</option><option value="MEME">grafika z tekstem</option><option value="OTHER">inne</option></select></div>
+      <div class="check"><input type="checkbox" id="fActive"><span>Tylko aktywne reklamy</span></div>
+    </div>
+  </div>
+
+  <div id="pdfCard" class="card hidden"></div>
+  <div id="resultsCard" class="card hidden"></div>
+</div>
+
+<div id="report"></div>
+<script>
+// ================================================================ dane stałe
+const EU = {PL:"Polska",DE:"Niemcy",CZ:"Czechy",SK:"Słowacja",AT:"Austria",FR:"Francja",IT:"Włochy",ES:"Hiszpania",NL:"Holandia",BE:"Belgia",LT:"Litwa",LV:"Łotwa",EE:"Estonia",HU:"Węgry",RO:"Rumunia",BG:"Bułgaria",HR:"Chorwacja",SI:"Słowenia",SE:"Szwecja",DK:"Dania",FI:"Finlandia",IE:"Irlandia",PT:"Portugalia",GR:"Grecja",LU:"Luksemburg",CY:"Cypr",MT:"Malta"};
+const ALL_COUNTRIES = {...EU, GB: "Wielka Brytania"};
+// Orientacyjne CPM (PLN) dla Meta, szeroki zakres pod różne branże
+const CPM = {PL:[10,25],CZ:[12,28],SK:[10,25],HU:[9,22],RO:[7,18],BG:[6,16],HR:[10,24],SI:[12,28],LT:[9,22],LV:[9,22],EE:[10,24],GR:[9,22],PT:[12,28],ES:[16,36],IT:[16,36],FR:[22,48],BE:[24,50],NL:[26,55],LU:[28,60],IE:[28,60],AT:[24,50],DE:[26,55],DK:[30,65],SE:[28,60],FI:[26,55],CY:[12,28],MT:[12,28],GB:[30,65],ALL:[20,50]};
+const AGE_ORDER = ["13-17","18-24","25-34","35-44","45-54","55-64","65+"];
+const PLATFORM_NAMES = {facebook:"Facebook",instagram:"Instagram",messenger:"Messenger",audience_network:"Audience Network",threads:"Threads",oculus:"Oculus",whatsapp:"WhatsApp"};
+const OFFERS = [
+  ["Rabat / % zniżki", /(-\s?\d{1,2}\s?%|\d{1,2}\s?%\s?(taniej|rabatu|zniżki|off|mniej)|\brabat|zniżk|\bdiscount|\b\d{1,2}% off)/i],
+  ["Darmowa dostawa", /(darmow\w* dostaw|bezpłatn\w* dostaw|free (shipping|delivery)|dostaw\w* gratis|dostawa 0 ?zł)/i],
+  ["Kod rabatowy", /(\bkod\w*\b|\bcode\b|\bkupon)/i],
+  ["Promocja / wyprzedaż", /(promocj|wyprzeda|okazj|\bsale\b|black ?friday|cyber ?monday|outlet|\bdeal)/i],
+  ["Gratis / prezent", /(gratis|prezent|w zestawie|free gift|\bdo zakupu\b)/i],
+  ["Konkurs", /(konkurs|wygraj|giveaway|losowani|do wygrania)/i],
+  ["Nowość", /(nowość|nowości|nowosc|nowa kolekcja|nowy produkt|premiera|\bnew\b|\bnowy\b|\bnowa\b)/i],
+  ["Pilność / ograniczony czas", /(ostatni\w* (dni|szans|sztuk|godzin)|tylko do|tylko dziś|tylko dzis|do końca|kończy się|konczy sie|limited|ograniczon|zostało|zostalo)/i],
+];
+const STOP = new Set(("a aby ale bez bo by być był była było były co czy dla do gdy gdzie go i ich im ja jak jako je jego jej jest jestem jeszcze już juz ku lub ma mamy masz mi mnie może można na nad nam nas nasz nasza nasze naszych naszej naszym nawet nie niech nim nich nic no o od oraz po pod przez przy sie się są sa ta tak tam te tego tej ten też tez to tu tutaj twoje twój twoja twoich u w we wiele więcej wszystko wszystkie z za ze że zł zl już twojej twoim swoje swój swoja które który która które których dzięki teraz tylko kiedy coś cos bardzo jeśli jesli każdy kazdy każda kazda the and for you your with our are this that from all now get more new have has can will out not but its it's off what when who how why was were his her him she they them their there here than then just also into about over only very www com https http pl").split(" "));
+
+// ================================================================ narzędzia
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); return true; } catch(e){ return false; } },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmt = n => n == null ? "brak danych" : Math.round(n).toLocaleString("pl-PL");
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DAY = 86400000;
+const toDay = s => s ? Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) : null;
+const todayUTC = (() => { const d = new Date(); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const iso = t => t == null ? "" : new Date(t).toISOString().slice(0,10);
+const mean = a => a.reduce((s,x) => s+x, 0) / a.length;
+const median = a => { const s = [...a].sort((x,y)=>x-y), m = s.length>>1; return s.length % 2 ? s[m] : (s[m-1]+s[m])/2; };
+const topN = (obj, n) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0, n);
+const COLORS = 8;
+const color = i => `var(--c${i % COLORS})`;
+const ageColor = i => `var(--a${i})`;
+function setStatus(msg, err){ const el = $("status"); el.textContent = msg; el.className = err ? "err" : ""; }
+
+// ================================================================ token
+const saved = store.get("metaAdsBotToken");
+if (saved){ $("token").value = saved; $("remember").checked = true; }
+const token = () => $("token").value.trim();
+
+// ================================================================ obszar emisji + CPM
+const selected = new Set(["PL"]);
+const chipBox = $("countries");
+for (const [k,v] of Object.entries(ALL_COUNTRIES)){
+  const b = document.createElement("button");
+  b.className = "chip"; b.type = "button"; b.dataset.c = k; b.textContent = `${k} · ${v}`;
+  b.onclick = () => { selected.has(k) ? selected.delete(k) : selected.add(k); regionChanged(); };
+  chipBox.appendChild(b);
+}
+$("world").onchange = regionChanged;
+$("pickEU").onclick = () => { $("world").checked = false; Object.keys(ALL_COUNTRIES).forEach(c => selected.add(c)); regionChanged(); };
+$("pickPL").onclick = () => { $("world").checked = false; selected.clear(); selected.add("PL"); regionChanged(); };
+$("pickNone").onclick = () => { $("world").checked = false; selected.clear(); regionChanged(); };
+
+function currentRegion(){ return $("world").checked ? ["ALL"] : [...selected]; }
+function regionLabel(arr){
+  if (!arr || !arr.length) return "—";
+  if (arr[0] === "ALL") return "cały świat";
+  if (arr.length === Object.keys(ALL_COUNTRIES).length) return "UE + UK";
+  if (arr.length === Object.keys(EU).length && !arr.includes("GB")) return "cała UE";
+  return arr.length > 6 ? `${arr.slice(0,6).join(", ")} +${arr.length-6}` : arr.join(", ");
+}
+function regionChanged(){
+  const world = $("world").checked;
+  chipBox.classList.toggle("off", world);
+  chipBox.querySelectorAll(".chip").forEach(b => b.classList.toggle("on", selected.has(b.dataset.c)));
+  const reg = currentRegion();
+  const h = $("regionHint");
+  if (world) h.textContent = "Meta udostępnia w API reklamy komercyjne tylko, jeśli dotarły do UE lub UK — kampanie emitowane wyłącznie poza Europą (np. tylko USA) nie będą widoczne. Zasięg = zasięg w UE.";
+  else if (!reg.length) h.textContent = "Wybierz co najmniej jeden kraj albo zaznacz „Cały świat”.";
+  else if (reg.includes("GB")) h.textContent = "Zasięg (eu_total_reach) dotyczy tylko UE — dla reklam emitowanych wyłącznie w UK może go brakować.";
+  else h.textContent = reg.length === 1 ? "" : "Zasięg to zasięg w całej UE dla każdej reklamy.";
+  applyBenchmark();
+}
+
+// ================================================================ benchmarki branżowe
+// mnożnik CPM względem średniej rynkowej + typowa częstotliwość (orientacyjnie, na bazie zestawień CPM Meta wg branż)
+const BENCHMARKS = [
+  ["general", "Ogólny — średnia rynkowa", 1.00, 1.3, 2.0],
+  ["ecommerce", "E-commerce (ogólnie)", 1.15, 1.4, 2.2],
+  ["fashion", "Moda i odzież", 0.90, 1.4, 2.2],
+  ["beauty", "Uroda, kosmetyki, drogerie", 1.10, 1.4, 2.2],
+  ["health", "Zdrowie, apteki, suplementy", 1.15, 1.3, 2.0],
+  ["food", "Spożywcze i FMCG", 0.80, 1.5, 2.5],
+  ["home", "Dom, wnętrza, ogród", 0.80, 1.3, 2.0],
+  ["tech", "Elektronika i technologie", 1.20, 1.3, 2.0],
+  ["auto", "Motoryzacja (dealerzy, części)", 0.70, 1.3, 2.0],
+  ["realestate", "Nieruchomości i deweloperzy", 1.25, 1.2, 1.8],
+  ["finance", "Finanse i ubezpieczenia", 1.45, 1.2, 1.8],
+  ["b2b", "B2B, usługi dla firm, leady", 1.50, 1.2, 1.8],
+  ["industry", "Przemysł, produkcja, budownictwo", 1.30, 1.2, 1.8],
+  ["education", "Edukacja i kursy", 1.00, 1.3, 2.0],
+  ["local", "Usługi lokalne (gastro, beauty, fitness)", 0.85, 1.6, 2.8],
+  ["travel", "Turystyka i hotele", 1.05, 1.3, 2.0],
+  ["events", "Rozrywka, media, wydarzenia", 0.85, 1.4, 2.2],
+  ["ngo", "Organizacje społeczne i NGO", 0.80, 1.3, 2.0],
+  ["custom", "Własne wartości (ręcznie)", null, null, null]
+];
+const SEASON = [["none", "bez korekty", 1], ["q4", "Q4 / Black Friday / Święta (+25%)", 1.25], ["summer", "lato (−10%)", 0.9]];
+(function initBench(){
+  const sel = $("bench");
+  sel.innerHTML = BENCHMARKS.map(([k, l]) => `<option value="${k}">${l}</option>`).join("") ;
+  const seasonSel = document.createElement("select"); seasonSel.id = "season";
+  seasonSel.innerHTML = SEASON.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
+  const wrap = document.createElement("div"); wrap.innerHTML = `<label for="season">Sezon</label>`; wrap.appendChild(seasonSel);
+  sel.parentElement.after(wrap);
+  try { const b = JSON.parse(store.get("metaAdsBotBench") || "{}"); if (b.k && BENCHMARKS.some(x => x[0] === b.k)) sel.value = b.k; if (b.s) seasonSel.value = b.s; } catch(e){}
+  const save = () => store.set("metaAdsBotBench", JSON.stringify({k: sel.value, s: seasonSel.value}));
+  sel.addEventListener("change", () => { save(); applyBenchmark(); });
+  seasonSel.addEventListener("change", () => { save(); applyBenchmark(); });
+  ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => {
+    if (sel.value !== "custom") $("benchHint").innerHTML = `Wartości zmienione ręcznie na bazie benchmarku „${esc(BENCHMARKS.find(x => x[0] === sel.value)[1])}”. Wybierz benchmark ponownie, żeby je przywrócić.`;
+  }));
+})();
+function benchLabel(){
+  const b = BENCHMARKS.find(x => x[0] === $("bench").value) || BENCHMARKS[0];
+  const se = SEASON.find(x => x[0] === ($("season") ? $("season").value : "none"));
+  return b[0] === "custom" ? "własne założenia" : `benchmark: ${b[1]}${se && se[0] !== "none" ? `, sezon: ${se[1]}` : ""}`;
+}
+function applyBenchmark(){
+  const b = BENCHMARKS.find(x => x[0] === $("bench").value) || BENCHMARKS[0];
+  const reg = currentRegion();
+  const keys = $("world").checked ? ["ALL"] : reg;
+  if (b[0] === "custom"){ $("benchHint").textContent = "Wpisz własne CPM i częstotliwość — benchmark nie nadpisze tych pól."; if (results.length) rerender(); return; }
+  if (!keys.length) return;
+  const se = (SEASON.find(x => x[0] === $("season").value) || SEASON[0])[2];
+  const mn = mean(keys.map(k => (CPM[k] || CPM.ALL)[0])) * b[2] * se, mx = mean(keys.map(k => (CPM[k] || CPM.ALL)[1])) * b[2] * se;
+  $("cpmMin").value = Math.round(mn * 2) / 2; $("cpmMax").value = Math.round(mx * 2) / 2;
+  $("freqMin").value = b[3]; $("freqMax").value = b[4];
+  $("benchHint").innerHTML = `CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł i częstotliwość ${String(b[3]).replace(".", ",")}–${String(b[4]).replace(".", ",")} dla obszaru <b>${esc(regionLabel(keys))}</b>${b[2] !== 1 ? ` (branża ×${String(b[2]).replace(".", ",")} względem średniej)` : ""}${se !== 1 ? `, sezon ×${String(se).replace(".", ",")}` : ""}. Możesz poprawić każde pole ręcznie.`;
+  $("cpmHint").textContent = "Benchmarki są orientacyjne (średnie stawki Meta dla rynku i branży). Jeśli znasz realne CPM z kont w tej branży — wpisz je.";
+  if (results.length) rerender();
+}
+
+// ================================================================ API
+class FatalApiError extends Error {}
+async function apiGet(url){
+  let delay = 4000;
+  for (let i = 0; i < 5; i++){
+    let json;
+    try { const res = await fetch(url); json = await res.json(); }
+    catch(e){
+      if (i < 4){ await sleep(delay); delay *= 2; continue; }
+      throw new FatalApiError("Brak połączenia z Meta (sprawdź internet).");
+    }
+    if (!json.error) return json;
+    const c = json.error.code, msg = json.error.message || "";
+    if ([4,17,32,613].includes(c) && i < 4){ setStatus(`Limit zapytań API, czekam ${delay/1000}s...`); await sleep(delay); delay *= 2; continue; }
+    if (c === 190) throw new FatalApiError(`Błąd Meta 190: ${msg} → token wygasł lub jest błędny. Wygeneruj nowy w Graph API Explorer.`);
+    if (c === 10 || c === 200 || /permission|identity|verify/i.test(msg)) throw new FatalApiError(`Błąd Meta ${c}: ${msg} → brak dostępu do Ad Library API. Potwierdź tożsamość na facebook.com/ID.`);
+    if (/version/i.test(msg)) throw new FatalApiError(`Błąd Meta ${c}: ${msg} → zmień wersję Graph API w ustawieniach.`);
+    const err = new Error(`Błąd Meta ${c}: ${msg}`); err.code = c; throw err;
+  }
+}
+async function fetchAll(params, max, label, onStatus = setStatus){
+  const ver = $("ver").value.trim() || "v25.0";
+  const q = new URLSearchParams({limit: 250, ...params, access_token: token()});
+  let data = await apiGet(`https://graph.facebook.com/${ver}/ads_archive?${q}`);
+  const out = [];
+  while (true){
+    out.push(...(data.data || []));
+    onStatus(`${label}: pobrano ${out.length} reklam...`);
+    if (max && out.length >= max) return out.slice(0, max);
+    const next = data.paging && data.paging.next;
+    if (!next) return out;
+    data = await apiGet(next);
+  }
+}
+function baseParams(region){
+  const p = {ad_type: "ALL", ad_active_status: "ALL", ad_reached_countries: JSON.stringify(region)};
+  const lang = $("lang").value;
+  if (lang) p.languages = JSON.stringify([lang]);
+  return p;
+}
+const FIELDS_BASIC = "id,page_id,page_name,ad_delivery_start_time,ad_delivery_stop_time,eu_total_reach,publisher_platforms,ad_creative_bodies,ad_creative_link_titles,ad_creative_link_captions,ad_creative_link_descriptions";
+const FIELDS_DEMO = FIELDS_BASIC + ",target_ages,target_gender,target_locations,age_country_gender_reach_breakdown";
+
+async function findPage(brand, region, label){
+  const ads = await fetchAll({...baseParams(region), search_terms: brand, fields: "page_id,page_name"}, 1000, `${label}: szukam reklamodawcy`);
+  if (!ads.length) return [];
+  const counts = {}, names = {};
+  for (const a of ads){ if (!a.page_id) continue; counts[a.page_id] = (counts[a.page_id]||0)+1; names[a.page_id] = a.page_name || ""; }
+  const b = brand.toLowerCase().trim();
+  const score = pid => {
+    const n = names[pid].toLowerCase().trim();
+    const s = n === b ? 3 : (n.startsWith(b) || b.startsWith(n)) ? 2 : (n.includes(b) || b.includes(n)) ? 1 : 0;
+    return s * 1e6 + counts[pid];
+  };
+  return Object.keys(counts).sort((x,y) => score(y) - score(x)).slice(0, 8).map(pid => ({id: pid, name: names[pid], count: counts[pid]}));
+}
+function parsePageId(v){
+  v = (v || "").trim();
+  if (!v) return null;
+  if (/^\d+$/.test(v)) return v;
+  const m = v.match(/view_all_page_id=(\d+)/) || v.match(/(\d{6,})/);
+  return m ? m[1] : undefined;
+}
+
+// ================================================================ słowniki analizy
+const MEDIA_NAMES = {VIDEO: "Wideo", IMAGE: "Grafika", MEME: "Grafika z tekstem (mem)", OTHER: "Inne (karuzela, katalog, tekst)"};
+const MEDIA_COLORS = {VIDEO: "var(--c3)", IMAGE: "var(--c0)", MEME: "var(--c5)", OTHER: "var(--a7)"};
+const PLAT_COLORS = {facebook: "var(--c0)", instagram: "var(--c3)", messenger: "var(--c6)", audience_network: "var(--c5)", threads: "var(--c7)", whatsapp: "var(--c2)", oculus: "var(--c4)"};
+const CTA_RE = /(^|[^\p{L}])(kup|kupuj|sprawdź|sprawdz|zamów|zamow|odbierz|zapisz|pobierz|dołącz|dolacz|kliknij|zarejestruj|zobacz|wypróbuj|wyprobuj|skorzystaj|zgarnij|odwiedź|odwiedz|umów|umow|zadzwoń|zadzwon|przetestuj|wejdź|wejdz|shop|buy|order|sign up|learn more|book)/iu;
+const EMOJI_RE = /\p{Extended_Pictographic}/u;
+const DISC_RE = /(?:[-–]\s?|do\s*[-–]?\s*|aż\s*[-–]?\s*|az\s*[-–]?\s*|rabat\w*\s*|zniżk\w*\s*|znizk\w*\s*)(\d{1,2})\s?%|(\d{1,2})\s?%\s?(?:taniej|rabatu|rabat|zniżki|znizki|zniżka|off|mniej)/giu;
+const PRICE_RE = /(\d{1,3}(?:[  .]\d{3})*(?:[,.]\d{1,2})?)\s?(?:zł|zl\b|pln|złotych)/giu;
+const WEEKDAYS = ["pn", "wt", "śr", "cz", "pt", "sb", "nd"];
+const WEEKDAYS_FULL = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
+const LIFE_B = [[1,3,"1–3 dni"],[4,7,"4–7"],[8,14,"8–14"],[15,30,"15–30"],[31,60,"31–60"],[61,90,"61–90"],[91,1e9,"90+"]];
+const LEN_B = [[0,50,"do 50 zn."],[51,100,"51–100"],[101,200,"101–200"],[201,400,"201–400"],[401,1e9,"400+"]];
+const DISC_B = [[0,10,"do 10%"],[11,20,"11–20%"],[21,30,"21–30%"],[31,40,"31–40%"],[41,50,"41–50%"],[51,100,"50%+"]];
+const PRICE_B = [[0,19.99,"< 20 zł"],[20,49.99,"20–49"],[50,99.99,"50–99"],[100,199.99,"100–199"],[200,499.99,"200–499"],[500,1e9,"500+"]];
+const bucket = (vals, B) => B.map(([a,b,l]) => [l, vals.filter(v => v >= a && v <= b).length]);
+
+function keyDates(year){
+  const nov1 = new Date(Date.UTC(year, 10, 1)).getUTCDay();
+  const thu1 = 1 + ((4 - nov1 + 7) % 7);
+  return [
+    ["Walentynki", Date.UTC(year,1,14)], ["Dzień Kobiet", Date.UTC(year,2,8)], ["Dzień Matki", Date.UTC(year,4,26)],
+    ["Dzień Dziecka", Date.UTC(year,5,1)], ["Powrót do szkoły", Date.UTC(year,8,1)], ["Black Friday", Date.UTC(year,10,thu1 + 22)],
+    ["Mikołajki", Date.UTC(year,11,6)], ["Święta", Date.UTC(year,11,24)]
+  ].map(([name, t]) => ({name, t}));
+}
+const keyDatesAround = (from, to) => [new Date(from).getUTCFullYear() - 1, new Date(from).getUTCFullYear(), new Date(to).getUTCFullYear(), new Date(to).getUTCFullYear() + 1]
+  .filter((y, i, a) => a.indexOf(y) === i).flatMap(keyDates).filter(k => k.t >= from && k.t <= to).sort((a,b) => a.t - b.t);
+
+// ================================================================ przygotowanie reklam
+function domainOf(s){
+  if (!s) return "";
+  const m = String(s).toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").match(/([a-z0-9-]+\.)+[a-z]{2,}/);
+  return m ? m[0] : "";
+}
+function pathOf(s){
+  const v = String(s || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "");
+  const i = v.indexOf("/");
+  if (i < 0) return "";
+  const p = v.slice(i).split(/[?#]/)[0].split("/").filter(Boolean).slice(0, 2).join("/");
+  return p ? "/" + p : "";
+}
+function ageLabel(a){
+  if (!a || !a.length) return "";
+  const v = a.map(String);
+  return v.length === 2 ? `${v[0]}–${v[1]}` : v.join("–");
+}
+const GENDER_PL = {all:"wszyscy", women:"kobiety", female:"kobiety", men:"mężczyźni", male:"mężczyźni"};
+const cleanTxt = s => String(s || "").replace(/\{\{[^}]*\}\}/g, " ").replace(/https?:\/\/\S+/g, " ").replace(/\s+/g, " ").trim();
+
+function buildRows(ads){
+  const today = todayUTC, rows = [];
+  for (const ad of ads){
+    const start = toDay(ad.ad_delivery_start_time);
+    if (start == null) continue;
+    const stop = toDay(ad.ad_delivery_stop_time);
+    const active = stop == null || stop >= today;
+    const end = active ? today : stop;
+    const days = Math.max(Math.round((end - start)/DAY) + 1, 1);
+    const reach = ad.eu_total_reach != null && !isNaN(+ad.eu_total_reach) ? +ad.eu_total_reach : null;
+    const bodies = (ad.ad_creative_bodies || []).map(cleanTxt).filter(Boolean);
+    const titles = (ad.ad_creative_link_titles || []).map(cleanTxt).filter(Boolean);
+    const descs = (ad.ad_creative_link_descriptions || []).map(cleanTxt).filter(Boolean);
+    const caps = ad.ad_creative_link_captions || [];
+    rows.push({
+      id: ad.id, start, stop, end, active, days, reach,
+      rpd: reach != null ? reach / days : null,
+      platforms: (ad.publisher_platforms || []).map(p => String(p).toLowerCase()),
+      text: (bodies[0] || "").slice(0, 240), title: (titles[0] || "").slice(0, 140), desc: (descs[0] || "").slice(0, 160),
+      body: bodies[0] || "",
+      fullText: cleanTxt(bodies.join(" ") + " " + titles.join(" ") + " " + descs.join(" ")),
+      dco: new Set(bodies).size > 1 || new Set(titles).size > 1,
+      domain: domainOf(caps[0]), path: pathOf(caps[0]),
+      tAges: ageLabel(ad.target_ages), tGender: ad.target_gender ? String(ad.target_gender).toLowerCase() : "",
+      tLocs: (ad.target_locations || []).map(l => ({name: l.name || "", excluded: !!l.excluded, type: l.type || ""})),
+      demo: ad.age_country_gender_reach_breakdown || null,
+      payers: (ad.beneficiary_payers || []).map(p => ({payer: p.payer || "", ben: p.beneficiary || ""})),
+      dow: (new Date(start).getUTCDay() + 6) % 7,
+      media: null
+    });
+  }
+  return rows;
+}
+
+// ================================================================ analiza marki
+const lg = (v, ref) => Math.max(0, Math.min(100, Math.log10(1 + v) / Math.log10(1 + ref) * 100));
+const conceptKey = r => (r.body || r.title || "").toLowerCase().replace(/\d+/g, "#").replace(/[^\p{L}#\s]/gu, "").replace(/\s+/g, " ").trim().slice(0, 90);
+const INDEX_PARTS = [["skala","Skala (aktywne reklamy)",.25],["zasieg","Zasięg dzienny",.25],["swiezosc","Świeżość kreacji",.15],["testowanie","Testowanie (koncepty 90 dni)",.15],["regularnosc","Regularność (miesiące z emisją)",.10],["roznorodnosc","Różnorodność (platformy, formaty)",.10]];
+const indexLabel = v => v >= 81 ? "bardzo wysoka" : v >= 61 ? "wysoka" : v >= 31 ? "średnia" : "niska";
+
+function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
+  const brandToks = new Set((String(brandName).toLowerCase().match(/[\p{L}\p{N}]+/gu) || []));
+  const today = todayUTC;
+  let rows = rowsAll;
+  if (f.days) rows = rows.filter(r => r.end >= today - (f.days - 1) * DAY);
+  if (f.platform) rows = rows.filter(r => r.platforms.includes(f.platform));
+  if (f.media) rows = rows.filter(r => (r.media || "OTHER") === f.media);
+  if (f.activeOnly) rows = rows.filter(r => r.active);
+  const n = rows.length;
+  const act = rows.filter(r => r.active);
+  const reaches = rows.filter(r => r.reach != null).map(r => r.reach);
+  const actReaches = act.filter(r => r.reach != null).map(r => r.reach);
+
+  // --- miesiące: nowe, emitowane, zasięg
+  const months = [], d0 = new Date(today);
+  for (let i = 11; i >= 0; i--){
+    const ms = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() - i, 1), dt = new Date(ms);
+    const me = Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 1) - DAY;
+    months.push({key: `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,"0")}`, ms, me, nowe: 0, emitowane: 0, reach: 0});
+  }
+  for (const r of rows) for (const m of months){
+    if (r.start >= m.ms && r.start <= m.me) m.nowe++;
+    const ov = Math.round((Math.min(r.end, m.me) - Math.max(r.start, m.ms)) / DAY) + 1;
+    if (ov > 0){ m.emitowane++; m.reach += (r.rpd || 0) * ov; }
+  }
+  const newIn = (from, to) => rows.filter(r => r.start > today - to*DAY && r.start <= today - from*DAY).length;
+  const n30 = newIn(0,30), p30 = newIn(30,60), n90 = newIn(0,90), p90 = newIn(90,180);
+  let trend, dir = "flat";
+  if (!n90 && !p90) trend = "brak nowych reklam (stagnacja)";
+  else if (!p90){ trend = "rośnie (start lub wznowienie aktywności)"; dir = "up"; }
+  else {
+    const ch = (n90 - p90) / p90 * 100;
+    if (ch >= 20){ trend = `rośnie (+${ch.toFixed(0)}% nowych reklam)`; dir = "up"; }
+    else if (ch <= -20){ trend = `spada (${ch.toFixed(0)}% nowych reklam)`; dir = "down"; }
+    else trend = `stabilna (${ch >= 0 ? "+" : ""}${ch.toFixed(0)}% nowych reklam)`;
+  }
+
+  // --- koszt
+  const dailyReach = act.reduce((s,r) => s + (r.rpd || 0), 0);
+  const fMid = (o.freqMin + o.freqMax)/2, cMid = (o.cpmMin + o.cpmMax)/2;
+  const dayMin = dailyReach * o.freqMin / 1000 * o.cpmMin, dayMax = dailyReach * o.freqMax / 1000 * o.cpmMax, dayMid = dailyReach * fMid / 1000 * cMid;
+  const w0 = today - 29*DAY;
+  let reach30 = 0;
+  for (const r of rows){
+    if (r.rpd == null) continue;
+    const ov = Math.round((Math.min(r.end, today) - Math.max(r.start, w0))/DAY) + 1;
+    if (ov > 0) reach30 += r.rpd * ov;
+  }
+
+  // --- evergreeny
+  const ev = rows.filter(r => r.days >= f.evDays).sort((a,b) => b.days - a.days);
+
+  // --- demografia (rozbicie zasięgu)
+  const age = {}, gender = {male: 0, female: 0, unknown: 0}, country = {}, cells = {};
+  let demoTotal = 0, demoAds = 0;
+  for (const r of rows){
+    if (!r.demo || !r.demo.length) continue;
+    demoAds++;
+    for (const c of r.demo) for (const g of (c.age_gender_breakdowns || [])){
+      const m = +g.male || 0, fe = +g.female || 0, u = +g.unknown || 0, t = m + fe + u;
+      age[g.age_range] = (age[g.age_range] || 0) + t;
+      const cell = cells[g.age_range] ||= {f: 0, m: 0, u: 0};
+      cell.f += fe; cell.m += m; cell.u += u;
+      gender.male += m; gender.female += fe; gender.unknown += u;
+      country[c.country] = (country[c.country] || 0) + t;
+      demoTotal += t;
+    }
+  }
+  const ageList = AGE_ORDER.map(k => [k, age[k] || 0]).concat(Object.keys(age).filter(k => !AGE_ORDER.includes(k)).map(k => [k, age[k]]));
+  const topAge = [...ageList].sort((a,b) => b[1] - a[1])[0];
+  const gKnown = gender.male + gender.female;
+
+  // --- targetowanie deklarowane + płatnicy
+  const tGen = {}, tAge = {}, tLoc = {}, tExc = {}, tType = {}, payers = {}, bens = {};
+  let tAds = 0, payAds = 0;
+  for (const r of rows){
+    if (r.payers.length){ payAds++; const ps = new Set(r.payers.map(p => p.payer).filter(Boolean)), bs = new Set(r.payers.map(p => p.ben).filter(Boolean)); ps.forEach(p => payers[p] = (payers[p] || 0) + 1); bs.forEach(b => bens[b] = (bens[b] || 0) + 1); }
+    if (!r.tAges && !r.tGender && !r.tLocs.length) continue;
+    tAds++;
+    if (r.tGender) tGen[r.tGender] = (tGen[r.tGender] || 0) + 1;
+    if (r.tAges) tAge[r.tAges] = (tAge[r.tAges] || 0) + 1;
+    for (const l of r.tLocs){ if (!l.name) continue; const bag = l.excluded ? tExc : tLoc; bag[l.name] = (bag[l.name] || 0) + 1; tType[l.name] = l.type; }
+  }
+
+  // --- przekaz: słowa, hasła, oferty, domeny, ścieżki, nagłówki, platformy
+  const words = {}, phrases = {}, offers = {}, domains = {}, paths = {}, linkTitles = {}, plat = {};
+  for (const r of rows){
+    const toks = (r.fullText.toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
+    const seenW = new Set(), seenP = new Set();
+    const ok = t => t.length >= 3 && !STOP.has(t) && !brandToks.has(t) && !/^\d+$/.test(t);
+    for (let i = 0; i < toks.length; i++){
+      const t = toks[i], nx = toks[i+1];
+      if (ok(t)) seenW.add(t);
+      if (nx && ok(t) && ok(nx)) seenP.add(`${t} ${nx}`);
+    }
+    seenW.forEach(w => words[w] = (words[w] || 0) + 1);
+    seenP.forEach(p => phrases[p] = (phrases[p] || 0) + 1);
+    for (const [name, re] of OFFERS) if (re.test(r.fullText)) offers[name] = (offers[name] || 0) + 1;
+    if (r.domain) domains[r.domain] = (domains[r.domain] || 0) + 1;
+    if (r.path) paths[(r.domain || "") + r.path] = (paths[(r.domain || "") + r.path] || 0) + 1;
+    if (r.title) linkTitles[r.title] = (linkTitles[r.title] || 0) + 1;
+    for (const p of r.platforms) plat[p] = (plat[p] || 0) + 1;
+  }
+  const withOffer = rows.filter(r => OFFERS.slice(0, 5).some(([,re]) => re.test(r.fullText))).length;
+
+  // --- copy
+  const bodies = rows.map(r => r.body).filter(Boolean);
+  const lens = bodies.map(b => b.length);
+  const share = re => bodies.length ? pct(bodies.filter(b => re.test(b)).length, bodies.length) : 0;
+  const discounts = [], prices = [];
+  let salesy = 0;
+  for (const r of rows){
+    const ds = [...r.fullText.matchAll(DISC_RE)].map(m => +(m[1] || m[2])).filter(v => v >= 5 && v <= 90);
+    if (ds.length) discounts.push(Math.max(...ds));
+    const ps = [...r.fullText.matchAll(PRICE_RE)].map(m => +m[1].replace(/[  ]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".")).filter(v => v >= 0.5 && v <= 100000);
+    if (ps.length) prices.push(Math.min(...ps));
+    if (ds.length || ps.length || OFFERS.slice(0, 5).some(([,re]) => re.test(r.fullText))) salesy++;
+  }
+  const copy = {
+    n: bodies.length, lenAvg: lens.length ? Math.round(mean(lens)) : null, lenMed: lens.length ? Math.round(median(lens)) : null,
+    emoji: share(EMOJI_RE), question: share(/\?/), excl: share(/!/), cta: share(CTA_RE), hashtag: share(/#[\p{L}\d]/u),
+    lenHist: bucket(lens, LEN_B), salesy, image: n - salesy
+  };
+  const priceStats = {
+    discAds: discounts.length, discPct: pct(discounts.length, n),
+    discAvg: discounts.length ? Math.round(mean(discounts)) : null, discMed: discounts.length ? Math.round(median(discounts)) : null, discMax: discounts.length ? Math.max(...discounts) : null,
+    discHist: bucket(discounts, DISC_B),
+    priceAds: prices.length, pricePct: pct(prices.length, n),
+    priceMed: prices.length ? median(prices) : null, priceMin: prices.length ? Math.min(...prices) : null, priceMax: prices.length ? Math.max(...prices) : null,
+    priceHist: bucket(prices, PRICE_B),
+    topDisc: rows.map(r => ({r, d: Math.max(0, ...[...r.fullText.matchAll(DISC_RE)].map(m => +(m[1] || m[2])).filter(v => v >= 5 && v <= 90))})).filter(x => x.d > 0).sort((a,b) => b.d - a.d).slice(0, 4).map(x => ({...x.r, disc: x.d}))
+  };
+
+  // --- testowanie kreacji
+  const finished = rows.filter(r => !r.active);
+  let concSum = 0, concMax = 0;
+  for (let d = today - 89 * DAY; d <= today; d += DAY){
+    let c = 0;
+    for (const r of rows) if (r.start <= d && r.end >= d) c++;
+    concSum += c; if (c > concMax) concMax = c;
+  }
+  const byStart = {};
+  for (const r of rows) (byStart[r.start] ||= []).push(r);
+  const startsYear = Object.keys(byStart).filter(k => +k > today - 365 * DAY);
+  const testing = {
+    killRate: finished.length ? pct(finished.filter(r => r.days <= 7).length, finished.length) : null,
+    lifeMed: finished.length ? Math.round(median(finished.map(r => r.days))) : null,
+    concAvg: Math.round(concSum / 90 * 10) / 10, concMax,
+    batchAvg: startsYear.length ? Math.round(startsYear.reduce((s,k) => s + byStart[k].length, 0) / startsYear.length * 10) / 10 : null,
+    dco: pct(rows.filter(r => r.dco).length, n),
+    ageActive: act.length ? Math.round(mean(act.map(r => r.days))) : null,
+    lifeHist: LIFE_B.map(([a,b,l]) => [l, rows.filter(r => r.days >= a && r.days <= b).length])
+  };
+
+  // --- koncepty i fale startów
+  const cmap = {};
+  for (const r of rows){
+    const k = conceptKey(r) || "(bez tekstu)";
+    const c = cmap[k] ||= {key: k, text: r.text || r.title || "(bez tekstu)", n: 0, active: 0, reach: 0, first: r.start, last: r.end, ids: []};
+    c.n++; if (r.active) c.active++; c.reach += r.reach || 0; c.first = Math.min(c.first, r.start); c.last = Math.max(c.last, r.end);
+    if (c.ids.length < 3) c.ids.push(r.id);
+  }
+  const concepts = Object.values(cmap).sort((a,b) => b.n - a.n || b.reach - a.reach);
+  const waves = Object.entries(byStart).filter(([,v]) => v.length >= 3).map(([k, v]) => {
+    const cc = {};
+    v.forEach(r => { const t = r.text || r.title; if (t) cc[t] = (cc[t] || 0) + 1; });
+    return {t: +k, n: v.length, reach: v.reduce((s,r) => s + (r.reach || 0), 0), text: topN(cc, 1)[0]?.[0] || "(bez tekstu)", variants: Object.keys(cc).length};
+  }).sort((a,b) => b.t - a.t);
+  const camp = {
+    concepts: concepts.length, concepts90: concepts.filter(c => c.last >= today - 89 * DAY).length,
+    perConcept: concepts.length ? Math.round(n / concepts.length * 10) / 10 : null,
+    top: concepts.slice(0, 10), waves, waves365: waves.filter(w => w.t > today - 365 * DAY).length
+  };
+
+  // --- kalendarz
+  const launches = {}, dow = [0,0,0,0,0,0,0];
+  for (const r of rows){ if (r.start > today - 371 * DAY){ launches[r.start] = (launches[r.start] || 0) + 1; } dow[r.dow]++; }
+
+  // --- efektywność zasięgu
+  const withRpd = rows.filter(r => r.rpd != null);
+  const eff = {
+    med: withRpd.length ? Math.round(median(withRpd.map(r => r.rpd))) : null,
+    top: [...withRpd].sort((a,b) => b.rpd - a.rpd).slice(0, 5),
+    points: withRpd.length > 500 ? withRpd.filter((_, i) => i % Math.ceil(withRpd.length / 500) === 0) : withRpd,
+    byMedia: {}
+  };
+
+  // --- media
+  const media = {};
+  if (mediaLoaded){
+    for (const r of rows) media[r.media || "OTHER"] = (media[r.media || "OTHER"] || 0) + 1;
+    for (const k of Object.keys(media)){ const v = withRpd.filter(r => (r.media || "OTHER") === k); if (v.length) eff.byMedia[k] = Math.round(median(v.map(r => r.rpd))); }
+  }
+
+  // --- indeks aktywności
+  const platUsed = Object.keys(plat).filter(k => plat[k] >= Math.max(1, n * 0.05)).length;
+  const parts = {
+    skala: lg(act.length, 150), zasieg: lg(dailyReach, 300000),
+    swiezosc: act.length ? Math.min(100, pct(act.filter(r => r.start > today - 30 * DAY).length, act.length) * 1.4) : 0,
+    testowanie: lg(camp.concepts90, 40), regularnosc: pct(months.filter(m => m.emitowane > 0).length, 12),
+    roznorodnosc: Math.min(100, platUsed / 4 * 60 + (mediaLoaded ? Object.keys(media).filter(k => media[k] >= Math.max(1, n * 0.05)).length / 3 * 40 : 20))
+  };
+  const index = Math.round(INDEX_PARTS.reduce((s, [k,,w]) => s + parts[k] * w, 0));
+
+  return {
+    rows, months, trend, dir, ev, mediaLoaded,
+    demo: {ageList, topAge, gender, gKnown, country, cells, demoTotal, demoAds},
+    targ: {tGen, tAge, tLoc, tExc, tType, tAds, payers, bens, payAds},
+    msg: {words: topN(words, 14), wordsAll: Object.fromEntries(topN(words, 400)), phrases: topN(Object.fromEntries(Object.entries(phrases).filter(([,v]) => v >= 2)), 8), offers, domains: topN(domains, 6), paths: topN(paths, 6), linkTitles: topN(Object.fromEntries(Object.entries(linkTitles).filter(([,v]) => v >= 2)), 6), plat, withOffer},
+    copy, prices: priceStats, testing, camp, cal: {launches, dow}, eff, media,
+    idx: {index, parts},
+    s: {
+      aktywne: act.length, lacznie: n, zZasiegiem: reaches.length,
+      sredniZasieg: reaches.length ? Math.round(mean(reaches)) : null,
+      medianaZasiegu: reaches.length ? Math.round(median(reaches)) : null,
+      sredniZasiegAktywnych: actReaches.length ? Math.round(mean(actReaches)) : null,
+      lacznyZasiegAktywnych: actReaches.length ? actReaches.reduce((a,b)=>a+b,0) : null,
+      sredniCzasEmisji: n ? Math.round(mean(rows.map(r => r.days))) : null,
+      n30, p30, n90, p90,
+      evergreeny: ev.length, evergreenyAktywne: ev.filter(r => r.active).length, evergreenyProc: pct(ev.length, n),
+      zOferta: withOffer, zOfertaProc: pct(withOffer, n),
+      dziennyZasieg: Math.round(dailyReach),
+      dzienMin: Math.round(dayMin), dzienMax: Math.round(dayMax), dzienSr: Math.round(dayMid),
+      miesMin: Math.round(dayMin*30), miesMax: Math.round(dayMax*30), miesSr: Math.round(dayMid*30),
+      ost30: Math.round(reach30 * fMid / 1000 * cMid),
+      wideo: mediaLoaded ? pct(media.VIDEO || 0, n) : null,
+      indeks: index,
+      zalozenia: `CPM ${o.cpmMin}–${o.cpmMax} PLN, częstotliwość ${o.freqMin}–${o.freqMax}${o.label ? ` (${o.label})` : ""}`
+    }
+  };
+}
+
+// ================================================================ reklamy społeczne / polityczne (prawdziwe wydatki)
+function analyzePolitical(ads){
+  const today = todayUTC;
+  const rng = v => v ? [+(v.lower_bound || 0), +(v.upper_bound || v.lower_bound || 0)] : [0, 0];
+  let spLo = 0, spHi = 0, imLo = 0, imHi = 0, active = 0;
+  const cur = {}, bylines = {}, demo = {}, regions = {}, months = {};
+  for (const a of ads){
+    const [sl, sh] = rng(a.spend), [il, ih] = rng(a.impressions);
+    spLo += sl; spHi += sh; imLo += il; imHi += ih;
+    const stop = toDay(a.ad_delivery_stop_time);
+    if (stop == null || stop >= today) active++;
+    if (a.currency) cur[a.currency] = (cur[a.currency] || 0) + 1;
+    if (a.bylines) bylines[a.bylines] = (bylines[a.bylines] || 0) + 1;
+    const w = (il + ih) / 2 || 1;
+    for (const d of (a.demographic_distribution || [])){ const k = `${d.age}|${d.gender}`; demo[k] = (demo[k] || 0) + (+d.percentage || 0) * w; }
+    for (const d of (a.delivery_by_region || [])) regions[d.region] = (regions[d.region] || 0) + (+d.percentage || 0) * w;
+    const st = a.ad_delivery_start_time ? a.ad_delivery_start_time.slice(0, 7) : null;
+    if (st) months[st] = (months[st] || 0) + (sl + sh) / 2;
+  }
+  const demoTot = Object.values(demo).reduce((a,b) => a+b, 0), regTot = Object.values(regions).reduce((a,b) => a+b, 0);
+  return {n: ads.length, active, spLo, spHi, imLo, imHi, currency: topN(cur, 1)[0]?.[0] || "",
+    bylines: topN(bylines, 4), demo: topN(demo, 8).map(([k,v]) => [k, pct(v, demoTot)]), regions: topN(regions, 8).map(([k,v]) => [k, pct(v, regTot)]),
+    months: Object.entries(months).sort((a,b) => a[0] < b[0] ? -1 : 1).slice(-12),
+    ads: ads.slice(0, 5).map(a => ({id: a.id, text: cleanTxt((a.ad_creative_bodies || [""])[0]).slice(0, 200), spend: rng(a.spend), start: (a.ad_delivery_start_time || "").slice(0, 10)}))};
+}
+
+// ================================================================ migawki i zmiany
+const SNAP_KEY = "metaAdsBotSnaps";
+const loadSnaps = () => { try { return JSON.parse(store.get(SNAP_KEY) || "{}"); } catch(e){ return {}; } };
+const snapKey = r => `${r.pageId}|${r.region.slice().sort().join(",")}|${r.langCode || ""}`;
+function handleSnapshot(res){
+  const snaps = loadSnaps(), key = snapKey(res), list = snaps[key] || [];
+  const now = Date.now();
+  const prev = [...list].reverse().find(s => now - s.ts > 20 * 3600 * 1000) || null;
+  const base = analyze(res.rowsAll, opts(), {days: 0, platform: "", media: "", activeOnly: false, evDays: 30}, res.pageName, res.mediaLoaded);
+  const snap = {ts: now, date: iso(todayUTC), active: res.rowsAll.filter(r => r.active).map(r => r.id), all: res.rowsAll.map(r => r.id),
+    ev: res.rowsAll.filter(r => r.days >= 30).map(r => r.id), s: {aktywne: base.s.aktywne, lacznie: base.s.lacznie, miesSr: base.s.miesSr, evergreeny: base.s.evergreeny, n30: base.s.n30, dziennyZasieg: base.s.dziennyZasieg}};
+  if (list.length && now - list[list.length - 1].ts < 20 * 3600 * 1000) list[list.length - 1] = snap; else list.push(snap);
+  snaps[key] = list.slice(-8);
+  if (!store.set(SNAP_KEY, JSON.stringify(snaps))){ const all = loadSnaps(); for (const k of Object.keys(all)) all[k] = all[k].slice(-3); all[key] = snaps[key].slice(-3); store.set(SNAP_KEY, JSON.stringify(all)); }
+  if (!prev) return {first: true, saved: snap.date};
+  const pAll = new Set(prev.all), pAct = new Set(prev.active), pEv = new Set(prev.ev || []);
+  return {
+    first: false, prevDate: prev.date, days: Math.round((todayUTC - toDay(prev.date)) / DAY),
+    newAds: res.rowsAll.filter(r => !pAll.has(r.id)).sort((a,b) => b.start - a.start),
+    ended: res.rowsAll.filter(r => pAct.has(r.id) && !r.active).sort((a,b) => b.end - a.end),
+    newEv: res.rowsAll.filter(r => r.days >= 30 && !pEv.has(r.id)),
+    now: snap.s, prev: prev.s
+  };
+}
+
+// ================================================================ wykresy
+const NODATA = `<div class="sub nodata">Brak danych.</div>`;
+const see = t => `<div class="see" data-k="x"><span>💡</span><div>${t}</div></div>`;
+const blk = (title, body, extra = "") => { const m = /^\[(\w)\]/.exec(title || ""); const k = m ? m[1] : ""; if (m) title = title.slice(3); return `<div class="blk ${extra}"${k ? ` data-k="${k}"` : ""}>${title ? `<h3>${title}</h3>` : ""}${body}</div>`; };
+const miniKpis = (a, b) => { const k = typeof a === "string" ? a : "", items = typeof a === "string" ? b : a; return `<div class="mkpis">${items.map(([v, l, kk]) => `<div class="mk"${(kk || k) ? ` data-k="${kk || k}"` : ""}><b>${v}</b><span>${l}</span></div>`).join("")}</div>`; };
+
+function donut(parts, {size = 136, thick = 22, center = "", sub = ""} = {}){
+  parts = parts.filter(p => p.value > 0);
+  const tot = parts.reduce((s,p) => s + p.value, 0);
+  if (!tot) return NODATA;
+  const c0 = size / 2, r = (size - thick) / 2, C = 2 * Math.PI * r;
+  let off = 0;
+  const segs = parts.map(p => {
+    const len = p.value / tot * C;
+    const s = `<circle r="${r}" cx="${c0}" cy="${c0}" fill="none" stroke="${p.color}" stroke-width="${thick}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"><title>${esc(p.label)}: ${pct(p.value, tot)}%</title></circle>`;
+    off += len; return s;
+  }).join("");
+  return `<div class="donutwrap">
+    <svg viewBox="0 0 ${size} ${size}" class="donut" style="width:${size}px;height:${size}px">
+      <g transform="rotate(-90 ${c0} ${c0})"><circle r="${r}" cx="${c0}" cy="${c0}" fill="none" stroke="var(--bg)" stroke-width="${thick}"/>${segs}</g>
+      ${center ? `<text x="${c0}" y="${c0 + (sub ? 0 : 6)}" text-anchor="middle" class="dc">${esc(center)}</text>` : ""}
+      ${sub ? `<text x="${c0}" y="${c0 + 17}" text-anchor="middle" class="ds">${esc(sub)}</text>` : ""}
+    </svg>
+    <div class="dleg">${parts.map(p => `<div><i style="background:${p.color}"></i><span>${esc(p.label)}</span><b>${pct(p.value, tot)}%</b></div>`).join("")}</div>
+  </div>`;
+}
+
+function colChart(items, {color = "var(--bar1)", unit = "", highlight = -1, h = 150} = {}){
+  const max = Math.max(1, ...items.map(x => x[1]));
+  if (!items.some(x => x[1] > 0)) return NODATA;
+  return `<div class="chart single" style="height:${h}px">${items.map(([l, v], i) => `<div class="col" title="${esc(l)}: ${fmt(v)}${unit}"><div class="n">${v ? fmt(v) : ""}</div>
+      <div class="bars"><div class="bar" style="height:${v / max * 100}%;background:${i === highlight ? "var(--c1)" : color}"></div></div></div>`).join("")}</div>
+    <div class="xl">${items.map(([l]) => `<span>${esc(l)}</span>`).join("")}</div>`;
+}
+
+function hbars(list, total, {labelW = 150} = {}){
+  if (!total || !list.length) return NODATA;
+  const max = Math.max(...list.map(x => x[1]), 1);
+  return list.map(([k,v]) => `<div class="hbar" style="grid-template-columns:${labelW}px 1fr 44px"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span class="pct">${pct(v,total)}%</span></div>`).join("");
+}
+
+function brandBars(list, getter, {fmtV = v => fmt(v), unit = "", note = ""} = {}){
+  const vals = list.map(r => getter(r));
+  if (!vals.some(v => v != null && v > 0)) return NODATA;
+  const max = Math.max(...vals.map(v => v || 0), 1);
+  return `<div class="bbars">${list.map((r, i) => { const v = vals[i]; return `<div class="bb"><span class="nm"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span>
+      <div class="track"><div class="fill" style="width:${(v || 0) / max * 100}%;background:${color(i)}"></div></div><b>${v == null ? "—" : fmtV(v) + unit}</b></div>`; }).join("")}</div>${note ? `<div class="note">${note}</div>` : ""}`;
+}
+
+function gauge(score, {size = 170, label = ""} = {}){
+  const cx = size / 2, cy = size * 0.56, r = size * 0.4, sw = size * 0.085;
+  const pt = a => [cx + r * Math.cos(Math.PI * (1 - a)), cy - r * Math.sin(Math.PI * (1 - a))];
+  const arc = (a0, a1) => { const [x0,y0] = pt(a0), [x1,y1] = pt(a1); return `M${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)}`; };
+  const col = score >= 81 ? "var(--good)" : score >= 61 ? "var(--c2)" : score >= 31 ? "var(--c5)" : "var(--bad)";
+  return `<svg viewBox="0 0 ${size} ${size * 0.66}" class="gauge" style="width:${size}px">
+    <path d="${arc(0, 1)}" fill="none" stroke="var(--bg)" stroke-width="${sw}" stroke-linecap="round"/>
+    ${score > 0 ? `<path d="${arc(0, Math.max(0.01, Math.min(1, score / 100)))}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"/>` : ""}
+    <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="gv">${score}</text>
+    <text x="${cx}" y="${cy + 14}" text-anchor="middle" class="gl">${esc(label || indexLabel(score))}</text>
+  </svg>`;
+}
+
+function heatCalendar(launches, ref, {weeks = 53} = {}){
+  const cell = 11, gap = 2, L = 22, T = 18;
+  const refDow = (new Date(ref).getUTCDay() + 6) % 7;
+  const start = ref - (refDow + (weeks - 1) * 7) * DAY;
+  const vals = Object.values(launches); const max = Math.max(1, ...vals);
+  const lvl = v => v === 0 ? -1 : Math.min(4, Math.ceil(v / max * 4));
+  const fills = ["var(--a1)", "var(--a2)", "var(--a3)", "var(--a5)", "var(--a6)"];
+  let cells = "", mlabels = "", lastM = -1;
+  for (let w = 0; w < weeks; w++){
+    for (let d = 0; d < 7; d++){
+      const t = start + (w * 7 + d) * DAY;
+      if (t > ref) continue;
+      const v = launches[t] || 0, l = lvl(v);
+      cells += `<rect x="${L + w * (cell + gap)}" y="${T + d * (cell + gap)}" width="${cell}" height="${cell}" rx="2" fill="${l < 0 ? "var(--bg)" : fills[l]}" ${l < 0 ? 'stroke="var(--line)" stroke-width=".6"' : ""}><title>${iso(t)}: ${v} nowych reklam</title></rect>`;
+    }
+    const m = new Date(start + w * 7 * DAY + 6 * DAY).getUTCMonth();
+    if (m !== lastM){ if (w > 0 || new Date(start).getUTCDate() <= 7) mlabels += `<text x="${L + w * (cell + gap)}" y="11" class="hl">${["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"][m]}</text>`; lastM = m; }
+  }
+  const kd = keyDatesAround(start, ref).map(k => { const w = Math.floor((k.t - start) / DAY / 7); const x = L + w * (cell + gap) + cell / 2;
+    return `<path d="M${x - 4},${T + 7 * (cell + gap) + 7} l4,-5 l4,5z" fill="var(--c1)"><title>${k.name} ${iso(k.t)}</title></path>`; }).join("");
+  const W = L + weeks * (cell + gap), H = T + 7 * (cell + gap) + 10;
+  return `<svg viewBox="0 0 ${W} ${H}" class="heat" style="width:100%;max-width:${W * 1.4}px">
+    ${mlabels}${[0,2,4].map(d => `<text x="0" y="${T + d * (cell + gap) + 9}" class="hl">${WEEKDAYS[d]}</text>`).join("")}${cells}${kd}</svg>
+    <div class="legend"><span>mniej</span>${fills.map(f => `<span><i style="background:${f}"></i></span>`).join("")}<span>więcej nowych reklam</span><span><i style="background:var(--c1);border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)"></i>ważne daty (Walentynki, Dzień Matki, Black Friday, Święta…)</span></div>`;
+}
+
+function scatter(points, {W = 640, H = 220} = {}){
+  if (points.length < 3) return NODATA;
+  const L = 68, R = 14, T = 12, B = 34;
+  const maxX = Math.max(10, ...points.map(p => p.x));
+  const ys = points.map(p => Math.max(1, p.y)); const minY = Math.max(1, Math.min(...ys)), maxY = Math.max(...ys) * 1.1;
+  const lmin = Math.log10(minY), lmax = Math.log10(maxY);
+  const X = v => L + (W - L - R) * (v / maxX), Y = v => T + (H - T - B) * (1 - (Math.log10(Math.max(1, v)) - lmin) / Math.max(0.0001, lmax - lmin));
+  const yt = []; for (let e = Math.floor(lmin); e <= Math.ceil(lmax); e++) if (10 ** e >= minY * 0.9 && 10 ** e <= maxY) yt.push(10 ** e);
+  const xt = [0, .25, .5, .75, 1].map(t => Math.round(maxX * t));
+  return `<svg class="lc" viewBox="0 0 ${W} ${H}">
+    ${yt.map(t => `<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L-6}" y="${Y(t)+4}" text-anchor="end">${fmtK(t)}</text>`).join("")}
+    ${xt.map(t => `<text x="${X(t)}" y="${H-16}" text-anchor="middle">${t}</text>`).join("")}
+    <text x="${(W + L) / 2}" y="${H-2}" text-anchor="middle">dni emisji →</text>
+    ${points.map(p => `<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="3.4" fill="${p.c}" fill-opacity=".7"><title>${esc(p.t || "")} · ${p.x} dni · zasięg ${fmt(p.y)}</title></circle>`).join("")}
+  </svg>`;
+}
+
+function stackArea100(keys, series){
+  const W = 640, H = 220, L = 36, R = 26, T = 10, B = 26;
+  const tot = keys.map((_, i) => series.reduce((s, x) => s + (x.values[i] || 0), 0));
+  if (!tot.some(v => v > 0)) return NODATA;
+  const step = (W - L - R) / (keys.length - 1), X = i => L + i * step, Y = v => T + (H - T - B) * (1 - v);
+  const cum = keys.map(() => 0);
+  const polys = series.map(s => {
+    const lo = cum.slice(), hi = keys.map((_, i) => (cum[i] += tot[i] ? (s.values[i] || 0) / tot[i] : 0));
+    const pts = hi.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).concat(lo.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).reverse());
+    return `<polygon points="${pts.join(" ")}" fill="${s.color}" fill-opacity=".85" stroke="var(--card)" stroke-width="1"><title>${esc(s.name)}</title></polygon>`;
+  }).join("");
+  return `<svg class="lc" viewBox="0 0 ${W} ${H}">${polys}
+    ${[0, .5, 1].map(t => `<text x="${L-6}" y="${Y(t)+4}" text-anchor="end">${t * 100}%</text>`).join("")}
+    ${keys.map((k, i) => `<text x="${X(i)}" y="${H-8}" text-anchor="middle">${k.slice(5)}.${k.slice(2,4)}</text>`).join("")}</svg>`;
+}
+
+function swimlanes(list, {weeks = 26} = {}){
+  const ref = todayUTC, refDow = (new Date(ref).getUTCDay() + 6) % 7, start = ref - (refDow + (weeks - 1) * 7) * DAY;
+  const L = 130, R = 12, T = 36, rowH = 30, W = 640, H = T + list.length * rowH + 8, step = (W - L - R) / weeks;
+  const data = list.map(r => { const w = new Array(weeks).fill(0); for (const [t, v] of Object.entries(r.cal.launches)){ const i = Math.floor((+t - start) / DAY / 7); if (i >= 0 && i < weeks) w[i] += v; } return w; });
+  const max = Math.max(1, ...data.flat());
+  let lastX = -1e9, lvl = 0;
+  const kd = keyDatesAround(start, ref).map(k => { const x = L + ((k.t - start) / DAY / 7) * step;
+    lvl = x - lastX < 90 ? 1 - lvl : 0; lastX = x;
+    return `<line x1="${x}" x2="${x}" y1="${T - 6 - lvl * 12}" y2="${H - 6}" stroke="var(--c1)" stroke-dasharray="3 3"/><text x="${x + 3}" y="${T - 10 - lvl * 12}" class="hl" style="fill:var(--c1)">${esc(k.name)}</text>`; }).join("");
+  const months = []; let lm = -1;
+  for (let w = 0; w < weeks; w++){ const m = new Date(start + w * 7 * DAY).getUTCMonth(); if (m !== lm){ months.push([w, m]); lm = m; } }
+  return `<svg class="lc" viewBox="0 0 ${W} ${H}">
+    ${months.map(([w, m]) => `<text x="${L + w * step}" y="${H}" class="hl">${["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"][m]}</text>`).join("")}
+    ${kd}
+    ${list.map((r, i) => `<text x="0" y="${T + i * rowH + rowH / 2 + 4}" class="sl">${esc(r.pageName.length > 18 ? r.pageName.slice(0, 17) + "…" : r.pageName)}</text>
+      <line x1="${L}" x2="${W - R}" y1="${T + i * rowH + rowH / 2}" y2="${T + i * rowH + rowH / 2}" stroke="var(--line)"/>
+      ${data[i].map((v, w) => v ? `<circle cx="${(L + (w + .5) * step).toFixed(1)}" cy="${T + i * rowH + rowH / 2}" r="${(2.5 + Math.sqrt(v / max) * 9).toFixed(1)}" fill="${color(i)}" fill-opacity=".8"><title>${esc(r.pageName)} · tydzień od ${iso(start + w * 7 * DAY)}: ${v} nowych reklam</title></circle>` : "").join("")}`).join("")}
+  </svg>`;
+}
+
+function diverging(items, {leftLabel = "", rightLabel = ""} = {}){
+  if (!items.length) return NODATA;
+  const max = Math.max(1, ...items.map(x => Math.abs(x.v)));
+  return `<div class="divg"><div class="dh"><span>${leftLabel}</span><span></span><span>${rightLabel}</span></div>
+    ${items.map(x => `<div class="dr"><div class="dl">${x.v < 0 ? `<div class="db neg" style="width:${Math.abs(x.v) / max * 100}%"></div>` : ""}</div>
+      <div class="dm">${esc(x.label)}<br><b>${x.v > 0 ? "+" : ""}${x.v.toFixed(1).replace(".", ",")} pp</b></div>
+      <div class="dl right">${x.v > 0 ? `<div class="db pos" style="width:${x.v / max * 100}%"></div>` : ""}</div></div>`).join("")}</div>`;
+}
+
+function pyramid(cells, total){
+  if (!total) return NODATA;
+  const rows = AGE_ORDER.filter(a => cells[a]).reverse();
+  const max = Math.max(1, ...rows.flatMap(a => [cells[a].f, cells[a].m]));
+  return `<div class="pyr"><div class="ph"><span>kobiety</span><span></span><span>mężczyźni</span></div>
+    ${rows.map(a => `<div class="pr"><div class="pl"><span>${pct(cells[a].f, total)}%</span><div class="pb f" style="width:${cells[a].f / max * 100}%"></div></div>
+      <div class="pm">${a}</div><div class="pl right"><div class="pb m" style="width:${cells[a].m / max * 100}%"></div><span>${pct(cells[a].m, total)}%</span></div></div>`).join("")}</div>`;
+}
+
+function genderBar(g){
+  const t = g.male + g.female + g.unknown;
+  if (!t) return NODATA;
+  return donut([{label: "kobiety", value: g.female, color: "var(--c3)"}, {label: "mężczyźni", value: g.male, color: "var(--c0)"}, {label: "nieznana", value: g.unknown, color: "var(--a7)"}], {size: 120, thick: 18, center: `${pct(g.female, g.female + g.male)}%`, sub: "kobiet"});
+}
+
+function lineChart(list){
+  const W = 640, H = 230, L = 36, R = 26, T = 12, B = 28;
+  const keys = list[0].months.map(m => m.key);
+  const maxV = Math.max(1, ...list.flatMap(r => r.months.map(m => m.emitowane)));
+  const step = (W - L - R) / (keys.length - 1);
+  const y = v => T + (H - T - B) * (1 - v / maxV);
+  const ticks = [...new Set([0, .25, .5, .75, 1].map(t => Math.round(maxV * t)))];
+  return `<svg class="lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="Emitowane reklamy miesięcznie">
+    ${ticks.map(t => `<line class="grid" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`).join("")}
+    ${keys.map((k,i) => `<text x="${L + i*step}" y="${H-8}" text-anchor="middle">${k.slice(5)}.${k.slice(2,4)}</text>`).join("")}
+    ${list.map((r, idx) => `<polyline fill="none" stroke="${color(idx)}" stroke-width="${r.isMain ? 3 : 2}" stroke-linejoin="round" points="${r.months.map((m,i) => `${(L + i*step).toFixed(1)},${y(m.emitowane).toFixed(1)}`).join(" ")}"/>
+        ${r.months.map((m,i) => `<circle cx="${L + i*step}" cy="${y(m.emitowane)}" r="${r.isMain ? 3.5 : 2.5}" fill="${color(idx)}"><title>${esc(r.pageName)} · ${m.key}: ${m.emitowane} emitowanych, ${m.nowe} nowych</title></circle>`).join("")}`).join("")}
+  </svg>`;
+}
+
+function shareBlock(list, getter, unit){
+  const total = list.reduce((s,r) => s + (getter(r) || 0), 0);
+  if (!total) return NODATA;
+  return `<div class="share">${list.map((r, idx) => ({r, idx})).sort((a,b) => (getter(b.r)||0) - (getter(a.r)||0)).map(({r, idx}) => {
+    const v = getter(r) || 0, p = v / total * 100;
+    return `<div class="nm" title="${esc(r.pageName)}"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>
+      <div class="track" title="${fmt(v)} ${unit}"><div class="fill" style="width:${p}%;background:${color(idx)}"></div></div>
+      <div class="pct">${p.toFixed(0)}%</div>`;
+  }).join("")}</div>`;
+}
+
+function ageStacks(list){
+  if (!list.some(r => r.demo.demoTotal)) return NODATA;
+  return list.map((r, idx) => {
+    const t = r.demo.demoTotal;
+    const bar = t ? AGE_ORDER.map((g, i) => { const v = (r.demo.ageList.find(x => x[0] === g) || [g,0])[1]; return v ? `<span style="width:${v/t*100}%;background:${ageColor(i)}" title="${g}: ${pct(v,t)}%">${v / t >= 0.09 ? pct(v,t) + "%" : ""}</span>` : ""; }).join("") : "";
+    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${bar}</div>` : `<div class="sub">brak danych</div>`}</div>`;
+  }).join("") + `<div class="legend">${AGE_ORDER.map((g,i) => `<span><i style="background:${ageColor(i)}"></i>${g}</span>`).join("")}</div>`;
+}
+
+function stack100(list, keys, getCounts, names, colors){
+  if (!list.some(r => Object.values(getCounts(r) || {}).some(v => v > 0))) return NODATA;
+  return list.map((r, idx) => {
+    const c = getCounts(r) || {}, t = Object.values(c).reduce((a,b) => a+b, 0);
+    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${keys.map(k => c[k] ? `<span style="width:${c[k]/t*100}%;background:${colors[k]}" title="${names[k]}: ${pct(c[k],t)}%">${c[k] / t >= 0.1 ? pct(c[k],t) + "%" : ""}</span>` : "").join("")}</div>` : `<div class="sub">brak danych</div>`}</div>`;
+  }).join("") + `<div class="legend">${keys.map(k => `<span><i style="background:${colors[k]}"></i>${names[k]}</span>`).join("")}</div>`;
+}
+
+// ================================================================ panele marki (ekran i PDF)
+const fmtK = n => n == null || isNaN(n) ? "—" : n >= 1e6 ? (n/1e6).toFixed(1).replace(".", ",") + " mln" : n >= 1e4 ? (n/1e3).toFixed(1).replace(".", ",") + " tys." : fmt(n);
+const fmtZl = v => v == null ? "—" : (v >= 100 ? fmt(v) : String(Math.round(v * 100) / 100).replace(".", ",")) + " zł";
+const filterLabel = () => {
+  const f = filters(), parts = [];
+  if (f.days) parts.push(`ostatnie ${f.days} dni`);
+  if (f.platform) parts.push(PLATFORM_NAMES[f.platform]);
+  if (f.media) parts.push(MEDIA_NAMES[f.media]);
+  if (f.activeOnly) parts.push("tylko aktywne");
+  return parts.join(", ");
+};
+const BRAND_TABS = [["overview","Przegląd"],["creative","Kreacje i testy"],["campaigns","Kampanie"],["message","Przekaz"],["offers","Oferty i ceny"],["audience","Odbiorcy"],["calendar","Kalendarz"],["changes","Zmiany"],["social","Społeczne i polityczne"]];
+const CMP_TABS = [["recs","Wnioski i rekomendacje"],["sov","Udział w głosie"],["creative","Kreacje i testy"],["message","Przekaz i oferty"],["audience","Odbiorcy"],["calendar","Kalendarz"],["ranks","Rankingi i indeks"]];
+
+function adLine(r, extra = ""){
+  return `<div class="ad">
+    <div><div class="t">${esc(r.text || r.title) || "<i>(bez tekstu)</i>"}</div>
+    <a href="https://www.facebook.com/ads/library/?id=${esc(r.id)}" target="_blank" rel="noopener">Zobacz w Bibliotece Reklam</a>${r.media ? ` <span class="mtag">${esc(MEDIA_NAMES[r.media] || "")}</span>` : ""}${extra}</div>
+    <div class="m">${r.active ? "aktywna" : "zakończona"} · ${r.days} dni<br>od ${iso(r.start)}${r.stop && !r.active ? ` do ${iso(r.stop)}` : ""}<br>zasięg ${fmt(r.reach)}</div>
+  </div>`;
+}
+function brandHead(res, idx){
+  const fl = filterLabel();
+  return `<div class="title-row">
+      <div>
+        <h2><span class="dot" style="background:${color(idx)}"></span>${esc(res.pageName)}${res.isMain ? '<span class="tag">Twoja marka</span>' : '<span class="tag">konkurent</span>'}</h2>
+        <div class="sub">Zapytanie: „${esc(res.brand)}” · page_id ${esc(res.pageId)} · emisja: ${esc(regionLabel(res.region))}${res.lang ? ` · język: ${esc(res.lang)}` : ""} · ${iso(todayUTC)}${fl ? ` · filtr: ${esc(fl)}` : ""}</div>
+      </div>
+      <span class="pill ${res.dir}" data-k="p">Tendencja: ${esc(res.trend)}</span>
+    </div>`;
+}
+function secKpis(res){
+  const s = res.s, f = filters(), fl = filterLabel();
+  return `<div class="kpis">
+      <div class="kpi" data-k="d"><div class="v">${fmt(s.aktywne)}</div><div class="l">aktywne reklamy</div></div>
+      <div class="kpi" data-k="d"><div class="v">${fmt(s.lacznie)}</div><div class="l">reklamy ${fl ? "w wybranym zakresie" : "w bibliotece"}</div></div>
+      <div class="kpi" data-k="c"><div class="v">${fmtK(s.sredniZasieg)}</div><div class="l">średni zasięg reklamy (mediana ${fmtK(s.medianaZasiegu)})</div></div>
+      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.miesSr)} zł</div><div class="l">szacowany koszt / mies.</div></div>
+      <div class="kpi" data-k="c"><div class="v">${fmt(s.evergreeny)}</div><div class="l">evergreeny (≥${f.evDays} dni)</div></div>
+    </div>`;
+}
+function secTrend(res){
+  const s = res.s, months = res.months;
+  const maxE = Math.max(1, ...months.map(m => Math.max(m.emitowane, m.nowe)));
+  return `<div class="trendline"><span>Nowe reklamy — 30 dni: <b>${s.n30}</b> (wcześniej ${s.p30})</span><span>90 dni: <b>${s.n90}</b> (wcześniej ${s.p90})</span></div>
+    <div class="chart">
+      ${months.map(m => `<div class="col" title="${m.key}: emitowane ${m.emitowane}, nowe ${m.nowe}">
+        <div class="n">${m.emitowane || ""}</div>
+        <div class="bars"><div class="bar a" style="height:${m.emitowane/maxE*100}%"></div><div class="bar b" style="height:${m.nowe/maxE*100}%"></div></div></div>`).join("")}
+    </div>
+    <div class="xl">${months.map(m => `<span>${m.key.slice(5)}.${m.key.slice(2,4)}</span>`).join("")}</div>
+    <div class="legend"><span><i style="background:var(--bar1)"></i>emitowane w miesiącu</span><span><i style="background:var(--bar2)"></i>nowe w miesiącu</span></div>`;
+}
+function secCost(res){
+  const s = res.s;
+  return `<div class="grid costgrid">
+      <div class="kpi"><div class="cost">${fmt(s.dzienMin)}–${fmt(s.dzienMax)} zł</div><div class="l">dziennie (środek ~${fmt(s.dzienSr)} zł)</div></div>
+      <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie (środek ~${fmt(s.miesSr)} zł)</div></div>
+      <div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>
+    </div>
+    <div class="note">Estymacja, nie dane Meta: dzienny zasięg aktywnych reklam (~${fmt(s.dziennyZasieg)} osób) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}.</div>`;
+}
+function indexBlock(res, {compact = false} = {}){
+  const p = res.idx.parts;
+  return `<div class="idxwrap">${gauge(res.idx.index, {size: compact ? 140 : 170})}
+    <div class="idxparts">${INDEX_PARTS.map(([k, l]) => `<div class="hbar" style="grid-template-columns:minmax(150px,210px) 1fr 30px;font-size:12.5px"><span>${l}</span><div class="track"><div class="fill" style="width:${p[k]}%"></div></div><span class="pct">${Math.round(p[k])}</span></div>`).join("")}</div></div>`;
+}
+function brandBullets(r){
+  const out = [], s = r.s, t = r.testing, pr = r.prices, cp = r.camp;
+  out.push(`Tendencja: <b>${esc(r.trend)}</b>; ${s.n30} nowych reklam w 30 dni.`);
+  if (t.killRate != null) out.push(`${t.killRate}% zakończonych reklam wyłączono w ciągu 7 dni${t.killRate >= 40 ? " — intensywnie testują i szybko odcinają słabe kreacje" : t.killRate <= 10 ? " — reklamy działają długo, mało testów" : ""}.`);
+  if (cp.top[0]) out.push(`Najczęstszy koncept: „${esc(cp.top[0].text.slice(0, 80))}${cp.top[0].text.length > 80 ? "…" : ""}” (${cp.top[0].n} reklam).`);
+  if (pr.discAds) out.push(`Rabaty w ${pr.discPct}% reklam, średnio −${pr.discAvg}% (maks. −${pr.discMax}%).`);
+  if (r.mediaLoaded && r.media) out.push(`Wideo to ${s.wideo}% reklam.`);
+  if (r.demo.demoTotal) out.push(`Najwięcej zasięgu: ${esc(r.demo.topAge[0])} (${pct(r.demo.topAge[1], r.demo.demoTotal)}%)${r.demo.gKnown ? `, kobiety ${pct(r.demo.gender.female, r.demo.gKnown)}%` : ""}.`);
+  if (r.changes && !r.changes.first) out.push(`Od ${r.changes.prevDate}: +${r.changes.newAds.length} nowych reklam, ${r.changes.ended.length} wyłączonych.`);
+  if (r.pol && r.pol.n) out.push(`Ma ${r.pol.n} reklam społecznych/politycznych — wydatki ${fmt(r.pol.spLo)}–${fmt(r.pol.spHi)} ${esc(r.pol.currency)} (dane Meta).`);
+  return `<ul class="lines">${out.map(x => `<li>${x}</li>`).join("")}</ul>`;
+}
+
+const P = {};
+P.overview = (r, idx, pdf) => {
+  const others = (r.cands || []).filter(c => c.id !== r.pageId).slice(0, 6);
+  const top = r.rows.filter(x => x.active).sort((a,b) => (b.reach||0) - (a.reach||0)).slice(0, pdf ? 4 : 6);
+  return `${pdf ? "" : brandHead(r, idx)}
+    <div style="margin-top:14px">${secKpis(r)}</div>
+    <div class="two">
+      ${blk("[p]Indeks aktywności reklamowej (0–100)", indexBlock(r) + `<div class="note">Łączy skalę, zasięg, świeżość, testowanie, regularność i różnorodność. Porównuj marki między sobą.</div>`)}
+      ${blk("[x]Najważniejsze w skrócie", brandBullets(r))}
+    </div>
+    ${blk("[c]Tendencja (12 miesięcy)", secTrend(r))}
+    ${blk("[p]Szacowany aktualny koszt", secCost(r))}
+    ${blk("[d]Największe aktywne reklamy (wg zasięgu)", top.length ? top.map(x => adLine(x)).join("") : `<div class="sub">Brak aktywnych reklam.</div>`)}
+    ${!pdf && others.length ? `<div class="cands"><div class="hint">Zła strona? Inne znalezione dla „${esc(r.brand)}” (kliknij, żeby podmienić):</div>
+      ${others.map(c => `<button class="ghost" data-swap="${r.uid}" data-id="${esc(c.id)}">${esc(c.name)} · ${c.count}</button>`).join("")}</div>` : ""}
+    ${r.demoMissing ? `<div class="note">Demografia i targetowanie niedostępne dla tego zapytania — pobrano dane podstawowe.</div>` : ""}`;
+};
+P.creative = (r, idx, pdf) => {
+  const t = r.testing, f = filters();
+  const killTxt = t.killRate == null ? "Brak zakończonych reklam do oceny testowania." : `${t.killRate}% zakończonych reklam działało maks. 7 dni. ${t.killRate >= 40 ? "To intensywne testowanie — słabe kreacje są szybko wyłączane." : t.killRate <= 10 ? "Reklamy rzadko są wyłączane szybko — mało testów A/B albo długie kampanie." : "Umiarkowane testowanie."} Średnio ${String(t.concAvg).replace(".", ",")} reklam działa jednocześnie.`;
+  const mediaParts = Object.keys(MEDIA_NAMES).map(k => ({label: MEDIA_NAMES[k], value: r.media[k] || 0, color: MEDIA_COLORS[k]}));
+  const platParts = topN(r.msg.plat, 6).map(([k, v]) => ({label: PLATFORM_NAMES[k] || k, value: v, color: PLAT_COLORS[k] || "var(--a7)"}));
+  const pts = r.eff.points.map(x => ({x: x.days, y: x.reach, c: x.active ? "var(--accent)" : "var(--a7)", t: (x.text || x.title || "").slice(0, 60)}));
+  return `${see(killTxt)}
+    ${miniKpis("c", [[t.killRate == null ? "—" : t.killRate + "%", "wyłączonych w ≤7 dni"], [t.lifeMed == null ? "—" : t.lifeMed + " dni", "mediana życia zakończonych"], [String(t.concAvg).replace(".", ","), `średnio aktywnych naraz (maks. ${t.concMax})`], [t.batchAvg == null ? "—" : String(t.batchAvg).replace(".", ","), "nowych reklam na dzień startu"], [t.dco + "%", "z wieloma wariantami tekstu (DCO)"], [t.ageActive == null ? "—" : t.ageActive + " dni", "średni wiek aktywnych reklam"]])}
+    <div class="two">
+      ${blk("[d]Formaty reklam", r.mediaLoaded ? donut(mediaParts, {center: `${r.s.wideo}%`, sub: "wideo"}) : `<div class="sub">Typ mediów nie był pobierany — włącz „Pobieraj typ mediów” w ustawieniach.</div>`)}
+      ${blk("[d]Platformy", donut(platParts, {center: String(Object.keys(r.msg.plat).length), sub: "platformy"}) + `<div class="note">Udział w łącznej liczbie umieszczeń (reklama może być na kilku).</div>`)}
+    </div>
+    ${blk("[c]Jak długo żyją reklamy", colChart(t.lifeHist, {color: "var(--c4)"}) + `<div class="note">Liczba reklam wg długości emisji. Dużo krótkich = testowanie; dużo długich = sprawdzone kreacje.</div>`)}
+    ${blk("[c]Efektywność zasięgu: dni emisji vs zasięg", scatter(pts) + `<div class="legend"><span><i style="background:var(--accent)"></i>aktywne</span><span><i style="background:var(--a7)"></i>zakończone</span><span>oś Y logarytmiczna</span></div>
+      <h3>Najszybciej zbierające zasięg (zasięg na dzień)</h3>${r.eff.top.length ? r.eff.top.map(x => adLine(x, `<span class="evbadge">${fmtK(Math.round(x.rpd))} / dzień</span>`)).join("") : NODATA}
+      ${r.mediaLoaded && Object.keys(r.eff.byMedia).length ? `<div class="note">Mediana zasięgu na dzień wg formatu: ${Object.entries(r.eff.byMedia).map(([k, v]) => `${MEDIA_NAMES[k]} ${fmtK(v)}`).join(" · ")}.</div>` : ""}`)}
+    ${blk(`[c]Evergreeny — najdłużej działające (≥${f.evDays} dni)`, `<div class="note" style="margin-top:0">${r.s.evergreeny} reklam (${r.s.evergreenyProc}%), ${r.s.evergreenyAktywne} wciąż aktywnych. Takie reklamy zwykle dowożą wyniki — warto podejrzeć przekaz i kreację.</div>
+      ${r.ev.length ? r.ev.slice(0, pdf ? 5 : 8).map(x => adLine(x, x.active ? '<span class="evbadge">wciąż aktywna</span>' : "")).join("") : `<div class="sub">Brak reklam emitowanych ${f.evDays}+ dni.</div>`}
+      ${r.ev.length > (pdf ? 5 : 8) ? `<div class="hint">+ ${r.ev.length - (pdf ? 5 : 8)} kolejnych w Excelu (zakładka „Evergreeny”).</div>` : ""}`)}`;
+};
+P.campaigns = (r) => {
+  const c = r.camp, maxN = Math.max(1, ...c.top.map(x => x.n));
+  return `${see(`${c.concepts} unikalnych konceptów (tekstów) w ${r.s.lacznie} reklamach — średnio ${String(c.perConcept ?? "—").replace(".", ",")} reklamy na koncept. ${c.waves365} fal startów (≥3 reklamy jednego dnia) w ostatnim roku.`)}
+    ${miniKpis("p", [[fmt(c.concepts), "konceptów kreatywnych"], [fmt(c.concepts90), "aktywnych w 90 dni"], [String(c.perConcept ?? "—").replace(".", ","), "reklam na koncept"], [fmt(c.waves365), "fal startów w roku"]])}
+    ${blk("[p]Najczęściej używane koncepty", c.top.length ? c.top.map(x => `<div class="concept"><div class="ct"><div class="t">${esc(x.text)}</div>
+        <div class="cbar"><div style="width:${x.n / maxN * 100}%"></div></div>
+        <div class="sub">${x.n} reklam · ${x.active} aktywnych · zasięg ${fmtK(x.reach)} · ${iso(x.first)} → ${iso(x.last)} · <a href="https://www.facebook.com/ads/library/?id=${esc(x.ids[0])}" target="_blank" rel="noopener">przykład</a></div></div></div>`).join("") : NODATA)
+      + `<div class="note">Koncept = reklamy z tym samym tekstem głównym (różne grafiki, formaty i zestawy reklam liczą się razem).</div>`}
+    ${blk("[p]Fale startów kampanii", c.waves.length ? `<div class="waves">${c.waves.slice(0, 12).map(w => `<div class="wave"><div class="wd">${iso(w.t)}<br><span class="sub">${WEEKDAYS_FULL[(new Date(w.t).getUTCDay() + 6) % 7]}</span></div>
+        <div class="wb"><div style="width:${Math.min(100, w.n / Math.max(...c.waves.map(x => x.n)) * 100)}%"></div></div><div class="wn"><b>${w.n}</b> reklam · ${w.variants} wariant${w.variants === 1 ? "" : "ów"} tekstu<br><span class="sub">${esc(w.text.slice(0, 90))}${w.text.length > 90 ? "…" : ""}</span></div></div>`).join("")}</div>` : `<div class="sub">Brak dni z co najmniej 3 nowymi reklamami.</div>`)}`;
+};
+P.message = (r) => {
+  const c = r.copy, msg = r.msg, n = r.rows.length;
+  const tone = c.salesy >= c.image ? "sprzedażowy" : "wizerunkowy / informacyjny";
+  return `${see(`Ton komunikacji: <b>${tone}</b> (${pct(c.salesy, n)}% reklam z ofertą, ceną lub rabatem). Średnia długość tekstu ${c.lenAvg ?? "—"} znaków; wezwanie do działania w ${c.cta}% reklam, emoji w ${c.emoji}%.`)}
+    ${miniKpis("p", [[c.lenAvg ?? "—", "średnia długość (znaki)"], [c.cta + "%", "z wezwaniem do działania"], [c.emoji + "%", "z emoji"], [c.question + "%", "z pytaniem"], [c.excl + "%", "z wykrzyknikiem"], [c.hashtag + "%", "z hashtagiem"]])}
+    <div class="two">
+      ${blk("[p]Ton reklam", donut([{label: "sprzedażowy (oferta, cena, rabat)", value: c.salesy, color: "var(--c1)"}, {label: "wizerunkowy / informacyjny", value: c.image, color: "var(--c4)"}], {center: pct(c.salesy, n) + "%", sub: "sprzedaż"}))}
+      ${blk("[c]Długość tekstów", colChart(c.lenHist, {color: "var(--c6)", h: 120}))}
+    </div>
+    <div class="two">
+      ${blk("[c]Najczęstsze słowa (w ilu reklamach)", (msg.words.length ? `<div class="wordchips">${msg.words.map(([w,k]) => `<span class="wc">${esc(w)}<b>${k}</b></span>`).join("")}</div>` : NODATA)
+        + (msg.phrases.length ? `<h3>Powtarzające się hasła</h3><div class="wordchips">${msg.phrases.map(([w,k]) => `<span class="wc alt">${esc(w)}<b>${k}</b></span>`).join("")}</div>` : ""))}
+      ${blk("[p]Mechaniki w tekstach", hbars(OFFERS.map(([name]) => [name, msg.offers[name] || 0]).filter(x => x[1] > 0), n, {labelW: 170}) || NODATA)}
+    </div>
+    <div class="two">
+      ${blk("[d]Strony docelowe", (msg.domains.length ? hbars(msg.domains, n, {labelW: 170}) : NODATA)
+        + (msg.paths.length ? `<h3>Podstrony (gdy widoczne w linku)</h3><ul class="lines">${msg.paths.map(([p, k]) => `<li>${esc(p)} — ${k} reklam</li>`).join("")}</ul>` : `<div class="note">Meta API nie udostępnia pełnych adresów docelowych — widać domenę z linku wyświetlanego w reklamie.</div>`))}
+      ${blk("[d]Najczęstsze nagłówki pod grafiką", msg.linkTitles.length ? `<ul class="lines">${msg.linkTitles.map(([t, k]) => `<li>${esc(t)} — ${k} reklam</li>`).join("")}</ul>` : NODATA)}
+    </div>`;
+};
+P.offers = (r) => {
+  const p = r.prices;
+  return `${see(p.discAds ? `Rabat procentowy pojawia się w <b>${p.discPct}%</b> reklam — średnio <b>−${p.discAvg}%</b>, najczęściej w przedziale ${[...p.discHist].sort((a,b) => b[1]-a[1])[0][0]}. ${p.priceAds ? `Ceny w ${p.pricePct}% reklam, mediana ${fmtZl(p.priceMed)}.` : "Ceny kwotowe pojawiają się rzadko."}` : `W tekstach nie ma rabatów procentowych. ${p.priceAds ? `Ceny w ${p.pricePct}% reklam, mediana ${fmtZl(p.priceMed)}.` : ""}`)}
+    ${miniKpis("p", [[p.discPct + "%", "reklam z rabatem %"], [p.discAvg == null ? "—" : "−" + p.discAvg + "%", "średni rabat"], [p.discMax == null ? "—" : "−" + p.discMax + "%", "najwyższy rabat"], [p.pricePct + "%", "reklam z ceną"], [fmtZl(p.priceMed), "mediana ceny"], [p.priceMin == null ? "—" : `${fmtZl(p.priceMin)} – ${fmtZl(p.priceMax)}`, "zakres cen"]])}
+    <div class="two">
+      ${blk("[p]Głębokość rabatów", colChart(p.discHist, {color: "var(--c1)", h: 130}))}
+      ${blk("[p]Poziomy cen w reklamach", colChart(p.priceHist, {color: "var(--c2)", h: 130}) + `<div class="note">Najniższa cena z każdej reklamy (także progi typu „darmowa dostawa od 99 zł”).</div>`)}
+    </div>
+    ${blk("[p]Mechaniki promocyjne", hbars(OFFERS.map(([name]) => [name, r.msg.offers[name] || 0]).filter(x => x[1] > 0), r.rows.length, {labelW: 190}) || NODATA)}
+    ${blk("[p]Reklamy z najwyższym rabatem", p.topDisc.length ? p.topDisc.map(x => adLine(x, `<span class="evbadge" style="color:var(--c1)">−${x.disc}%</span>`)).join("") : NODATA)}`;
+};
+P.audience = (r) => {
+  const {demo, targ} = r;
+  const tGenTotal = Object.values(targ.tGen).reduce((a,b) => a+b, 0);
+  const locs = topN(targ.tLoc, 8), exc = topN(targ.tExc, 6);
+  return `${demo.demoTotal ? see(`Najwięcej zasięgu w grupie <b>${esc(demo.topAge[0])}</b> (${pct(demo.topAge[1], demo.demoTotal)}%); kobiety to ${pct(demo.gender.female, demo.gKnown)}% zasięgu. Dane z ${demo.demoAds} reklam emitowanych w UE.`) : ""}
+    <div class="two">
+      ${blk("[d]Zasięg wg wieku i płci", pyramid(demo.cells, demo.demoTotal))}
+      ${blk("[d]Płeć", genderBar(demo.gender) + `<h3>Kraje (zasięg)</h3>` + (demo.demoTotal ? hbars(topN(demo.country, 5).map(([k,v]) => [ALL_COUNTRIES[k] || k, v]), demo.demoTotal, {labelW: 120}) : NODATA))}
+    </div>
+    <div class="two">
+      ${blk("[d]Targetowanie ustawione przez reklamodawcę", targ.tAds ? `<ul class="lines">
+          ${topN(targ.tAge, 4).map(([k,v]) => `<li>Wiek ${esc(k)}: <b>${pct(v, targ.tAds)}%</b> reklam</li>`).join("")}
+          ${topN(targ.tGen, 3).map(([k,v]) => `<li>Płeć „${esc(GENDER_PL[k] || k)}”: <b>${pct(v, tGenTotal)}%</b> reklam</li>`).join("")}
+        </ul><div class="note">Na podstawie ${targ.tAds} reklam z danymi targetowania (UE).</div>` : `<div class="sub">Brak danych targetowania (włącz „Pobieraj demografię i targetowanie”).</div>`)}
+      ${blk("[d]Lokalizacje targetowania", (locs.length ? hbars(locs.map(([k, v]) => [`${k}${targ.tType[k] ? ` (${({countries:"kraj",regions:"region",cities:"miasto",zips:"kod",places:"miejsce"})[targ.tType[k]] || targ.tType[k]})` : ""}`, v]), targ.tAds, {labelW: 170}) : NODATA)
+        + (exc.length ? `<h3>Wykluczone</h3>${hbars(exc, targ.tAds, {labelW: 170})}` : ""))}
+    </div>
+    ${blk("[d]Kto płaci i kto jest beneficjentem", targ.payAds ? `<div class="two"><div><div class="sub">Płatnik</div><ul class="lines">${topN(targ.payers, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div>
+      <div><div class="sub">Beneficjent</div><ul class="lines">${topN(targ.bens, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div></div>
+      <div class="note">Dane wymagane w UE (DSA). Jeśli płatnik różni się od marki, często jest to agencja lub dom mediowy.</div>` : `<div class="sub">Brak danych o płatniku (pole dostępne dla reklam emitowanych w UE).</div>`)}`;
+};
+P.calendar = (r) => {
+  const dowMax = r.cal.dow.indexOf(Math.max(...r.cal.dow));
+  const tot = r.cal.dow.reduce((a,b) => a+b, 0);
+  const kd = keyDatesAround(todayUTC - 365 * DAY, todayUTC);
+  const near = kd.map(k => { const w = r.camp.waves.filter(x => x.t >= k.t - 30 * DAY && x.t <= k.t); const nAds = r.rows.filter(x => x.start >= k.t - 30 * DAY && x.start <= k.t).length; return {k, w, nAds, lead: w.length ? Math.round((k.t - Math.min(...w.map(x => x.t))) / DAY) : null}; }).filter(x => x.nAds > 0);
+  return `${tot ? see(`Najwięcej reklam startuje w <b>${WEEKDAYS_FULL[dowMax]}</b> (${pct(r.cal.dow[dowMax], tot)}% startów).${near.length ? ` Wokół ważnych dat: ${near.slice(-3).map(x => `${x.k.name} — ${x.nAds} reklam${x.lead != null ? `, start ~${x.lead} dni wcześniej` : ""}`).join("; ")}.` : ""}`) : ""}
+    ${blk("[d]Kalendarz startów reklam (ostatni rok)", heatCalendar(r.cal.launches, todayUTC))}
+    <div class="two">
+      ${blk("[c]Dzień tygodnia startu", colChart(r.cal.dow.map((v, i) => [WEEKDAYS[i], v]), {color: "var(--c6)", highlight: dowMax, h: 120}))}
+      ${blk("[c]Nowe reklamy miesiąc po miesiącu", colChart(r.months.map(m => [`${m.key.slice(5)}.${m.key.slice(2,4)}`, m.nowe]), {color: "var(--bar1)", h: 120}))}
+    </div>
+    ${blk("[c]Aktywność przed ważnymi datami (30 dni przed)", near.length ? `<ul class="lines">${near.map(x => `<li><b>${x.k.name}</b> (${iso(x.k.t)}): ${x.nAds} nowych reklam${x.w.length ? `, ${x.w.length} ${x.w.length === 1 ? "fala" : x.w.length < 5 ? "fale" : "fal"} startów, pierwsza ~${x.lead} dni przed` : ""}</li>`).join("")}</ul>` : `<div class="sub">Brak nowych reklam w okresach przed ważnymi datami w ostatnim roku.</div>`)}`;
+};
+P.changes = (r) => {
+  const c = r.changes;
+  if (!c) return NODATA;
+  if (c.first) return see(`To pierwsza analiza tej strony na tym obszarze — zapisano migawkę z ${c.saved}. Przy kolejnej analizie (najwcześniej jutro) zobaczysz tu, co się zmieniło: nowe i wyłączone reklamy, zmianę budżetu i nowe evergreeny.`);
+  const d = (a, b, f = fmt, u = "") => { const x = a - b; return `<span class="${x > 0 ? "up" : x < 0 ? "down" : ""}">${x > 0 ? "+" : ""}${f(x)}${u}</span>`; };
+  return `${see(`Porównanie z migawką z <b>${c.prevDate}</b> (${c.days} dni temu): <b>+${c.newAds.length}</b> nowych reklam, <b>${c.ended.length}</b> wyłączonych, aktywnych ${d(c.now.aktywne, c.prev.aktywne)}, szacowany koszt ${d(c.now.miesSr, c.prev.miesSr, fmtK, " zł")}/mies.`)}
+    ${miniKpis("c", [[`${fmt(c.now.aktywne)} <small>${d(c.now.aktywne, c.prev.aktywne)}</small>`, "aktywne reklamy"], [`${fmtK(c.now.miesSr)} zł <small>${d(c.now.miesSr, c.prev.miesSr, fmtK)}</small>`, "szac. koszt / mies."], [`+${c.newAds.length}`, "nowe reklamy"], [String(c.ended.length), "wyłączone reklamy"], [`+${c.newEv.length}`, "nowe evergreeny (30+ dni)"]])}
+    <div class="two">
+      ${blk(`[d]Nowe reklamy (${c.newAds.length})`, c.newAds.length ? c.newAds.slice(0, 8).map(x => adLine(x)).join("") + (c.newAds.length > 8 ? `<div class="hint">+ ${c.newAds.length - 8} kolejnych w Excelu (zakładka „Zmiany”).</div>` : "") : `<div class="sub">Brak.</div>`)}
+      ${blk(`[d]Wyłączone reklamy (${c.ended.length})`, c.ended.length ? c.ended.slice(0, 8).map(x => adLine(x)).join("") : `<div class="sub">Brak.</div>`)}
+    </div>`;
+};
+P.social = (r) => {
+  if (!r.polLoaded) return `<div class="sub">Nie sprawdzano — włącz „Sprawdzaj reklamy społeczne i polityczne” w ustawieniach.</div>`;
+  const p = r.pol;
+  if (!p || !p.n) return see("Ta strona nie emitowała reklam społecznych, wyborczych ani politycznych na wybranym obszarze. Dla takich reklam Meta publikuje prawdziwe wydatki i wyświetlenia (w przedziałach).");
+  return `${see(`${p.n} reklam społecznych/politycznych (${p.active} aktywnych). Tu Meta podaje <b>prawdziwe dane</b>: wydatki ${fmt(p.spLo)}–${fmt(p.spHi)} ${esc(p.currency)}, wyświetlenia ${fmtK(p.imLo)}–${fmtK(p.imHi)}.`)}
+    ${miniKpis("d", [[fmt(p.n), "reklam"], [`${fmtK(p.spLo)}–${fmtK(p.spHi)}`, `wydatki (${esc(p.currency)})`], [`${fmtK(p.imLo)}–${fmtK(p.imHi)}`, "wyświetlenia"], [fmt(p.active), "aktywnych"]])}
+    <div class="two">
+      ${blk("[d]Wydatki wg miesiąca startu", colChart(p.months.map(([k, v]) => [`${k.slice(5)}.${k.slice(2,4)}`, Math.round(v)]), {color: "var(--c5)", h: 120}))}
+      ${blk("[d]Płacący (byline)", p.bylines.length ? `<ul class="lines">${p.bylines.map(([k,v]) => `<li>${esc(k)} — ${v} reklam</li>`).join("")}</ul>` : NODATA)}
+    </div>
+    <div class="two">
+      ${blk("[d]Odbiorcy (wiek | płeć)", p.demo.length ? hbars(p.demo.map(([k, v]) => [k.replace("|", " · ").replace("female", "kobiety").replace("male", "mężczyźni").replace("unknown", "nieznana"), v]), 100, {labelW: 150}) : NODATA)}
+      ${blk("[d]Regiony", p.regions.length ? hbars(p.regions, 100, {labelW: 150}) : NODATA)}
+    </div>
+    ${blk("[d]Przykładowe reklamy", p.ads.map(a => `<div class="ad"><div><div class="t">${esc(a.text) || "<i>(bez tekstu)</i>"}</div><a href="https://www.facebook.com/ads/library/?id=${esc(a.id)}" target="_blank" rel="noopener">Zobacz w Bibliotece Reklam</a></div><div class="m">od ${esc(a.start)}<br>${fmt(a.spend[0])}–${fmt(a.spend[1])} ${esc(p.currency)}</div></div>`).join(""))}`;
+};
+const brandPanel = (tab, r, idx, pdf = false) => (P[tab] || P.overview)(r, idx, pdf);
+
+// ================================================================ wnioski i rekomendacje
+function diffVsMain(val, mainVal){
+  if (mainVal == null || val == null || mainVal === 0) return "";
+  const p = (val - mainVal) / mainVal * 100;
+  if (Math.abs(p) < 0.5) return `<span class="d">tyle samo co Ty</span>`;
+  return `<span class="d ${p > 0 ? "up" : "down"}">${p > 0 ? "+" : ""}${p.toFixed(0)}% vs Ty</span>`;
+}
+function rankBlock(list, title, getter, unit = "", f = fmt){
+  const main = list.find(r => r.isMain);
+  const sorted = [...list].sort((a,b) => (getter(b) ?? -1) - (getter(a) ?? -1));
+  return `<div><h3 style="margin-top:0">${title}</h3><ol>${sorted.map(r =>
+    `<li><b${r.isMain ? ' style="color:var(--accent)"' : ""}>${esc(r.pageName)}</b> — ${getter(r) == null ? "—" : f(getter(r)) + unit} ${r.isMain || !main ? "" : diffVsMain(getter(r), getter(main))}</li>`).join("")}</ol></div>`;
+}
+function insights(list){
+  const main = list.find(r => r.isMain);
+  const out = [];
+  const sortBy = g => [...list].sort((a,b) => (g(b)||0) - (g(a)||0));
+  const lead = g => sortBy(g)[0];
+  const posOf = g => sortBy(g).indexOf(main) + 1;
+  const lA = lead(r => r.s.aktywne), lC = lead(r => r.s.miesSr), lN = lead(r => r.s.n30), lE = lead(r => r.s.evergreeny), lO = lead(r => r.s.zOfertaProc), lI = lead(r => r.idx.index);
+  out.push(`Najwyższy indeks aktywności: <b>${esc(lI.pageName)}</b> (${lI.idx.index}/100).`);
+  out.push(`Najwięcej aktywnych reklam: ${esc(lA.pageName)} (${fmt(lA.s.aktywne)}); najwyższy szacowany budżet: ${esc(lC.pageName)} (~${fmtK(lC.s.miesSr)} zł/mies.).`);
+  out.push(`Najwięcej nowych kreacji w 30 dni: ${esc(lN.pageName)} (${fmt(lN.s.n30)}).`);
+  if (lE.s.evergreeny) out.push(`Najwięcej evergreenów: ${esc(lE.pageName)} (${lE.s.evergreeny}).`);
+  if (lO.s.zOfertaProc) out.push(`Najmocniej gra ofertą: ${esc(lO.pageName)} — ${lO.s.zOfertaProc}% reklam.`);
+  const tests = list.filter(r => r.testing.killRate != null);
+  if (tests.length > 1){ const t = [...tests].sort((a,b) => b.testing.killRate - a.testing.killRate)[0]; out.push(`Najintensywniej testuje: ${esc(t.pageName)} — ${t.testing.killRate}% reklam wyłączanych w ciągu 7 dni.`); }
+  if (main){
+    const totalCost = list.reduce((s,r) => s + r.s.miesSr, 0);
+    out.push(`Twoja marka: ${posOf(r => r.s.aktywne)}. miejsce na ${list.length} pod względem aktywnych reklam, ${posOf(r => r.s.miesSr)}. pod względem budżetu; udział w wydatkach ~${totalCost ? Math.round(main.s.miesSr / totalCost * 100) : 0}%.`);
+    const growing = list.filter(r => !r.isMain && r.dir === "up").map(r => esc(r.pageName));
+    if (growing.length) out.push(`Konkurenci zwiększający aktywność (90 dni): ${growing.join(", ")}.`);
+  }
+  return `<ul class="lines">${out.map(x => `<li>${x}</li>`).join("")}</ul>`;
+}
+
+function demoGaps(list){
+  const main = list.find(r => r.isMain), comps = list.filter(r => !r.isMain && r.demo.demoTotal);
+  if (!main || !main.demo.demoTotal || !comps.length) return [];
+  const share = (r, a, g) => { const c = r.demo.cells[a]; return c ? (c[g] / r.demo.demoTotal * 100) : 0; };
+  const items = [];
+  for (const a of AGE_ORDER) for (const [g, gl] of [["f","K"],["m","M"]]){
+    const m = share(main, a, g), c = mean(comps.map(r => share(r, a, g)));
+    if (m || c) items.push({label: `${a} ${gl}`, v: c - m, a, g: gl});
+  }
+  return items.sort((x, y) => Math.abs(y.v) - Math.abs(x.v)).slice(0, 8).sort((x, y) => y.v - x.v);
+}
+function wordGaps(list){
+  const main = list.find(r => r.isMain), comps = list.filter(r => !r.isMain);
+  if (!main || !comps.length) return {theirs: [], ours: []};
+  const df = r => { const n = Math.max(1, r.rows.length), o = {}; for (const [w, c] of Object.entries(r.msg.wordsAll)) o[w] = c / n; return o; };
+  const m = df(main), cs = comps.map(df);
+  const words = new Set([...Object.keys(m), ...cs.flatMap(Object.keys)]);
+  const theirs = [], ours = [];
+  for (const w of words){
+    const mv = m[w] || 0, cv = mean(cs.map(c => c[w] || 0)), inComps = cs.filter(c => (c[w] || 0) >= 0.05).length;
+    if (cv >= 0.08 && mv <= cv * 0.25 && inComps >= Math.min(2, comps.length)) theirs.push([w, Math.round(cv * 100)]);
+    if (mv >= 0.08 && cv <= mv * 0.25) ours.push([w, Math.round(mv * 100)]);
+  }
+  return {theirs: theirs.sort((a,b) => b[1]-a[1]).slice(0, 14), ours: ours.sort((a,b) => b[1]-a[1]).slice(0, 14)};
+}
+
+function recommendations(list){
+  const main = list.find(r => r.isMain) || list[0], comps = list.filter(r => r !== main), R = [];
+  const add = (prio, area, title, why, todo) => R.push({prio, area, title, why, todo});
+  const avg = g => { const v = comps.map(g).filter(x => x != null); return v.length ? mean(v) : null; };
+  const t = main.testing, s = main.s;
+  // świeżość / zmęczenie kreacji
+  if (s.aktywne && t.ageActive != null && t.ageActive > 45 && s.n30 < Math.max(2, s.aktywne * 0.2))
+    add(1, "Kreacje", "Odśwież kreacje — aktywne reklamy są stare", `Średni wiek aktywnych reklam to ${t.ageActive} dni, a w 30 dni dodano tylko ${s.n30} nowych.`, "Przygotuj 3–5 nowych wariantów dla głównych konceptów i podmieniaj co 2–4 tygodnie, zanim spadnie CTR.");
+  // testowanie
+  const kr = avg(r => r.testing.killRate);
+  if (comps.length && t.killRate != null && kr != null && kr - t.killRate >= 15)
+    add(2, "Testy", "Testuj więcej wariantów", `Konkurencja wyłącza średnio ${Math.round(kr)}% reklam w ciągu 7 dni (Ty: ${t.killRate}%) — szybciej uczy się, co działa.`, "Uruchamiaj po 3–4 warianty kreacji na koncept, oceniaj po 5–7 dniach i zostawiaj zwycięzców.");
+  else if (!comps.length && t.killRate != null && t.killRate < 10 && s.lacznie > 20)
+    add(2, "Testy", "Mało testów kreacji", `Tylko ${t.killRate}% reklam jest wyłączanych w ciągu tygodnia — kreacje rzadko są testowane.`, "Wprowadź stały rytm testów A/B: nowe warianty co 2 tygodnie, decyzja po 5–7 dniach.");
+  // wideo
+  const vid = avg(r => r.s.wideo);
+  if (main.mediaLoaded && vid != null && s.wideo != null && vid - s.wideo >= 15)
+    add(2, "Formaty", "Zwiększ udział wideo", `Wideo to ${Math.round(vid)}% reklam konkurencji i tylko ${s.wideo}% Twoich.`, "Dodaj krótkie wideo 6–15 s (Reels/Stories) dla 2–3 najlepszych konceptów.");
+  // oferty i rabaty
+  const off = avg(r => r.s.zOfertaProc), disc = avg(r => r.prices.discAvg);
+  if (off != null && off - s.zOfertaProc >= 15)
+    add(2, "Przekaz", "Konkurencja mocniej gra ofertą", `Oferta w ${Math.round(off)}% reklam konkurencji vs ${s.zOfertaProc}% Twoich.`, "Przetestuj komunikat z konkretną korzyścią cenową (rabat, darmowa dostawa, kod) obok komunikacji wizerunkowej.");
+  else if (off != null && s.zOfertaProc - off >= 25)
+    add(3, "Przekaz", "Bardzo promocyjna komunikacja", `Oferta w ${s.zOfertaProc}% Twoich reklam vs ${Math.round(off)}% u konkurencji.`, "Rozważ więcej komunikacji wizerunkowej/produktowej, żeby nie uczyć klientów kupowania tylko w promocji.");
+  if (disc != null && main.prices.discAvg != null && disc - main.prices.discAvg >= 8)
+    add(3, "Oferty", "Głębsze rabaty u konkurencji", `Średni komunikowany rabat konkurencji −${Math.round(disc)}% vs Twój −${main.prices.discAvg}%.`, "Jeśli marża pozwala, przetestuj ofertę z wyższym rabatem na wybraną kategorię — albo podkreśl inną przewagę (jakość, dostawa, program lojalnościowy).");
+  // luki demograficzne
+  const gaps = demoGaps(list).filter(x => x.v >= 4);
+  if (gaps.length) add(1, "Odbiorcy", `Wolne pole: grupa ${gaps[0].label}`, `Konkurencja dociera do grupy ${gaps[0].label} o ${gaps[0].v.toFixed(1).replace(".", ",")} pp częściej niż Ty${gaps[1] ? `; podobnie ${gaps[1].label}` : ""}.`, "Sprawdź, czy ta grupa jest dla Ciebie wartościowa — jeśli tak, przygotuj dedykowaną kreację i zestaw reklam z tym targetowaniem.");
+  // evergreeny konkurencji
+  const ce = comps.map(r => ({r, e: r.ev.filter(x => x.active && x.days >= 60)})).sort((a,b) => b.e.length - a.e.length)[0];
+  if (ce && ce.e.length >= 3) add(2, "Inspiracje", `Przeanalizuj evergreeny: ${ce.r.pageName}`, `${ce.e.length} reklam ${esc(ce.r.pageName)} działa nieprzerwanie 60+ dni — prawdopodobnie dobrze konwertują.`, "Przejrzyj ich przekaz i format (zakładka „Kreacje i testy” konkurenta) i zaadaptuj sprawdzone motywy.");
+  // sezonowość — najbliższa ważna data
+  const next = keyDatesAround(todayUTC, todayUTC + 75 * DAY)[0];
+  if (next){
+    const lastYear = next.t - 365 * DAY;
+    const early = comps.map(r => { const w = r.camp.waves.filter(x => x.t >= lastYear - 45 * DAY && x.t <= lastYear); return w.length ? {r, lead: Math.round((lastYear - Math.min(...w.map(x => x.t))) / DAY)} : null; }).filter(Boolean);
+    const daysTo = Math.round((next.t - todayUTC) / DAY);
+    if (early.length) add(1, "Kalendarz", `${next.name} za ${daysTo} dni — konkurencja startuje wcześnie`, `W zeszłym roku ${early.map(x => `${esc(x.r.pageName)} ruszył ~${x.lead} dni przed`).join(", ")}.`, `Zaplanuj start kampanii ${next.name} z wyprzedzeniem (najpóźniej ${Math.max(...early.map(x => x.lead))} dni przed), z kreacjami gotowymi tydzień wcześniej.`);
+    else if (daysTo <= 45) add(3, "Kalendarz", `${next.name} za ${daysTo} dni`, "Zbliża się ważna data sprzedażowa.", "Przygotuj kreacje sezonowe i harmonogram startu kampanii.");
+  }
+  // copy
+  const cta = avg(r => r.copy.cta);
+  if (cta != null && cta - main.copy.cta >= 20) add(3, "Przekaz", "Dodaj wyraźne wezwania do działania", `Konkurencja używa CTA w ${Math.round(cta)}% reklam, Ty w ${main.copy.cta}%.`, "Dodaj konkretne CTA w pierwszym lub ostatnim zdaniu („Sprawdź”, „Odbierz”, „Zamów”).");
+  const gw = wordGaps(list);
+  if (gw.theirs.length >= 3) add(3, "Przekaz", "Tematy, które porusza konkurencja, a Ty nie", `Konkurencja często używa słów: ${gw.theirs.slice(0, 6).map(x => `„${esc(x[0])}”`).join(", ")}.`, "Sprawdź, czy te motywy pasują do Twojej oferty i przetestuj je w nowych kreacjach.");
+  // platformy
+  const platN = r => Object.values(r.msg.plat).filter(v => v >= r.rows.length * 0.1).length;
+  if (comps.length && platN(main) <= 1 && avg(platN) >= 2) add(3, "Formaty", "Poszerz umieszczenia", `Twoje reklamy są głównie na jednej platformie; konkurencja używa średnio ${avg(platN).toFixed(1).replace(".", ",")}.`, "Włącz Instagram (Reels/Stories) i Advantage+ placements, żeby obniżyć koszt dotarcia.");
+  // udział w głosie
+  const tot = list.reduce((a, r) => a + r.s.miesSr, 0);
+  if (comps.length && tot && main.s.miesSr / tot < 0.6 / list.length) add(2, "Budżet", "Niski udział w głosie", `Twój szacowany udział w wydatkach to ok. ${Math.round(main.s.miesSr / tot * 100)}% (średnio na markę ${Math.round(100 / list.length)}%).`, "Skup budżet na 1–2 najlepszych konceptach i grupach, zamiast rozpraszać go na wiele kampanii.");
+  // zmiany u konkurencji
+  for (const r of comps) if (r.changes && !r.changes.first && r.changes.newAds.length >= Math.max(10, r.changes.prev.aktywne * 0.3))
+    add(1, "Monitoring", `${r.pageName} przyspiesza`, `Od ${r.changes.prevDate}: +${r.changes.newAds.length} nowych reklam, aktywnych ${r.changes.prev.aktywne} → ${r.changes.now.aktywne}.`, "Sprawdź nowe reklamy konkurenta (zakładka „Zmiany”) — może to start dużej kampanii lub promocji.");
+  if (!R.length) add(3, "Ogólne", "Brak wyraźnych sygnałów do zmiany", "Wskaźniki marki są zbliżone do konkurencji.", "Kontynuuj obecną strategię i powtórz analizę za 2–4 tygodnie, żeby wychwycić zmiany.");
+  return R.sort((a,b) => a.prio - b.prio);
+}
+const PRIO = {1: ["wysoki", "var(--bad)"], 2: ["średni", "var(--c5)"], 3: ["niski", "var(--c2)"]};
+const recCards = recs => `<div class="recs">${recs.map(x => `<div class="rec" style="border-left-color:${PRIO[x.prio][1]}">
+    <div class="rh"><span class="rprio" style="background:${PRIO[x.prio][1]}">priorytet ${PRIO[x.prio][0]}</span><span class="ra">${esc(x.area)}</span></div>
+    <div class="rt">${esc(x.title)}</div><div class="rw">${x.why}</div><div class="rd"><b>Co zrobić:</b> ${esc(x.todo)}</div></div>`).join("")}</div>`;
+
+function scoreCard(r, i){
+  const s = r.s, d = r.demo, fem = d.gKnown ? pct(d.gender.female, d.gKnown) : null;
+  return `<div class="rp-sc">
+    <div class="rp-sc-h"><span><span class="dot" style="background:${color(i)}"></span><b>${esc(r.pageName)}</b>${r.isMain ? '<span class="tag">Twoja marka</span>' : ""}</span><span class="idxchip">${r.idx.index}<small>/100</small></span></div>
+    <div class="rp-sc-g">
+      <div><b>${fmt(s.aktywne)}</b><span>aktywne reklamy</span></div>
+      <div><b>~${fmtK(s.miesSr)} zł</b><span>szac. koszt / mies.</span></div>
+      <div><b>${fmt(s.n30)}</b><span>nowe w 30 dni</span></div>
+      <div><b>${r.testing.killRate == null ? "—" : r.testing.killRate + "%"}</b><span>wyłączanych ≤7 dni</span></div>
+      <div><b>${fmtK(s.sredniZasieg)}</b><span>śr. zasięg reklamy</span></div>
+      <div><b>${s.zOfertaProc}%</b><span>reklam z ofertą</span></div>
+      <div><b>${d.demoTotal ? esc(d.topAge[0]) : "—"}</b><span>główna grupa wieku</span></div>
+      <div><b>${fem != null ? fem + "%" : "—"}</b><span>kobiet w zasięgu</span></div>
+    </div>
+    <div class="sub" style="margin-top:6px">Tendencja: <span class="${r.dir}">${esc(r.trend)}</span></div>
+  </div>`;
+}
+
+// ================================================================ panele porównania
+const C = {};
+C.recs = list => `${blk("[c]Najważniejsze wnioski", insights(list))}
+  ${blk("[x]Rekomendacje — co z tego wynika", recCards(recommendations(list)) + `<div class="note">Rekomendacje są generowane automatycznie na podstawie reguł i danych z Biblioteki Reklam — traktuj je jako punkt wyjścia do decyzji.</div>`)}
+  ${blk("[c]Marki w skrócie", `<div class="rp-scgrid">${list.map(scoreCard).join("")}</div>`)}`;
+C.sov = list => {
+  const keys = list[0].months.map(m => m.key);
+  const main = list.find(r => r.isMain);
+  const tot = list.reduce((s, r) => s + r.s.miesSr, 0);
+  return `${main ? see(`Twój szacowany udział w wydatkach: <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b>, w aktywnych reklamach: <b>${pct(main.s.aktywne, list.reduce((s, r) => s + r.s.aktywne, 0))}%</b>.`) : ""}
+    <div class="three">
+      ${blk("[p]Szacowane wydatki / mies.", shareBlock(list, r => r.s.miesSr, "zł"))}
+      ${blk("[c]Aktywne reklamy", shareBlock(list, r => r.s.aktywne, "reklam"))}
+      ${blk("[c]Dzienny zasięg", shareBlock(list, r => r.s.dziennyZasieg, "osób"))}
+    </div>
+    ${blk("[c]Udział w zasięgu miesiąc po miesiącu", stackArea100(keys, list.map((r, i) => ({name: r.pageName, color: color(i), values: r.months.map(m => m.reach)}))) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div><div class="note">Udział każdej marki w łącznym zasięgu (zasięg reklamy rozłożony równomiernie na dni emisji).</div>`)}
+    ${blk("[c]Emitowane reklamy miesiąc po miesiącu", lineChart(list) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div>`)}`;
+};
+C.creative = list => `${list.some(r => r.mediaLoaded) ? blk("[c]Formaty reklam", stack100(list, Object.keys(MEDIA_NAMES), r => r.mediaLoaded ? r.media : null, MEDIA_NAMES, MEDIA_COLORS)) : ""}
+  <div class="two">
+    ${blk("[c]Wyłączane w ciągu 7 dni (testowanie)", brandBars(list, r => r.testing.killRate, {unit: "%"}))}
+    ${blk("[c]Mediana życia zakończonej reklamy", brandBars(list, r => r.testing.lifeMed, {unit: " dni"}))}
+  </div>
+  <div class="two">
+    ${blk("[c]Średnio aktywnych reklam naraz (90 dni)", brandBars(list, r => r.testing.concAvg, {fmtV: v => String(v).replace(".", ",")}))}
+    ${blk("[p]Koncepty kreatywne aktywne w 90 dni", brandBars(list, r => r.camp.concepts90))}
+  </div>
+  <div class="two">
+    ${blk("[c]Reklamy z wieloma wariantami tekstu (DCO)", brandBars(list, r => r.testing.dco, {unit: "%"}))}
+    ${blk("[c]Evergreeny", brandBars(list, r => r.s.evergreeny))}
+  </div>
+  ${blk("[c]Platformy", stack100(list, ["facebook", "instagram", "messenger", "audience_network", "threads"], r => r.msg.plat, PLATFORM_NAMES, PLAT_COLORS))}`;
+C.message = list => {
+  const gw = wordGaps(list), main = list.find(r => r.isMain);
+  return `${blk("[p]Przekaz w skrócie", `<ul class="lines">${list.map((r, i) => `<li><span class="dot" style="background:${color(i)}"></span><b>${esc(r.pageName)}</b>: ${r.msg.words.slice(0,6).map(w => esc(w[0])).join(", ") || "brak tekstów"} · ton ${r.copy.salesy >= r.copy.image ? "sprzedażowy" : "wizerunkowy"} · oferta w ${r.s.zOfertaProc}%</li>`).join("")}</ul>`)}
+    ${main ? `<div class="two">
+      ${blk("[p]Konkurencja mówi, Ty nie", gw.theirs.length ? `<div class="wordchips">${gw.theirs.map(([w, v]) => `<span class="wc warn">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">% reklam konkurencji zawierających słowo (średnio), u Ciebie rzadko lub wcale.</div>` : `<div class="sub">Brak wyraźnych różnic.</div>`)}
+      ${blk("[p]Twoje wyróżniki", gw.ours.length ? `<div class="wordchips">${gw.ours.map(([w, v]) => `<span class="wc good">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">Słowa częste u Ciebie, rzadkie u konkurencji.</div>` : `<div class="sub">Brak wyraźnych różnic.</div>`)}
+    </div>` : ""}
+    <div class="two">
+      ${blk("[p]Reklamy z ofertą", brandBars(list, r => r.s.zOfertaProc, {unit: "%"}))}
+      ${blk("[p]Średni komunikowany rabat", brandBars(list, r => r.prices.discAvg, {fmtV: v => "−" + v, unit: "%"}))}
+    </div>
+    <div class="two">
+      ${blk("[p]Mediana ceny w reklamach", brandBars(list, r => r.prices.priceMed, {fmtV: fmtZl}))}
+      ${blk("[p]Wezwanie do działania (CTA)", brandBars(list, r => r.copy.cta, {unit: "%"}))}
+    </div>
+    <div class="two">
+      ${blk("[c]Średnia długość tekstu", brandBars(list, r => r.copy.lenAvg, {unit: " zn."}))}
+      ${blk("[p]Emoji w tekstach", brandBars(list, r => r.copy.emoji, {unit: "%"}))}
+    </div>`;
+};
+C.audience = list => {
+  const gaps = demoGaps(list), main = list.find(r => r.isMain);
+  const locs = {}; list.forEach(r => Object.entries(r.targ.tLoc).forEach(([k, v]) => locs[k] = (locs[k] || 0) + v));
+  const topL = topN(locs, 8).map(x => x[0]);
+  return `${gaps.length ? see(`Największa luka: grupa <b>${gaps[0].label}</b> — konkurencja ma w niej ${gaps[0].v > 0 ? "o " + gaps[0].v.toFixed(1).replace(".", ",") + " pp większy" : "mniejszy"} udział zasięgu niż Ty.`) : ""}
+    ${blk("[d]Struktura wieku docieranej grupy", ageStacks(list))}
+    ${main && gaps.length ? blk("[c]Luki demograficzne: Ty vs średnia konkurencji", diverging(gaps.map(g => ({label: g.label, v: g.v})), {leftLabel: "← Ty silniejszy", rightLabel: "konkurencja silniejsza →"}) + `<div class="note">Różnica udziału grupy (wiek + płeć) w zasięgu, w punktach procentowych. Prawa strona = potencjalne „wolne pole” dla Ciebie.</div>`) : ""}
+    <div class="two">
+      ${blk("[c]Kobiety w zasięgu", brandBars(list, r => r.demo.gKnown ? pct(r.demo.gender.female, r.demo.gKnown) : null, {unit: "%"}))}
+      ${blk("[c]Reklamy z wąskim targetowaniem płci", brandBars(list, r => { const t = Object.values(r.targ.tGen).reduce((a,b) => a+b, 0); return t ? pct(t - (r.targ.tGen.all || 0), t) : null; }, {unit: "%"}))}
+    </div>
+    ${blk("[c]Lokalizacje targetowania (% reklam)", topL.length ? `<div class="matrix" style="grid-template-columns:minmax(120px,1.4fr) repeat(${list.length}, 1fr)">
+        <div class="mh"></div>${list.map((r, i) => `<div class="mh"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</div>`).join("")}
+        ${topL.map(l => `<div class="ml">${esc(l)}</div>${list.map(r => { const v = r.targ.tAds ? pct(r.targ.tLoc[l] || 0, r.targ.tAds) : 0; return `<div class="mc" style="background:color-mix(in srgb, var(--accent) ${Math.round(v * 0.8)}%, transparent)">${v ? v + "%" : "—"}</div>`; }).join("")}`).join("")}
+      </div>` : NODATA)}`;
+};
+C.calendar = list => {
+  const busiest = list.map(r => { const i = r.cal.dow.indexOf(Math.max(...r.cal.dow)); const t = r.cal.dow.reduce((a,b) => a+b, 0); return {r, i, p: pct(r.cal.dow[i], t)}; });
+  return `${blk("[d]Starty reklam tydzień po tygodniu (ostatnie 26 tygodni)", swimlanes(list) + `<div class="note">Wielkość kropki = liczba nowych reklam w tygodniu. Przerywane linie = ważne daty sprzedażowe.</div>`)}
+    ${blk("[c]Ulubiony dzień startu", `<ul class="lines">${busiest.map((x, i) => `<li><span class="dot" style="background:${color(i)}"></span><b>${esc(x.r.pageName)}</b>: ${WEEKDAYS_FULL[x.i]} (${x.p}% startów)</li>`).join("")}</ul>`)}
+    ${blk("[p]Fale startów w ostatnim roku", brandBars(list, r => r.camp.waves365))}`;
+};
+C.ranks = list => `${blk("[p]Indeks aktywności reklamowej", `<div class="gauges">${list.map((r, i) => `<div class="gw"><div class="gn"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</div>${gauge(r.idx.index, {size: 150})}</div>`).join("")}</div>
+    <div class="note">0–30 niska · 31–60 średnia · 61–80 wysoka · 81–100 bardzo wysoka. Składowe: ${INDEX_PARTS.map(x => x[1].toLowerCase()).join(", ")}.</div>`)}
+  ${blk("[p]Składowe indeksu", `<div class="rank">${INDEX_PARTS.map(([k, l]) => rankBlock(list, l, r => Math.round(r.idx.parts[k]))).join("")}</div>`)}
+  ${blk("[c]Rankingi", `<div class="rank">
+    ${rankBlock(list, "Aktywne reklamy", r => r.s.aktywne)}
+    ${rankBlock(list, "Szacowany koszt / mies.", r => r.s.miesSr, " zł")}
+    ${rankBlock(list, "Nowe reklamy (30 dni)", r => r.s.n30)}
+    ${rankBlock(list, "Evergreeny", r => r.s.evergreeny)}
+    ${rankBlock(list, "Średni zasięg reklamy", r => r.s.sredniZasieg)}
+    ${rankBlock(list, "Wyłączane ≤7 dni (%)", r => r.testing.killRate, "%")}
+    ${rankBlock(list, "Koncepty (90 dni)", r => r.camp.concepts90)}
+    ${rankBlock(list, "Reklamy z ofertą (%)", r => r.s.zOfertaProc, "%")}
+    ${rankBlock(list, "Średni czas emisji", r => r.s.sredniCzasEmisji, " dni")}
+  </div>`)}
+  <div class="note">Koszty to estymacja liczona tymi samymi założeniami dla wszystkich marek — do porównań, nie jako dokładny budżet.</div>`;
+const cmpPanel = (tab, list) => (C[tab] || C.recs)(list);
+
+// ================================================================ stan i widok
+const opts = () => ({cpmMin: +$("cpmMin").value || 10, cpmMax: +$("cpmMax").value || 25, freqMin: +$("freqMin").value || 1.3, freqMax: +$("freqMax").value || 2, label: benchLabel()});
+const filters = () => ({days: +$("fDays").value, platform: $("fPlat").value, media: $("fMedia").value, activeOnly: $("fActive").checked, evDays: +$("fEv").value});
+let results = [];
+let uidSeq = 0;
+const view = {top: "cmp", cmpTab: "recs", brandTab: "overview"};
+try { const v = JSON.parse(store.get("metaAdsBotView") || "{}"); if (v.cmpTab) view.cmpTab = v.cmpTab; if (v.brandTab) view.brandTab = v.brandTab; } catch(e){}
+
+function reanalyze(r){ Object.assign(r, analyze(r.rowsAll, opts(), filters(), r.pageName, r.mediaLoaded)); }
+function rerender(){ for (const r of results) reanalyze(r); renderAll(); }
+
+function renderAll(){
+  const card = $("resultsCard");
+  const any = results.length > 0;
+  ["xlsx","clear","pdf"].forEach(id => $(id).classList.toggle("hidden", !any));
+  $("filtersCard").classList.toggle("hidden", !any);
+  $("fMediaWrap").classList.toggle("hidden", !results.some(r => r.mediaLoaded));
+  if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); return; }
+  if (results.length < 2 && view.top === "cmp") view.top = results[0].uid;
+  if (view.top !== "cmp" && !results.some(r => r.uid === view.top)) view.top = results.length > 1 ? "cmp" : results[0].uid;
+  const isCmp = view.top === "cmp";
+  const idx = isCmp ? -1 : results.findIndex(r => r.uid === view.top);
+  const r = isCmp ? null : results[idx];
+  const tabs = isCmp ? CMP_TABS : BRAND_TABS.filter(([k]) => k !== "social" || r.polLoaded);
+  const cur = isCmp ? view.cmpTab : view.brandTab;
+  const active = tabs.some(t => t[0] === cur) ? cur : tabs[0][0];
+  const badge = (k, rr) => k === "changes" && rr.changes && !rr.changes.first && rr.changes.newAds.length ? `<span class="tb">+${rr.changes.newAds.length}</span>` : k === "social" && rr.pol && rr.pol.n ? `<span class="tb">${rr.pol.n}</span>` : "";
+  card.classList.remove("hidden");
+  card.innerHTML = `
+    <div class="tabs1" role="tablist">
+      ${results.length > 1 ? `<button class="t1 ${isCmp ? "on" : ""}" data-top="cmp">📊 Porównanie</button>` : ""}
+      ${results.map((x, i) => `<button class="t1 ${x.uid === view.top ? "on" : ""}" data-top="${x.uid}"><span class="dot" style="background:${color(i)}"></span>${esc(x.pageName)}${x.isMain ? " ★" : ""}<span class="t1i">${x.idx.index}</span></button>`).join("")}
+    </div>
+    ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div></div>` : ""}
+    <div class="tabs2" role="tablist">${tabs.map(([k, l]) => `<button class="t2 ${k === active ? "on" : ""}" data-tab="${k}">${l}${isCmp ? "" : badge(k, r)}</button>`).join("")}</div>
+    <div id="resLegend">${marksLegend()}</div>
+    <div class="panel">${isCmp ? cmpPanel(active, results) : brandPanel(active, r, idx)}</div>`;
+  card.querySelectorAll(".t1").forEach(b => b.onclick = () => { view.top = b.dataset.top === "cmp" ? "cmp" : +b.dataset.top; renderAll(); });
+  card.querySelectorAll(".t2").forEach(b => b.onclick = () => {
+    if (isCmp) view.cmpTab = b.dataset.tab; else view.brandTab = b.dataset.tab;
+    store.set("metaAdsBotView", JSON.stringify({cmpTab: view.cmpTab, brandTab: view.brandTab}));
+    renderAll();
+    const t2 = card.querySelector(".tabs2"); if (t2 && t2.getBoundingClientRect().top < 0) t2.scrollIntoView({block: "start"});
+  });
+  card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
+}
+
+// ================================================================ pobieranie i analiza marek
+async function analyzeOne(job, region, label){
+  let pageId = job.pageId, pageName = job.brand, cands = null;
+  if (!pageId){
+    cands = await findPage(job.brand, region, label);
+    if (!cands.length) throw new Error(`nie znaleziono reklam dla „${job.brand}” (obszar: ${regionLabel(region)})`);
+    pageId = cands[0].id; pageName = cands[0].name;
+  }
+  const withDemo = $("withDemo").checked;
+  const params = {...baseParams(region), search_page_ids: JSON.stringify([pageId])};
+  let ads = null, demoMissing = false;
+  const tries = withDemo ? [[FIELDS_DEMO + ",beneficiary_payers", 100], [FIELDS_DEMO, 100], [FIELDS_BASIC, 250]] : [[FIELDS_BASIC, 250]];
+  for (let i = 0; i < tries.length && !ads; i++){
+    try { ads = await fetchAll({...params, fields: tries[i][0], limit: tries[i][1]}, null, `${label}: pobieram reklamy ${pageName || pageId}`); }
+    catch(e){ if (e instanceof FatalApiError || i === tries.length - 1) throw e; if (tries[i + 1][0] === FIELDS_BASIC) demoMissing = true; }
+  }
+  if (ads.length && ads[0].page_name) pageName = ads[0].page_name;
+  const rowsAll = buildRows(ads);
+  // typ mediów: osobne zapytania z filtrem media_type
+  let mediaLoaded = false;
+  if ($("withMedia").checked && rowsAll.length){
+    try {
+      const byId = new Map(rowsAll.map(r => [r.id, r]));
+      for (const mt of ["VIDEO", "IMAGE", "MEME"]){
+        const ids = await fetchAll({...params, media_type: mt, fields: "id", limit: 500}, null, `${label}: sprawdzam formaty (${MEDIA_NAMES[mt].toLowerCase()})`);
+        for (const a of ids){ const r = byId.get(a.id); if (r && !r.media) r.media = mt; }
+      }
+      for (const r of rowsAll) if (!r.media) r.media = "OTHER";
+      mediaLoaded = true;
+    } catch(e){ if (e instanceof FatalApiError) throw e; }
+  }
+  // reklamy społeczne / polityczne
+  let pol = null, polLoaded = false;
+  if ($("withPol").checked){
+    try {
+      const pads = await fetchAll({ad_type: "POLITICAL_AND_ISSUE_ADS", ad_active_status: "ALL", ad_reached_countries: JSON.stringify(region), search_page_ids: JSON.stringify([pageId]),
+        fields: "id,ad_delivery_start_time,ad_delivery_stop_time,spend,impressions,currency,bylines,demographic_distribution,delivery_by_region,ad_creative_bodies", limit: 200}, 1000, `${label}: sprawdzam reklamy społeczne i polityczne`);
+      pol = analyzePolitical(pads); polLoaded = true;
+    } catch(e){ if (e instanceof FatalApiError) throw e; }
+  }
+  const langOpt = $("lang").selectedOptions[0];
+  const res = {uid: ++uidSeq, isMain: job.isMain, brand: job.brand || pageName, pageName: pageName || pageId, pageId, region,
+    lang: langOpt.value ? langOpt.text : "", langCode: langOpt.value, cands, demoMissing, mediaLoaded, pol, polLoaded, rowsAll};
+  reanalyze(res);
+  try { res.changes = handleSnapshot(res); } catch(e){ res.changes = null; }
+  return res;
+}
+function parseCompetitors(){
+  const jobs = [], bad = [];
+  for (const raw of $("comp").value.split("\n")){
+    const line = raw.trim();
+    if (!line) continue;
+    const [name, ...rest] = line.split(";");
+    let pid = parsePageId(rest.join(";").trim());
+    if (pid === undefined){ bad.push(line); pid = null; }
+    if (!name.trim() && !pid) continue;
+    jobs.push({brand: name.trim(), pageId: pid, isMain: false});
+  }
+  return {jobs, bad};
+}
+const plural = n => n === 1 ? "markę" : (n%10>=2 && n%10<=4 && (n%100<12 || n%100>14)) ? "marki" : "marek";
+
+async function run(){
+  if (!token()) return setStatus("Wklej token dostępu.", true);
+  const region = currentRegion();
+  if (!region.length) return setStatus("Wybierz obszar emisji (kraj albo „Cały świat”).", true);
+  const brand = $("brand").value.trim();
+  const mainPid = parsePageId($("page").value);
+  if (mainPid === undefined) return setStatus("Nie rozpoznano ID strony w polu „ID strony lub link”.", true);
+  const {jobs: comp, bad} = parseCompetitors();
+  const jobs = [];
+  if (brand || mainPid) jobs.push({brand, pageId: mainPid, isMain: true});
+  jobs.push(...comp);
+  if (!jobs.length) return setStatus("Wpisz markę albo konkurentów.", true);
+  if ($("remember").checked) store.set("metaAdsBotToken", token()); else store.del("metaAdsBotToken");
+
+  $("go").disabled = true;
+  const errors = [], fresh = [];
+  try {
+    for (let i = 0; i < jobs.length; i++){
+      const label = jobs.length > 1 ? `[${i+1}/${jobs.length}] ${jobs[i].brand || jobs[i].pageId}` : (jobs[i].brand || jobs[i].pageId);
+      try {
+        const res = await analyzeOne(jobs[i], region, label);
+        if (fresh.some(x => x.pageId === res.pageId)) errors.push(`${jobs[i].brand || jobs[i].pageId}: pominięto — ta sama strona już jest w analizie (${res.pageName}).`);
+        else fresh.push(res);
+      }
+      catch(e){ if (e instanceof FatalApiError) throw e; errors.push(`${jobs[i].brand || jobs[i].pageId}: ${e.message}`); }
+    }
+  } catch(e){ errors.unshift(e.message); }
+  finally {
+    if (fresh.length){ results = fresh; view.top = fresh.length > 1 ? "cmp" : fresh[0].uid; renderAll(); $("resultsCard").scrollIntoView({behavior: "smooth", block: "start"}); }
+    $("go").disabled = false;
+    const okMsg = fresh.length ? `Gotowe: przeanalizowano ${fresh.length} ${plural(fresh.length)}.` : "";
+    const warn = bad.length ? `\nNie rozpoznano ID strony w liniach: ${bad.join(" | ")} (użyto samej nazwy).` : "";
+    setStatus([okMsg, ...errors.map(e => "⚠ " + e)].filter(Boolean).join("\n") + warn, !fresh.length);
+  }
+}
+async function swapPage(uid, pageId){
+  const i = results.findIndex(r => r.uid === uid);
+  if (i < 0) return;
+  const old = results[i];
+  $("go").disabled = true;
+  try {
+    const res = await analyzeOne({brand: old.brand, pageId, isMain: old.isMain}, old.region, old.brand);
+    res.cands = old.cands;
+    results[i] = res; view.top = res.uid;
+    renderAll();
+    setStatus(`Podmieniono stronę dla „${old.brand}” na ${res.pageName}.`);
+  } catch(e){ setStatus(e.message, true); }
+  finally { $("go").disabled = false; }
+}
+
+// migawki: eksport / import
+function exportSnaps(){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(loadSnaps())], {type: "application/json"}));
+  a.download = `meta-ads-bot-migawki_${iso(todayUTC)}.json`; a.click();
+}
+async function importSnaps(e){
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const inc = JSON.parse(await file.text()), cur = loadSnaps();
+    for (const [k, list] of Object.entries(inc)){ const m = [...(cur[k] || []), ...list]; const seen = new Set(); cur[k] = m.filter(s => !seen.has(s.ts) && seen.add(s.ts)).sort((a,b) => a.ts - b.ts).slice(-8); }
+    store.set(SNAP_KEY, JSON.stringify(cur));
+    setStatus(`Zaimportowano migawki dla ${Object.keys(inc).length} stron.`);
+  } catch(err){ setStatus("To nie jest poprawny plik migawek.", true); }
+  e.target.value = "";
+}
+
+// ================================================================ raport PDF
+const PDF_KEY = "metaAdsBotPdf";
+const PDF_GROUPS = [
+  ["Ogólne", [["cover", "Okładka"], ["summary", "Podsumowanie i karty marek"], ["recs", "Rekomendacje"], ["method", "Metodologia i zastrzeżenia"]]],
+  ["Porównanie marek", CMP_TABS.filter(([k]) => k !== "recs").map(([k, l]) => ["cmp_" + k, l])],
+  ["Strony każdej marki", BRAND_TABS.map(([k, l]) => ["b_" + k, l])]
+];
+const PDF_ALL = PDF_GROUPS.flatMap(g => g[1].map(x => x[0]));
+const PDF_SHORT = ["cover", "summary", "recs", "method", "cmp_sov", "cmp_ranks", "b_overview"];
+const pdfPrefs = () => { try { return JSON.parse(store.get(PDF_KEY) || "{}"); } catch(e){ return {}; } };
+let pdfLogo = null;
+
+function openPdfPanel(){
+  const card = $("pdfCard"), p = pdfPrefs();
+  const main = results.find(r => r.isMain) || results[0];
+  const defTitle = results.length > 1 ? `${main.pageName} na tle konkurencji` : `${main.pageName} — analiza reklam`;
+  const secs = (p.sections && p.sections.some(s => PDF_ALL.includes(s))) ? p.sections : PDF_ALL;
+  pdfLogo = p.logo || null;
+  card.innerHTML = `
+    <div class="title-row"><h2 style="margin:0">📄 Raport PDF</h2><button class="ghost mini" id="pdfClose">Zamknij</button></div>
+    <div class="grid" style="margin-top:14px">
+      <div><label for="pdfTitle">Tytuł raportu</label><input id="pdfTitle" value="${esc(defTitle)}"></div>
+      <div><label for="pdfClient">Dla kogo (klient)</label><input id="pdfClient" value="${esc(p.client && p.lastBrand === main.pageName ? p.client : main.pageName)}"></div>
+      <div><label for="pdfAuthor">Przygotował(a)</label><input id="pdfAuthor" value="${esc(p.author || "")}" placeholder="np. Jan Kowalski, Agencja XYZ"></div>
+      <div><label>Logo na okładce (opcjonalnie)</label>
+        <div class="row"><button class="ghost mini" id="pdfLogoBtn">Wybierz plik</button><button class="ghost mini ${pdfLogo ? "" : "hidden"}" id="pdfLogoDel">Usuń</button>
+        <img id="pdfLogoPrev" alt="" style="max-height:34px;max-width:120px;${pdfLogo ? "" : "display:none"}" src="${pdfLogo || ""}"></div>
+        <input type="file" id="pdfLogoFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="hidden"></div>
+    </div>
+    <div style="margin-top:14px"><label for="pdfNote">Komentarz analityka (pojawi się na stronie podsumowania)</label>
+      <textarea id="pdfNote" placeholder="np. Konkurencja mocno inwestuje w wideo i rabaty — rekomendujemy test kreacji z kodem rabatowym…"></textarea></div>
+    <div class="row" style="margin:14px 0 4px"><b style="margin-right:6px">Zawartość:</b><button class="ghost mini" id="pdfFull">Pełny raport</button><button class="ghost mini" id="pdfShort">Skrót dla klienta</button><button class="ghost mini" id="pdfNone">Odznacz wszystko</button></div>
+    ${PDF_GROUPS.map(([g, items]) => `<h3>${g}</h3><div class="optgrid">${items.map(([k, label]) => `<label class="check" style="margin:0"><input type="checkbox" data-sec="${k}" ${secs.includes(k) ? "checked" : ""} ${k.startsWith("cmp_") && results.length < 2 ? "disabled" : ""}><span>${label}</span></label>`).join("")}</div>`).join("")}
+    ${results.length > 1 ? `<h3>Marki w raporcie</h3><div class="optgrid">${results.map((r, i) => `<label class="check" style="margin:0"><input type="checkbox" data-brand="${r.uid}" checked><span><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span></label>`).join("")}</div>` : ""}
+    <div class="row" style="margin-top:16px"><button id="pdfGo">Pobierz PDF</button><span class="hint" id="pdfEst"></span></div>
+    <div class="hint">Otworzy się okno drukowania — jako drukarkę wybierz <b>„Zapisz jako PDF”</b>. Raport uwzględnia aktualne filtry, założenia kosztu i oznaczenia „Lupy detektywa” włączone na górze strony${activeMarks().length ? ` (teraz: ${activeMarks().map(k => MARKS[k][0].toLowerCase()).join(", ")})` : " (teraz wyłączone)"}. Najlepiej wygląda w Chrome lub Edge.</div>`;
+  card.classList.remove("hidden");
+  const est = () => { const s = [...card.querySelectorAll("input[data-sec]:checked")].map(c => c.dataset.sec); const nb = results.length > 1 ? card.querySelectorAll("input[data-brand]:checked").length : 1;
+    const pages = (s.includes("cover") ? 1 : 0) + (s.includes("summary") || s.includes("recs") ? 2 : 0) + s.filter(x => x.startsWith("cmp_")).length + nb * s.filter(x => x.startsWith("b_")).length * 1.4 + (s.includes("method") ? 1 : 0);
+    $("pdfEst").textContent = `ok. ${Math.max(1, Math.round(pages))} stron`; };
+  const setSecs = list => { card.querySelectorAll("input[data-sec]").forEach(cb => { if (!cb.disabled) cb.checked = list.includes(cb.dataset.sec); }); est(); };
+  card.querySelectorAll("input").forEach(i => i.addEventListener("change", est)); est();
+  $("pdfFull").onclick = () => setSecs(PDF_ALL);
+  $("pdfShort").onclick = () => setSecs(PDF_SHORT);
+  $("pdfNone").onclick = () => setSecs([]);
+  $("pdfClose").onclick = () => card.classList.add("hidden");
+  $("pdfLogoBtn").onclick = () => $("pdfLogoFile").click();
+  $("pdfLogoDel").onclick = () => { pdfLogo = null; $("pdfLogoPrev").style.display = "none"; $("pdfLogoDel").classList.add("hidden"); };
+  $("pdfLogoFile").onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 1.5e6) return setStatus("Logo jest za duże (max 1,5 MB).", true);
+    const rd = new FileReader();
+    rd.onload = () => { pdfLogo = rd.result; const im = $("pdfLogoPrev"); im.src = pdfLogo; im.style.display = ""; $("pdfLogoDel").classList.remove("hidden"); };
+    rd.readAsDataURL(file);
+  };
+  $("pdfGo").onclick = generatePdf;
+  card.scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+function generatePdf(){
+  const card = $("pdfCard");
+  const o = {
+    title: $("pdfTitle").value.trim() || "Raport reklam Meta",
+    client: $("pdfClient").value.trim(), author: $("pdfAuthor").value.trim(), note: $("pdfNote").value.trim(), logo: pdfLogo,
+    secs: new Set([...card.querySelectorAll("input[data-sec]:checked")].map(cb => cb.dataset.sec)),
+    brands: results.length > 1 ? [...card.querySelectorAll("input[data-brand]:checked")].map(cb => +cb.dataset.brand) : results.map(r => r.uid)
+  };
+  if (!o.brands.length) return setStatus("Zaznacz co najmniej jedną markę do raportu.", true);
+  if (!o.secs.size) return setStatus("Zaznacz co najmniej jedną sekcję raportu.", true);
+  const main = results.find(r => r.isMain) || results[0];
+  const prefs = {author: o.author, client: o.client, lastBrand: main.pageName, sections: [...o.secs]};
+  if (o.logo && o.logo.length < 400000) prefs.logo = o.logo;
+  store.set(PDF_KEY, JSON.stringify(prefs));
+
+  $("report").innerHTML = buildReport(o);
+  const root = document.documentElement, prevTheme = root.getAttribute("data-theme"), prevTitle = document.title;
+  root.setAttribute("data-theme", "light");
+  document.title = `Raport Meta Ads - ${o.client || main.pageName} - ${iso(todayUTC)}`.replace(/[\\/:*?"<>|]/g, "");
+  const restore = () => {
+    document.title = prevTitle;
+    if (prevTheme) root.setAttribute("data-theme", prevTheme); else root.removeAttribute("data-theme");
+    window.removeEventListener("afterprint", restore);
+  };
+  window.addEventListener("afterprint", restore);
+  const imgs = [...$("report").querySelectorAll("img")].map(im => im.complete ? null : new Promise(r => { im.onload = im.onerror = r; })).filter(Boolean);
+  Promise.all([document.fonts ? document.fonts.ready : null, ...imgs]).then(() => setTimeout(() => window.print(), 150));
+}
+
+function buildReport(o){
+  const sel = results.filter(r => o.brands.includes(r.uid));
+  const main = sel.find(r => r.isMain) || sel[0];
+  const dateLong = new Date().toLocaleDateString("pl-PL", {day: "numeric", month: "long", year: "numeric"});
+  const fl = filterLabel();
+  const top = `<div class="rp-top"><span>${esc(o.title)}</span><span>${o.client ? esc(o.client) + " · " : ""}${dateLong}</span></div>`;
+  const has = k => o.secs.has(k);
+  const pages = [];
+
+  if (has("cover")){
+    const det = (document.querySelector("header .detective") || {outerHTML: ""}).outerHTML.replace('class="detective"', 'class="detective rp-det"');
+    const kp = main.s;
+    pages.push(`<section class="rp-cover">
+      <div class="rp-cover-top">
+        <div>${o.logo ? `<img class="rp-logo" src="${o.logo}" alt="">` : `<span class="rp-wordmark">Meta Ads Bot</span>`}</div>
+        <div class="rp-cover-date">${dateLong}</div>
+      </div>
+      <div class="rp-hero">
+        <div class="rp-hero-txt">
+          <div class="kicker">Raport konkurencji · reklamy Meta (Facebook i Instagram)</div>
+          <h1>${esc(o.title)}</h1>
+          <p>${sel.length > 1 ? `${esc(main.pageName)} na tle ${sel.length - 1} ${sel.length - 1 === 1 ? "konkurenta" : "konkurentów"}` : `Analiza reklam marki ${esc(main.pageName)}`} · emisja: ${esc(regionLabel(main.region))}${fl ? ` · ${esc(fl)}` : ""}</p>
+        </div>
+        ${det}
+      </div>
+      <div class="rp-cover-kpis">
+        <div><div class="v">${main.idx.index}<small>/100</small></div><div class="l">indeks aktywności<br>${esc(main.pageName)}</div></div>
+        <div><div class="v">${fmt(kp.aktywne)}</div><div class="l">aktywne reklamy</div></div>
+        <div><div class="v">~${fmtK(kp.miesSr)} zł</div><div class="l">szacowany koszt miesięczny</div></div>
+        <div><div class="v">${fmt(kp.n30)}</div><div class="l">nowe reklamy w 30 dni</div></div>
+      </div>
+      <div class="rp-cover-brands">
+        <div class="rp-label">Marki w raporcie</div>
+        ${sel.map((r, i) => `<span class="rp-brandchip"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}${r.isMain ? " · Twoja marka" : ""}</span>`).join("")}
+      </div>
+      <div class="rp-cover-foot">
+        <div>${o.author ? `<b>Przygotował(a):</b> ${esc(o.author)}` : ""}${o.client ? `${o.author ? "<br>" : ""}<b>Dla:</b> ${esc(o.client)}` : ""}</div>
+        <div style="text-align:right">Źródło danych: Meta Ad Library API<br>Stan na ${iso(todayUTC)}</div>
+      </div>
+    </section>`);
+  }
+
+  if (has("summary") || has("recs")){
+    pages.push(`<section class="rp-page">${top}
+      <h2 class="rp-h">Podsumowanie</h2>${marksLegend()}
+      ${o.note ? `<div class="rp-note blk"><div class="rp-label">Komentarz analityka</div>${esc(o.note).replace(/\n/g, "<br>")}</div>` : ""}
+      ${has("summary") ? blk("[c]Najważniejsze wnioski", sel.length > 1 ? insights(sel) : brandBullets(main)) : ""}
+      ${has("recs") ? blk("[x]Rekomendacje — co z tego wynika", recCards(recommendations(sel).slice(0, 8))) : ""}
+      ${has("summary") ? blk("[c]Marki w skrócie", `<div class="rp-scgrid">${sel.map(scoreCard).join("")}</div>`) : ""}
+    </section>`);
+  }
+
+  if (sel.length > 1){
+    for (const [k, l] of CMP_TABS) if (k !== "recs" && has("cmp_" + k))
+      pages.push(`<section class="rp-page">${top}<div class="rp-kicker">Porównanie marek</div><h2 class="rp-h">${l}</h2>${cmpPanel(k, sel)}</section>`);
+  }
+
+  const bt = BRAND_TABS.filter(([k]) => has("b_" + k));
+  if (bt.length){
+    sel.forEach((r, i) => {
+      const topics = bt.filter(([k]) => k !== "social" || (r.polLoaded && r.pol && r.pol.n)).filter(([k]) => k !== "changes" || (r.changes && !r.changes.first));
+      if (!topics.length) return;
+      pages.push(`<section class="rp-page">${top}
+        <div class="rp-brandhead">${brandHead(r, i)}</div>
+        ${topics.map(([k, l], j) => `<div class="rp-topic ${j ? "rp-newpage" : ""}"><div class="rp-kicker">${esc(r.pageName)}</div><h2 class="rp-h2">${l}</h2>${brandPanel(k, r, i, true)}</div>`).join("")}
+      </section>`);
+    });
+  }
+
+  if (has("method")){
+    const f = filters();
+    pages.push(`<section class="rp-page">${top}
+      <h2 class="rp-h">Metodologia i zastrzeżenia</h2>
+      <ul class="lines rp-method">
+        <li><b>Źródło danych:</b> oficjalne Meta Ad Library API, reklamy dostarczone na obszarze: ${esc(regionLabel(main.region))}${main.lang ? `, język: ${esc(main.lang)}` : ""}. Stan na ${iso(todayUTC)}.</li>
+        <li><b>Zakres:</b> Meta udostępnia reklamy komercyjne, które dotarły do UE (DSA), przez ok. rok od zakończenia emisji. Reklamy emitowane wyłącznie poza UE nie są widoczne.</li>
+        <li><b>Aktywna reklama:</b> bez daty zakończenia emisji albo z datą zakończenia od dziś wzwyż.</li>
+        <li><b>Zasięg:</b> eu_total_reach — szacowana przez Meta liczba kont w UE, do których dotarła reklama. Demografia: rozbicie zasięgu wg wieku, płci i kraju. Targetowanie i płatnik: dane deklarowane przez reklamodawcę (DSA).</li>
+        <li><b>Szacowany koszt:</b> estymacja, nie dane Meta — dzienny zasięg aktywnych reklam × częstotliwość × CPM. ${esc(main.s.zalozenia)}. Do porównań między markami.</li>
+        <li><b>Testowanie kreacji:</b> % zakończonych reklam emitowanych maks. 7 dni; aktywne naraz — średnia dzienna z ostatnich 90 dni; DCO — reklamy z wieloma wariantami tekstu.</li>
+        <li><b>Koncepty i fale:</b> koncept = reklamy z tym samym tekstem głównym; fala startów = dzień z co najmniej 3 nowymi reklamami.</li>
+        <li><b>Przekaz, rabaty i ceny:</b> wykrywane automatycznie w tekstach reklam (np. „-30%”, „49,99 zł”, „darmowa dostawa”); słowa bez nazwy marki i słów pomocniczych. Pełne adresy stron docelowych nie są dostępne w API — widoczna jest domena.</li>
+        <li><b>Evergreen:</b> reklama emitowana co najmniej ${f.evDays} dni. <b>Formaty</b> (wideo/grafika) — z filtra typu mediów w API.</li>
+        <li><b>Indeks aktywności (0–100):</b> ${INDEX_PARTS.map(([, l, w]) => `${l.toLowerCase()} ${Math.round(w * 100)}%`).join(", ")}; skale logarytmiczne.</li>
+        <li><b>Reklamy społeczne/polityczne:</b> dla nich Meta publikuje rzeczywiste wydatki i wyświetlenia (w przedziałach).</li>
+        <li><b>Zmiany:</b> porównanie z zapisaną w przeglądarce migawką poprzedniej analizy tej samej strony i obszaru.</li>
+        <li><b>Oznaczenia „lupy detektywa”:</b> <span style="color:var(--kd)">■</span> czyste dane — wartości wprost z Meta API; <span style="color:var(--kc)">■</span> obliczenia — średnie, udziały, trendy; <span style="color:var(--kp)">■</span> poszlaki — szacunki, modele, przyjęte progi i automatyczne wykrywanie w tekstach (dyskusyjne); <span style="color:var(--kx)">■</span> dedukcja detektywa — interpretacje, wnioski i rekomendacje. ${activeMarks().length ? "W tym raporcie oznaczono: " + activeMarks().map(k => MARKS[k][0].toLowerCase()).join(", ") + "." : "W tym raporcie oznaczenia są wyłączone."}</li>
+        <li><b>Rekomendacje:</b> generowane automatycznie regułami na podstawie powyższych danych — punkt wyjścia do decyzji, nie gotowa strategia.</li>
+        ${fl ? `<li><b>Zastosowane filtry:</b> ${esc(fl)}.</li>` : ""}
+      </ul>
+    </section>`);
+  }
+  return `<div class="rp">${pages.join("")}</div>`;
+}
+
+// ================================================================ eksport Excel (same wartości)
+function exportXlsx(){
+  const f = filters(), fl = filterLabel() || "brak";
+  const main = results.find(r => r.isMain);
+  const totCost = results.reduce((s,r) => s + r.s.miesSr, 0), totAct = results.reduce((s,r) => s + r.s.aktywne, 0);
+  const dpct = (v, m) => (m ? Math.round((v - m) / m * 100) : null);
+  const S = {};
+  const sheet = (name, header) => (S[name] = [header]);
+  const cmp = sheet("Porównanie", ["Strona","Rola","Indeks aktywności","Aktywne reklamy","Udział w aktywnych (%)","Koszt mies. środek (PLN)","Udział w wydatkach (%)","Nowe 30 dni","Evergreeny","Wyłączane ≤7 dni (%)","Koncepty 90 dni","Reklamy z ofertą (%)","Średni rabat (%)","Mediana ceny (zł)","Wideo (%)","CTA (%)","Średni zasięg","Dominująca grupa wieku","Kobiety (%)","Aktywne vs Ty (%)","Koszt vs Ty (%)","Tendencja"]);
+  const sum = sheet("Podsumowanie", ["Rola","Marka (zapytanie)","Strona","page_id","Obszar emisji","Język","Filtr","Data","Aktywne reklamy","Reklamy","Średni zasięg","Mediana zasięgu","Średni czas emisji (dni)","Nowe 30 dni","Nowe poprz. 30 dni","Nowe 90 dni","Nowe poprz. 90 dni","Tendencja",`Evergreeny (≥${f.evDays} dni)`,"Dzienny zasięg aktywnych","Koszt dzienny min","Koszt dzienny max","Koszt mies. min","Koszt mies. max","Koszt mies. środek","Koszt ostatnie 30 dni","Indeks",...INDEX_PARTS.map(x => "Indeks: " + x[1]),"Założenia"]);
+  const rec = sheet("Rekomendacje", ["Priorytet","Obszar","Rekomendacja","Uzasadnienie","Co zrobić"]);
+  const trend = sheet("Tendencja", ["Strona","Miesiąc","Nowe reklamy","Emitowane reklamy","Zasięg (rozłożony)","Udział w zasięgu (%)"]);
+  const test = sheet("Kreacje i testy", ["Strona","Wyłączane ≤7 dni (%)","Mediana życia zakończonych (dni)","Średnio aktywnych naraz","Maks. aktywnych naraz","Nowych na dzień startu","DCO (%)","Średni wiek aktywnych (dni)",...LIFE_B.map(x => "Życie " + x[2]),"Wideo","Grafika","Mem","Inne","Mediana zasięgu/dzień"]);
+  const conc = sheet("Kampanie", ["Strona","Typ","Tekst","Reklamy","Aktywne","Zasięg","Od","Do / data","Warianty"]);
+  const cal = sheet("Kalendarz", ["Strona","Data","Nowe reklamy"]);
+  const dowS = sheet("Dni tygodnia", ["Strona", ...WEEKDAYS_FULL]);
+  const evs = sheet("Evergreeny", ["Strona","ID reklamy","Aktywna","Dni emisji","Start","Stop","Zasięg UE","Format","Tekst","Tytuł","Domena","Link"]);
+  const copyS = sheet("Copy", ["Strona","Średnia długość","Mediana długości","CTA (%)","Emoji (%)","Pytanie (%)","Wykrzyknik (%)","Hashtag (%)","Sprzedażowe (szt.)","Wizerunkowe (szt.)",...LEN_B.map(x => "Długość " + x[2])]);
+  const msg = sheet("Przekaz", ["Strona","Typ","Wartość","Liczba reklam","Udział (%)"]);
+  const price = sheet("Rabaty i ceny", ["Strona","Reklamy z rabatem (%)","Średni rabat","Mediana rabatu","Maks. rabat",...DISC_B.map(x => "Rabat " + x[2]),"Reklamy z ceną (%)","Mediana ceny","Min. cena","Maks. cena",...PRICE_B.map(x => "Cena " + x[2])]);
+  const demo = sheet("Demografia", ["Strona","Wymiar","Wartość","Zasięg","Udział (%)"]);
+  const gapsS = sheet("Luki demograficzne", ["Grupa","Różnica: konkurencja − Ty (pp)"]);
+  const targ = sheet("Targetowanie", ["Strona","Wymiar","Wartość","Typ","Liczba reklam","Udział (%)"]);
+  const chg = sheet("Zmiany", ["Strona","Poprzednia migawka","Status","ID reklamy","Start","Stop","Dni","Zasięg","Tekst","Link"]);
+  const pol = sheet("Społeczne i polityczne", ["Strona","Reklamy","Aktywne","Wydatki min","Wydatki max","Waluta","Wyświetlenia min","Wyświetlenia max","Płacący"]);
+  const ads = sheet("Reklamy", ["Strona","ID reklamy","Aktywna","Evergreen","Start","Stop","Dni emisji","Zasięg UE","Zasięg/dzień","Format","Platformy","Domena","Target wiek","Target płeć","Target lokalizacje","Płatnik","Beneficjent","Warianty tekstu (DCO)","Tekst","Tytuł","Opis linku","Link"]);
+  const monthTot = results[0] ? results[0].months.map((_, i) => results.reduce((s, r) => s + r.months[i].reach, 0)) : [];
+  if (results.length > 1) recommendations(results).forEach(x => rec.push([PRIO[x.prio][0], x.area, x.title, x.why.replace(/<[^>]+>/g, ""), x.todo]));
+  else if (results[0]) recommendations(results).forEach(x => rec.push([PRIO[x.prio][0], x.area, x.title, x.why.replace(/<[^>]+>/g, ""), x.todo]));
+  demoGaps(results).forEach(g => gapsS.push([g.label, Math.round(g.v * 10) / 10]));
+  for (const r of results){
+    const s = r.s, role = r.isMain ? "Twoja marka" : "konkurent", n = r.rows.length, t = r.testing, p = r.prices, c = r.copy;
+    const fem = r.demo.gKnown ? pct(r.demo.gender.female, r.demo.gKnown) : null;
+    cmp.push([r.pageName, role, r.idx.index, s.aktywne, totAct ? Math.round(s.aktywne/totAct*1000)/10 : null, s.miesSr, totCost ? Math.round(s.miesSr/totCost*1000)/10 : null, s.n30, s.evergreeny, t.killRate, r.camp.concepts90, s.zOfertaProc, p.discAvg, p.priceMed, s.wideo, c.cta, s.sredniZasieg, r.demo.demoTotal ? r.demo.topAge[0] : null, fem,
+      main && !r.isMain ? dpct(s.aktywne, main.s.aktywne) : null, main && !r.isMain ? dpct(s.miesSr, main.s.miesSr) : null, r.trend]);
+    sum.push([role, r.brand, r.pageName, r.pageId, regionLabel(r.region), r.lang || "dowolny", fl, iso(todayUTC), s.aktywne, s.lacznie, s.sredniZasieg, s.medianaZasiegu, s.sredniCzasEmisji, s.n30, s.p30, s.n90, s.p90, r.trend, s.evergreeny, s.dziennyZasieg, s.dzienMin, s.dzienMax, s.miesMin, s.miesMax, s.miesSr, s.ost30, r.idx.index, ...INDEX_PARTS.map(([k]) => Math.round(r.idx.parts[k])), s.zalozenia]);
+    r.months.forEach((m, i) => trend.push([r.pageName, m.key, m.nowe, m.emitowane, Math.round(m.reach), monthTot[i] ? Math.round(m.reach / monthTot[i] * 1000) / 10 : null]));
+    test.push([r.pageName, t.killRate, t.lifeMed, t.concAvg, t.concMax, t.batchAvg, t.dco, t.ageActive, ...t.lifeHist.map(x => x[1]), ...(r.mediaLoaded ? ["VIDEO","IMAGE","MEME","OTHER"].map(k => r.media[k] || 0) : [null,null,null,null]), r.eff.med]);
+    r.camp.top.forEach(x => conc.push([r.pageName, "koncept", x.text, x.n, x.active, x.reach, iso(x.first), iso(x.last), null]));
+    r.camp.waves.forEach(w => conc.push([r.pageName, "fala startów", w.text, w.n, null, w.reach, null, iso(w.t), w.variants]));
+    Object.entries(r.cal.launches).sort((a,b) => a[0] - b[0]).forEach(([d, v]) => cal.push([r.pageName, iso(+d), v]));
+    dowS.push([r.pageName, ...r.cal.dow]);
+    r.ev.forEach(a => evs.push([r.pageName, a.id, a.active ? "tak" : "nie", a.days, iso(a.start), iso(a.stop), a.reach, MEDIA_NAMES[a.media] || "", a.text, a.title, a.domain, `https://www.facebook.com/ads/library/?id=${a.id}`]));
+    copyS.push([r.pageName, c.lenAvg, c.lenMed, c.cta, c.emoji, c.question, c.excl, c.hashtag, c.salesy, c.image, ...c.lenHist.map(x => x[1])]);
+    r.msg.words.forEach(([k,v]) => msg.push([r.pageName, "słowo", k, v, pct(v, n)]));
+    r.msg.phrases.forEach(([k,v]) => msg.push([r.pageName, "hasło", k, v, pct(v, n)]));
+    OFFERS.forEach(([name]) => msg.push([r.pageName, "oferta / mechanika", name, r.msg.offers[name] || 0, pct(r.msg.offers[name] || 0, n)]));
+    r.msg.domains.forEach(([k,v]) => msg.push([r.pageName, "domena", k, v, pct(v, n)]));
+    r.msg.paths.forEach(([k,v]) => msg.push([r.pageName, "podstrona", k, v, pct(v, n)]));
+    r.msg.linkTitles.forEach(([k,v]) => msg.push([r.pageName, "nagłówek linku", k, v, pct(v, n)]));
+    topN(r.msg.plat, 8).forEach(([k,v]) => msg.push([r.pageName, "platforma", PLATFORM_NAMES[k] || k, v, pct(v, n)]));
+    price.push([r.pageName, p.discPct, p.discAvg, p.discMed, p.discMax, ...p.discHist.map(x => x[1]), p.pricePct, p.priceMed, p.priceMin, p.priceMax, ...p.priceHist.map(x => x[1])]);
+    const dt = r.demo.demoTotal;
+    r.demo.ageList.forEach(([k,v]) => v && demo.push([r.pageName, "wiek", k, v, pct(v, dt)]));
+    AGE_ORDER.forEach(a => { const cl = r.demo.cells[a]; if (cl){ demo.push([r.pageName, "wiek + płeć", `${a} kobiety`, cl.f, pct(cl.f, dt)]); demo.push([r.pageName, "wiek + płeć", `${a} mężczyźni`, cl.m, pct(cl.m, dt)]); } });
+    topN(r.demo.country, 30).forEach(([k,v]) => demo.push([r.pageName, "kraj", ALL_COUNTRIES[k] || k, v, pct(v, dt)]));
+    const ta = r.targ.tAds;
+    topN(r.targ.tAge, 20).forEach(([k,v]) => targ.push([r.pageName, "wiek", k, "", v, pct(v, ta)]));
+    topN(r.targ.tGen, 5).forEach(([k,v]) => targ.push([r.pageName, "płeć", GENDER_PL[k] || k, "", v, pct(v, ta)]));
+    topN(r.targ.tLoc, 40).forEach(([k,v]) => targ.push([r.pageName, "lokalizacja", k, r.targ.tType[k] || "", v, pct(v, ta)]));
+    topN(r.targ.tExc, 20).forEach(([k,v]) => targ.push([r.pageName, "lokalizacja wykluczona", k, r.targ.tType[k] || "", v, pct(v, ta)]));
+    topN(r.targ.payers, 10).forEach(([k,v]) => targ.push([r.pageName, "płatnik", k, "", v, pct(v, r.targ.payAds)]));
+    topN(r.targ.bens, 10).forEach(([k,v]) => targ.push([r.pageName, "beneficjent", k, "", v, pct(v, r.targ.payAds)]));
+    if (r.changes && !r.changes.first){
+      const row = (st, a) => chg.push([r.pageName, r.changes.prevDate, st, a.id, iso(a.start), iso(a.stop), a.days, a.reach, a.text, `https://www.facebook.com/ads/library/?id=${a.id}`]);
+      r.changes.newAds.forEach(a => row("nowa", a)); r.changes.ended.forEach(a => row("wyłączona", a));
+    }
+    if (r.polLoaded) pol.push([r.pageName, r.pol.n, r.pol.active, r.pol.spLo, r.pol.spHi, r.pol.currency, r.pol.imLo, r.pol.imHi, r.pol.bylines.map(x => x[0]).join(", ")]);
+    for (const a of [...r.rows].sort((x,y) => y.start - x.start))
+      ads.push([r.pageName, a.id, a.active ? "tak" : "nie", a.days >= f.evDays ? "tak" : "nie", iso(a.start), iso(a.stop), a.days, a.reach, a.rpd != null ? Math.round(a.rpd) : null, MEDIA_NAMES[a.media] || "", a.platforms.map(p => PLATFORM_NAMES[p] || p).join(", "), a.domain, a.tAges, GENDER_PL[a.tGender] || a.tGender, a.tLocs.map(l => (l.excluded ? "bez: " : "") + l.name).join(", "),
+        [...new Set(a.payers.map(x => x.payer))].join(", "), [...new Set(a.payers.map(x => x.ben))].join(", "), a.dco ? "tak" : "nie", a.text, a.title, a.desc, `https://www.facebook.com/ads/library/?id=${a.id}`]);
+  }
+  const name = `raport_meta_${iso(todayUTC)}`;
+  if (!window.XLSX){
+    const csv = sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + csv], {type: "text/csv"}));
+    a.download = name + ".csv"; a.click(); return;
+  }
+  const wb = XLSX.utils.book_new();
+  for (const [nm, aoa] of Object.entries(S)){
+    if (nm === "Porównanie" && results.length < 2) continue;
+    if (nm === "Luki demograficzne" && aoa.length < 2) continue;
+    if (nm === "Zmiany" && aoa.length < 2) continue;
+    if (nm === "Społeczne i polityczne" && aoa.length < 2) continue;
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = aoa[0].map((h, i) => ({wch: Math.min(60, Math.max(10, ...aoa.slice(0, 200).map(r => String(r[i] ?? "").length)) + 1)}));
+    XLSX.utils.book_append_sheet(wb, ws, nm.slice(0, 31));
+  }
+  XLSX.writeFile(wb, name + ".xlsx");
+}
+
+// ================================================================ odkrywanie konkurentów
+let discFound = [];
+async function discover(){
+  const phrase = $("phrase").value.trim();
+  const st = m => $("discStatus").textContent = m;
+  if (!token()) return st("Najpierw wklej token dostępu.");
+  if (!phrase) return st("Wpisz frazę.");
+  const region = currentRegion();
+  if (!region.length) return st("Wybierz obszar emisji.");
+  $("discGo").disabled = true;
+  try {
+    const ads = await fetchAll({...baseParams(region), search_terms: phrase, fields: "page_id,page_name,ad_delivery_start_time,ad_delivery_stop_time,eu_total_reach"}, 2000, "Szukam", st);
+    const by = {};
+    for (const a of ads){
+      if (!a.page_id) continue;
+      const p = by[a.page_id] ||= {id: a.page_id, name: a.page_name || a.page_id, ads: 0, active: 0, reach: 0};
+      p.ads++;
+      const stop = toDay(a.ad_delivery_stop_time);
+      if (stop == null || stop >= todayUTC) p.active++;
+      p.reach += +a.eu_total_reach || 0;
+    }
+    discFound = Object.values(by).sort((a,b) => b.active - a.active || b.ads - a.ads).slice(0, 25);
+    const own = new Set(results.map(r => r.pageId));
+    $("discList").innerHTML = discFound.length ? discFound.map((p, i) => `<label class="disc-row">
+        <input type="checkbox" data-i="${i}" ${i < 5 && !own.has(p.id) ? "checked" : ""}>
+        <span><b>${esc(p.name)}</b> <span class="sub">· page_id ${esc(p.id)}</span></span>
+        <span class="m">${p.active} aktywnych / ${p.ads} reklam<br>zasięg ${fmt(p.reach)}</span></label>`).join("")
+      : `<div class="sub">Brak reklam z tą frazą na wybranym obszarze.</div>`;
+    $("discActions").classList.toggle("hidden", !discFound.length);
+    st(discFound.length ? `Znaleziono ${Object.keys(by).length} reklamodawców w ${ads.length} reklamach (pokazuję top 25, sortowane po aktywnych reklamach).` : "");
+  } catch(e){ st(e.message); }
+  finally { $("discGo").disabled = false; }
+}
+function addDiscovered(){
+  const ta = $("comp");
+  const existing = new Set(ta.value.split("\n").map(l => parsePageId(l.split(";").slice(1).join(";"))).filter(Boolean));
+  const mainName = $("brand").value.trim().toLowerCase(), mainId = parsePageId($("page").value);
+  results.filter(r => r.isMain).forEach(r => existing.add(r.pageId));
+  if (mainId) existing.add(mainId);
+  const lines = [];
+  $("discList").querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+    const p = discFound[+cb.dataset.i];
+    if (p && !existing.has(p.id) && p.name.toLowerCase() !== mainName) lines.push(`${p.name}; ${p.id}`);
+  });
+  if (!lines.length){ $("discStatus").textContent = "Nic nowego do dodania."; return; }
+  ta.value = (ta.value.trim() ? ta.value.trim() + "\n" : "") + lines.join("\n");
+  $("discStatus").textContent = `Dodano ${lines.length} do listy konkurentów. Kliknij „Analizuj”, żeby je porównać.`;
+  ta.scrollIntoView({behavior: "smooth", block: "center"});
+}
+
+// ================================================================ zestawy konkurentów
+const SETS_KEY = "metaAdsBotSets";
+const loadSets = () => { try { return JSON.parse(store.get(SETS_KEY) || "{}"); } catch(e){ return {}; } };
+function refreshSets(selectName){
+  const sets = loadSets(), sel = $("sets");
+  sel.innerHTML = `<option value="">— zapisane zestawy —</option>` + Object.keys(sets).sort((a,b) => a.localeCompare(b, "pl")).map(n => `<option>${esc(n)}</option>`).join("");
+  if (selectName) sel.value = selectName;
+}
+function saveSet(){
+  const name = prompt("Nazwa zestawu (np. „Natura — drogerie”):", $("sets").value || $("brand").value.trim());
+  if (!name) return;
+  const sets = loadSets();
+  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, savedAt: iso(todayUTC)};
+  if (!store.set(SETS_KEY, JSON.stringify(sets))) return setStatus("Przeglądarka nie pozwala zapisywać danych — użyj „Eksport”, żeby zachować zestaw w pliku.", true);
+  refreshSets(name.trim());
+  setStatus(`Zapisano zestaw „${name.trim()}”.`);
+}
+function loadSet(){
+  const name = $("sets").value; if (!name) return setStatus("Wybierz zestaw z listy.", true);
+  const s = loadSets()[name]; if (!s) return;
+  $("brand").value = s.brand || ""; $("page").value = s.page || ""; $("comp").value = s.comp || "";
+  $("lang").value = s.lang || "";
+  $("world").checked = !!s.world; selected.clear(); (s.countries || ["PL"]).forEach(c => selected.add(c));
+  regionChanged();
+  setStatus(`Wczytano zestaw „${name}”. Kliknij „Analizuj”.`);
+}
+function delSet(){
+  const name = $("sets").value; if (!name) return;
+  if (!confirm(`Usunąć zestaw „${name}”?`)) return;
+  const sets = loadSets(); delete sets[name]; store.set(SETS_KEY, JSON.stringify(sets)); refreshSets();
+  setStatus(`Usunięto zestaw „${name}”.`);
+}
+function exportSets(){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(loadSets(), null, 2)], {type: "application/json"}));
+  a.download = "meta-ads-bot-zestawy.json"; a.click();
+}
+$("setFile").onchange = async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const incoming = JSON.parse(await file.text());
+    const sets = {...loadSets(), ...incoming};
+    store.set(SETS_KEY, JSON.stringify(sets)); refreshSets();
+    setStatus(`Zaimportowano ${Object.keys(incoming).length} zestawów.`);
+  } catch(err){ setStatus("To nie jest poprawny plik zestawów.", true); }
+  e.target.value = "";
+};
+
+
+// ================================================================ lupa detektywa: oznaczenia źródeł
+const MARKS = {d: ["Czyste dane", "var(--kd)"], c: ["Obliczenia", "var(--kc)"], p: ["Poszlaki", "var(--kp)"], x: ["Dedukcja detektywa", "var(--kx)"]};
+const activeMarks = () => Object.keys(MARKS).filter(k => document.body.classList.contains("mk-" + k));
+const marksLegend = () => { const a = activeMarks(); return a.length ? `<div class="mklegend"><b style="color:var(--text)">Oznaczenia:</b>${a.map(k => `<span><i style="background:${MARKS[k][1]}"></i>${MARKS[k][0]}</span>`).join("")}</div>` : ""; };
+(function initMarks(){
+  let saved = []; try { saved = JSON.parse(store.get("metaAdsBotMarks") || "[]"); } catch(e){}
+  document.querySelectorAll("input[data-mk]").forEach(cb => {
+    cb.checked = saved.includes(cb.dataset.mk);
+    document.body.classList.toggle("mk-" + cb.dataset.mk, cb.checked);
+    cb.addEventListener("change", () => {
+      document.body.classList.toggle("mk-" + cb.dataset.mk, cb.checked);
+      store.set("metaAdsBotMarks", JSON.stringify(activeMarks()));
+      const lg = document.getElementById("resLegend"); if (lg) lg.innerHTML = marksLegend();
+    });
+  });
+})();
+// ================================================================ podpięcia
+$("go").onclick = run;
+$("xlsx").onclick = exportXlsx;
+$("pdf").onclick = openPdfPanel;
+$("clear").onclick = () => { results = []; renderAll(); setStatus(""); };
+$("discGo").onclick = discover;
+$("discAdd").onclick = addDiscovered;
+$("phrase").addEventListener("keydown", e => { if (e.key === "Enter") discover(); });
+$("setSave").onclick = saveSet; $("setLoad").onclick = loadSet; $("setDel").onclick = delSet;
+$("setExport").onclick = exportSets; $("setImport").onclick = () => $("setFile").click();
+$("snapExport").onclick = exportSnaps; $("snapImport").onclick = () => $("snapFile").click(); $("snapFile").onchange = importSnaps;
+["brand","page","token"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") run(); }));
+["fDays","fPlat","fMedia","fEv","fActive"].forEach(id => $(id).addEventListener("change", rerender));
+let rt; ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(rt); rt = setTimeout(() => results.length && rerender(), 300); }));
+$("lang").addEventListener("change", () => results.length && setStatus("Zmiana języka wymaga ponownego „Analizuj”."));
+refreshSets();
+regionChanged();
+</script>
+</body>
+</html>
