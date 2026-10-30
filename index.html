@@ -35,15 +35,35 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-
 .hero .kicker{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
 header h1{margin:2px 0 0;font-size:28px;letter-spacing:-.02em}
 header p{margin:6px 0 0;color:var(--muted);max-width:560px}
-.detective{width:270px;flex:none}
+.detective{width:300px;flex:none;overflow:visible}
 .detective .float1{animation:bob 3.2s ease-in-out infinite}
 .detective .float2{animation:bob 3.8s ease-in-out infinite .6s}
 .detective .float3{animation:bob 2.6s ease-in-out infinite .3s}
-.detective .lens{transform-origin:150px 140px;animation:peek 4.5s ease-in-out infinite}
+.detective [class^="dt-"],.detective [class*=" dt-"]{transform-box:fill-box}
+.detective .dt-body{transform-origin:50% 100%;animation:swag 3.6s ease-in-out infinite}
+.detective .dt-head{transform-origin:50% 90%;animation:nod 3.6s ease-in-out infinite}
+.detective .dt-hat{transform-origin:20% 100%;animation:tip 5.4s ease-in-out infinite}
+.detective .dt-brow{transform-origin:50% 50%;animation:brow 3.6s ease-in-out infinite}
+.detective .dt-spark{transform-origin:50% 50%;animation:spark 2.8s ease-in-out infinite}
+.detective .dt-lens{transform-origin:0% 100%;animation:swing 3s ease-in-out infinite}
+.detective .dt-tail{transform-origin:0% 100%;animation:wag 1.6s ease-in-out infinite}
+.detective .dt-cathead{transform-origin:60% 90%;animation:purr 4.2s ease-in-out infinite}
+.detective .dt-cateye{transform-origin:50% 50%;animation:blink 4.8s infinite}
+.detective .dt-twinkle{transform-origin:50% 50%;animation:spark 3.4s ease-in-out infinite .8s}
+.detective .dt-twinkle.dt-tw2{animation-delay:2s}
+@keyframes swag{0%,100%{transform:rotate(-1.6deg) translateY(0)}50%{transform:rotate(1.6deg) translateY(-3px)}}
+@keyframes nod{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
+@keyframes tip{0%,70%,100%{transform:rotate(0) translateY(0)}78%{transform:rotate(-9deg) translateY(-6px)}88%{transform:rotate(-9deg) translateY(-6px)}}
+@keyframes brow{0%,40%,100%{transform:translateY(0)}50%,60%{transform:translateY(-3px)}}
+@keyframes spark{0%,55%,100%{transform:scale(0) rotate(0);opacity:0}65%{transform:scale(1.25) rotate(45deg);opacity:1}80%{transform:scale(.9) rotate(90deg);opacity:1}}
+@keyframes swing{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+@keyframes wag{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(16deg)}}
+@keyframes purr{0%,100%{transform:rotate(0)}30%{transform:rotate(-6deg)}60%{transform:rotate(4deg)}}
+@keyframes blink{0%,44%,50%,100%{transform:scaleY(1)}47%{transform:scaleY(.1)}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes peek{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
 @media (prefers-reduced-motion:reduce){.detective *{animation:none!important}}
-@media (max-width:640px){.hero{flex-direction:column-reverse;align-items:flex-start}.detective{width:170px;align-self:center}}
+@media (max-width:640px){.hero{flex-direction:column-reverse;align-items:flex-start}.detective{width:210px;align-self:center}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:18px;box-shadow:var(--shadow)}
 .card h2{margin:0 0 14px;font-size:16px}
 h3{font-size:14px;margin:22px 0 10px}
@@ -420,6 +440,31 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .aichk b{display:block;font-size:14px}.aichk small{display:block;font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
 .aichk:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .aichk.dis{opacity:.5;cursor:not-allowed}
+
+.probctl{padding:14px;border:1px solid var(--line);border-radius:12px;margin-top:14px}
+.probctl h3{margin:0 0 10px;font-size:15px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.pgrid label{font-size:12px}
+.ladder{display:grid;gap:8px}
+.lr{display:grid;grid-template-columns:48px 1fr 190px;gap:12px;align-items:center;font-size:14px}
+.lr b{font-size:15px}
+.lr span{text-align:right;font-weight:600;white-space:nowrap}
+.lt{position:relative;height:22px;background:var(--bg);border-radius:6px}
+.lb{position:absolute;top:0;bottom:0;border-radius:6px}
+.lm{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;background:var(--c1);border-radius:2px}
+.probx{margin-top:12px;display:grid;grid-template-columns:auto auto;gap:6px 18px;justify-content:start;align-items:end}
+.pxv b{display:block;font-size:26px;letter-spacing:-.02em}.pxv span{font-size:12px;color:var(--muted)}
+.pxbar{grid-column:1/-1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden;min-width:240px}.pxbar div{height:100%;background:var(--c1)}
+.forest{display:grid;gap:10px}
+.fr{display:grid;grid-template-columns:minmax(110px,170px) 1fr 150px;gap:12px;align-items:center;font-size:13px}
+.fr .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ft{position:relative;height:18px}
+.f95{position:absolute;top:6px;height:6px;border-radius:3px;opacity:.3}
+.f80{position:absolute;top:3px;height:12px;border-radius:6px}
+.fm{position:absolute;top:0;bottom:0;width:2px;background:var(--text)}
+.fv{text-align:right;font-weight:600}.fv small{font-weight:400;color:var(--muted)}
+.rp .lr{grid-template-columns:40px 1fr 160px;font-size:9pt}.rp .fr{grid-template-columns:110px 1fr 110px;font-size:8.5pt}
+@media (max-width:560px){.lr{grid-template-columns:40px 1fr;}.lr span{grid-column:1/-1;text-align:left}.fr{grid-template-columns:80px 1fr}.fr .fv{grid-column:1/-1;text-align:left}}
 </style>
 </head>
 <body>
@@ -430,54 +475,93 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
       <h1>Meta Ads Bot</h1>
       <p>Wpisz markę, a detektyw sprawdzi, ile reklam puszcza, do kogo trafia, co komunikuje, które kreacje działają najdłużej i ile mniej więcej na to wydaje. Konkurencję też prześwietli.</p>
     </div>
-    <svg class="detective" viewBox="0 0 230 190" role="img" aria-label="Detektyw z lupą przygląda się reklamom">
-      <circle cx="105" cy="105" r="80" fill="var(--accent-soft)"/>
-      <!-- unoszące się „dowody” -->
+    <svg class="detective" viewBox="0 0 270 230" role="img" aria-label="Uśmiechnięty detektyw z kotem na ręce i lupą">
+      <circle cx="132" cy="128" r="98" fill="var(--accent-soft)"/>
+      <!-- unoszące się dowody -->
       <g class="float1">
-        <rect x="162" y="22" width="52" height="40" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
-        <rect x="171" y="44" width="7" height="10" rx="2" fill="var(--c1)"/>
-        <rect x="182" y="36" width="7" height="18" rx="2" fill="var(--c2)"/>
-        <rect x="193" y="29" width="7" height="25" rx="2" fill="var(--accent)"/>
+        <rect x="200" y="14" width="56" height="42" rx="9" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
+        <rect x="210" y="37" width="8" height="11" rx="2" fill="var(--c1)"/>
+        <rect x="222" y="29" width="8" height="19" rx="2" fill="var(--c2)"/>
+        <rect x="234" y="21" width="8" height="27" rx="2" fill="var(--accent)"/>
       </g>
       <g class="float2">
-        <rect x="172" y="76" width="44" height="26" rx="7" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
-        <text x="194" y="94" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="var(--c3)">AD</text>
+        <rect x="12" y="96" width="44" height="26" rx="7" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
+        <text x="34" y="114" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="13" fill="var(--c3)">AD</text>
       </g>
-      <g class="float3">
-        <text x="20" y="48" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="26" fill="var(--accent)" opacity=".55">?</text>
+      <g class="float3"><text x="22" y="56" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="28" fill="var(--accent)" opacity=".5">?</text></g>
+
+      <g class="dt-body">
+        <!-- płaszcz -->
+        <path d="M62 230 L74 166 Q132 140 190 166 L202 230 Z" fill="#c69a5c"/>
+        <path d="M108 154 L132 196 L156 154 Q132 146 108 154 Z" fill="#f4ece0"/>
+        <path d="M104 156 L132 200 L120 164 Z M160 156 L132 200 L144 164 Z" fill="#a87d43"/>
+        <path d="M128 162 L136 162 L139 196 L132 204 L125 196 Z" fill="var(--c3)"/>
+        <circle cx="96" cy="210" r="3" fill="#7a5230"/><circle cx="168" cy="210" r="3" fill="#7a5230"/>
+
+        <!-- ręka z kotem (lewa strona obrazka) -->
+        <path d="M88 162 Q58 178 64 208 L118 212 L118 198 L86 194 Q82 184 96 172 Z" fill="#b8894e"/>
+        <g class="dt-cat">
+          <path class="dt-tail" d="M122 196 Q146 194 144 172 Q143 162 136 164" fill="none" stroke="#e39a3b" stroke-width="7" stroke-linecap="round"/>
+          <ellipse cx="100" cy="194" rx="27" ry="16" fill="#f0a94b"/>
+          <path d="M84 186 q4 8 0 16 M96 182 q4 10 0 22 M108 183 q4 9 0 20" stroke="#d9862c" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <g class="dt-cathead">
+            <path d="M66 158 L70 140 L82 152 Z M92 152 L102 140 L104 160 Z" fill="#f0a94b"/>
+            <path d="M70 147 L72 143 L78 150 Z M97 149 L101 144 L101 154 Z" fill="#f7c9a0"/>
+            <circle cx="86" cy="166" r="18" fill="#f0a94b"/>
+            <path d="M80 151 q3 5 0 9 M88 150 q2 5 0 9" stroke="#d9862c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <g class="dt-cateye"><ellipse cx="79" cy="165" rx="3.6" ry="4.4" fill="#2f9e44"/><ellipse cx="79" cy="165" rx="1.3" ry="3.6" fill="#1b1f27"/></g>
+            <g class="dt-cateye"><ellipse cx="94" cy="165" rx="3.6" ry="4.4" fill="#2f9e44"/><ellipse cx="94" cy="165" rx="1.3" ry="3.6" fill="#1b1f27"/></g>
+            <path d="M84 171 L88 171 L86 174 Z" fill="#e8708a"/>
+            <path d="M86 174 q-3 4 -6 2 M86 174 q3 4 6 2" stroke="#7a3e1d" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            <path d="M74 171 L60 168 M74 174 L61 177 M98 171 L112 168 M98 174 L111 177" stroke="#7a3e1d" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+          </g>
+          <ellipse cx="116" cy="204" rx="8" ry="6" fill="#f2c79d"/>
+        </g>
+
+        <!-- głowa -->
+        <g class="dt-head">
+          <circle cx="132" cy="104" r="31" fill="#f2c79d"/>
+          <circle cx="101" cy="107" r="6" fill="#e9b788"/><circle cx="163" cy="107" r="6" fill="#e9b788"/>
+          <!-- oko mrugające i oko otwarte -->
+          <path d="M113 101 Q119 106 125 101" stroke="#2b2f38" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <ellipse cx="144" cy="100" rx="6" ry="6.6" fill="#fff"/><circle cx="145" cy="101" r="3.2" fill="#2b2f38"/><circle cx="146.3" cy="99.6" r="1.1" fill="#fff"/>
+          <path d="M111 92 L126 91" stroke="#6b4b2a" stroke-width="3.2" stroke-linecap="round"/>
+          <path class="dt-brow" d="M136 89 Q144 83 153 88" stroke="#6b4b2a" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+          <circle cx="133" cy="109" r="4.6" fill="#e6a979"/>
+          <!-- wąsik z zawijasami -->
+          <path d="M116 116 Q124 110 133 115 Q142 110 150 116 Q154 112 155 108 Q156 116 149 119 Q141 115 133 118 Q125 115 117 119 Q110 116 111 108 Q112 112 116 116 Z" fill="#6b4b2a"/>
+          <!-- szeroki uśmiech z zębami -->
+          <path d="M117 121 Q133 138 150 120 Q133 127 117 121 Z" fill="#7a2e2e"/>
+          <path d="M119 122 Q133 128 148 121 L147 125 Q133 131 120 126 Z" fill="#fff"/>
+          <path d="M126 125 L126 128.5 M133 126 L133 129.5 M140 125.5 L140 129" stroke="#e8dccb" stroke-width=".8"/>
+          <!-- błysk w zębie -->
+          <g class="dt-spark">
+            <path d="M141 117 L142.6 122.4 L148 124 L142.6 125.6 L141 131 L139.4 125.6 L134 124 L139.4 122.4 Z" fill="#fff"/>
+            <path d="M141 119.5 L142 123 L145.5 124 L142 125 L141 128.5 L140 125 L136.5 124 L140 123 Z" fill="#ffe066"/>
+          </g>
+          <!-- kapelusz uchylony -->
+          <g class="dt-hat">
+            <path d="M101 82 Q103 44 133 42 Q163 44 165 82 Z" fill="#3b3f4a"/>
+            <path d="M120 45 Q133 55 146 45" stroke="#2b2f38" stroke-width="3" fill="none"/>
+            <rect x="102" y="69" width="62" height="10" fill="var(--accent)"/>
+            <path d="M152 70 l8 -3 l-1 8 z" fill="#fcc419"/>
+            <ellipse cx="133" cy="82" rx="54" ry="10" fill="#2b2f38"/>
+          </g>
+        </g>
+
+        <!-- ręka z lupą (prawa strona obrazka) -->
+        <path d="M176 160 Q204 166 212 136 L200 130 Q194 150 172 150 Z" fill="#b8894e"/>
+        <g class="dt-lens">
+          <line x1="208" y1="128" x2="222" y2="104" stroke="#7a5230" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="206" cy="132" r="8.5" fill="#f2c79d"/>
+          <circle cx="232" cy="84" r="23" fill="#dff1ff" fill-opacity=".85" stroke="#2b2f38" stroke-width="6"/>
+          <path d="M218 76 Q224 66 236 64" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".95"/>
+          <text x="232" y="92" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="17" fill="var(--accent)">%</text>
+        </g>
       </g>
-      <!-- płaszcz -->
-      <path d="M48 190 L56 140 Q90 122 124 140 L132 190 Z" fill="#c69a5c"/>
-      <path d="M72 132 L90 162 L108 132 Q90 126 72 132 Z" fill="#f4ece0"/>
-      <path d="M68 134 L90 166 L80 140 Z M112 134 L90 166 L100 140 Z" fill="#a87d43"/>
-      <rect x="86" y="150" width="8" height="28" rx="3" fill="#3b3f4a"/>
-      <!-- głowa -->
-      <circle cx="90" cy="96" r="31" fill="#f2c79d"/>
-      <circle cx="60" cy="98" r="6" fill="#e9b788"/>
-      <!-- lewe oko zmrużone -->
-      <path d="M72 92 Q78 88 84 92" stroke="#2b2f38" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M71 84 L85 86" stroke="#6b4b2a" stroke-width="3" stroke-linecap="round"/>
-      <!-- nos i wąsy -->
-      <circle cx="91" cy="104" r="5" fill="#e6a979"/>
-      <path d="M74 113 Q83 106 91 112 Q99 106 108 113 Q100 118 91 114 Q82 118 74 113 Z" fill="#6b4b2a"/>
-      <!-- kapelusz -->
-      <path d="M58 72 Q60 36 90 34 Q120 36 122 72 Z" fill="#3b3f4a"/>
-      <path d="M78 36 Q90 46 102 36" stroke="#2b2f38" stroke-width="3" fill="none"/>
-      <rect x="59" y="61" width="62" height="9" fill="var(--accent)"/>
-      <ellipse cx="90" cy="73" rx="48" ry="9" fill="#2b2f38"/>
-      <!-- lupa z powiększonym okiem -->
-      <g class="lens">
-        <line x1="128" y1="114" x2="152" y2="146" stroke="#7a5230" stroke-width="9" stroke-linecap="round"/>
-        <circle cx="148" cy="140" r="8" fill="#f2c79d"/>
-        <circle cx="112" cy="92" r="24" fill="#dff1ff" fill-opacity=".85" stroke="#2b2f38" stroke-width="6"/>
-        <circle cx="110" cy="92" r="13" fill="#fff" stroke="#2b2f38" stroke-width="1.5"/>
-        <circle cx="114" cy="93" r="6.5" fill="#2b2f38"/>
-        <circle cx="116.5" cy="90.5" r="2" fill="#fff"/>
-        <path d="M98 80 Q104 74 112 74" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>
-        <path d="M100 66 L120 69" stroke="#6b4b2a" stroke-width="3.5" stroke-linecap="round"/>
-      </g>
-      <!-- linie „skanowania” w stronę dowodów -->
-      <path d="M138 80 L160 56 M140 92 L168 90" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round" opacity=".7"/>
+      <!-- iskierki dookoła -->
+      <g class="dt-twinkle"><path d="M40 146 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 z" fill="var(--c5)"/></g>
+      <g class="dt-twinkle dt-tw2"><path d="M196 196 l1.6 4.4 l4.4 1.6 l-4.4 1.6 l-1.6 4.4 l-1.6 -4.4 l-4.4 -1.6 l4.4 -1.6 z" fill="var(--c2)"/></g>
     </svg>
   </header>
   <div class="card marksbar" id="marksBar">
@@ -1434,7 +1518,7 @@ const filterLabel = () => {
   if (f.activeOnly) parts.push("tylko aktywne");
   return parts.join(", ");
 };
-const BRAND_TABS = [["overview","Przegląd"],["creative","Kreacje i testy"],["campaigns","Kampanie"],["message","Przekaz"],["offers","Oferty i ceny"],["audience","Odbiorcy"],["calendar","Kalendarz"],["changes","Zmiany"],["social","Społeczne i polityczne"]];
+const BRAND_TABS = [["overview","Przegląd"],["budget","Prawdopodobny budżet"],["creative","Kreacje i testy"],["campaigns","Kampanie"],["message","Przekaz"],["offers","Oferty i ceny"],["audience","Odbiorcy"],["calendar","Kalendarz"],["changes","Zmiany"],["social","Społeczne i polityczne"]];
 const CMP_TABS = [["recs","Wnioski i rekomendacje"],["sov","Udział w głosie"],["creative","Kreacje i testy"],["message","Przekaz i oferty"],["audience","Odbiorcy"],["calendar","Kalendarz"],["ranks","Rankingi i indeks"]];
 
 function adLine(r, extra = ""){
@@ -1647,6 +1731,164 @@ P.social = (r) => {
 };
 const brandPanel = (tab, r, idx, pdf = false) => (P[tab] || P.overview)(r, idx, pdf);
 
+// ================================================================ prawdopodobny budżet (model niepewności)
+// Wydatek = suma dziennego zasięgu × częstotliwość × CPM/1000 × dni × korekta zasięgu.
+// CPM, częstotliwość i korekta zasięgu mają rozkłady log-normalne, więc wynik też jest log-normalny
+// i przedziały liczymy dokładnie (bez losowania).
+const normCdf = x => { const t = 1 / (1 + 0.2316419 * Math.abs(x)), d = 0.3989423 * Math.exp(-x * x / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p : p; };
+function normInv(p){
+  const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
+  const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+  const c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+  const d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+  const pl = 0.02425;
+  if (p < pl){ const q = Math.sqrt(-2 * Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if (p > 1 - pl){ const q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  const q = p - 0.5, r = q * q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+const PROB_LEVELS = [99, 95, 90, 80, 50];
+const probState = {};   // lokalne korekty założeń — tylko dla zakładki budżetu, osobno dla każdej marki
+function probDefaults(){ const o = opts(); return {cpmMin: o.cpmMin, cpmMax: o.cpmMax, freqMin: o.freqMin, freqMax: o.freqMax, conf: 80, reachU: 25, period: "month", fill: true}; }
+function probGet(r){
+  const d = probDefaults(), st = probState[r.uid];
+  if (!st) return (probState[r.uid] = d);
+  if (!st.touched) Object.assign(st, {cpmMin: d.cpmMin, cpmMax: d.cpmMax, freqMin: d.freqMin, freqMax: d.freqMax});
+  return st;
+}
+
+function probModel(r, st){
+  const act = r.rows.filter(x => x.active);
+  const withR = act.filter(x => x.rpd != null);
+  const cover = act.length ? withR.length / act.length : 1;
+  let base;   // suma „zasięgo-dni” w okresie
+  if (st.period === "last30"){
+    const w0 = todayUTC - 29 * DAY; base = 0;
+    for (const x of r.rows){ if (x.rpd == null) continue; const ov = Math.round((Math.min(x.end, todayUTC) - Math.max(x.start, w0)) / DAY) + 1; if (ov > 0) base += x.rpd * ov; }
+  } else base = withR.reduce((a, x) => a + x.rpd, 0) * (st.period === "day" ? 1 : 30);
+  if (st.fill && cover > 0 && cover < 1 && st.period !== "last30") base /= cover;
+  const z = normInv(0.5 + st.conf / 200);
+  const lnMid = (a, b) => (Math.log(a) + Math.log(b)) / 2, lnSig = (a, b) => Math.max(1e-6, (Math.log(b) - Math.log(a)) / (2 * z));
+  const cMin = Math.max(0.01, Math.min(st.cpmMin, st.cpmMax)), cMax = Math.max(cMin * 1.0001, st.cpmMax, st.cpmMin);
+  const fMin = Math.max(1, Math.min(st.freqMin, st.freqMax)), fMax = Math.max(fMin * 1.0001, st.freqMax, st.freqMin);
+  const sc = lnSig(cMin, cMax), sf = lnSig(fMin, fMax), sr = Math.log(1 + st.reachU / 100) / 1.645;
+  const sigma = Math.sqrt(sc * sc + sf * sf + sr * sr);
+  const mu = base > 0 ? Math.log(base / 1000) + lnMid(cMin, cMax) + lnMid(fMin, fMax) : -Infinity;
+  const q = p => base > 0 ? Math.exp(mu + sigma * normInv(p)) : 0;
+  return {
+    base, cover, active: act.length, withR: withR.length, mu, sigma, sc, sf, sr, z, used: {cMin, cMax, fMin, fMax},
+    median: q(0.5), mean: base > 0 ? Math.exp(mu + sigma * sigma / 2) : 0,
+    levels: PROB_LEVELS.map(L => ({L, lo: q(0.5 - L / 200), hi: q(0.5 + L / 200)})),
+    pAbove: x => base > 0 && x > 0 ? 1 - normCdf((Math.log(x) - mu) / sigma) : (x <= 0 ? 1 : 0),
+    q
+  };
+}
+const periodLabel = p => ({month: "miesięcznie (przy obecnej aktywności)", last30: "w ostatnich 30 dniach", day: "dziennie (obecnie)"})[p];
+const roundNice = v => { if (v <= 0) return 0; const e = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / e) * e; };
+
+function probChart(m){
+  if (!(m.base > 0)) return NODATA;
+  const W = 640, H = 175, L = 14, R = 14, T = 10, B = 36;
+  const x0 = m.q(0.002), x1 = m.q(0.998);
+  const lx0 = Math.log(x0), lx1 = Math.log(x1);
+  const X = v => L + (W - L - R) * (Math.log(v) - lx0) / (lx1 - lx0);
+  const dens = v => { const zz = (Math.log(v) - m.mu) / m.sigma; return Math.exp(-zz * zz / 2); };   // gęstość na osi log
+  const pts = []; for (let i = 0; i <= 160; i++){ const v = Math.exp(lx0 + (lx1 - lx0) * i / 160); pts.push([X(v), T + (H - T - B) * (1 - dens(v))]); }
+  const band = (lo, hi, fill) => { const p = pts.filter(([x]) => x >= X(lo) && x <= X(hi)); if (!p.length) return ""; return `<polygon points="${X(lo)},${H - B} ${p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")} ${X(hi)},${H - B}" fill="${fill}"/>`; };
+  const shades = ["var(--a1)", "var(--a2)", "var(--a3)", "var(--a4)", "var(--a5)"];
+  const ticks = [m.levels[0].lo, m.levels[3].lo, m.median, m.levels[3].hi, m.levels[0].hi];
+  return `<svg class="lc" viewBox="0 0 ${W} ${H}">
+    ${m.levels.map((lv, i) => band(lv.lo, lv.hi, shades[i])).join("")}
+    <polyline fill="none" stroke="var(--text)" stroke-width="1.5" points="${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}"/>
+    <line x1="${X(m.median)}" x2="${X(m.median)}" y1="${T}" y2="${H - B}" stroke="var(--c1)" stroke-width="2" stroke-dasharray="4 3"/>
+    <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" class="grid"/>
+    ${ticks.map((t, i) => `<text x="${X(t)}" y="${H - B + 16}" text-anchor="middle" style="${i === 2 ? "font-weight:700;fill:var(--c1)" : ""}">${fmtK(roundNice(t))}</text>`).join("")}
+    <text x="${W / 2}" y="${H - 4}" text-anchor="middle">szacowany wydatek (zł, skala logarytmiczna) · pomarańczowa linia = najbardziej prawdopodobna wartość</text>
+  </svg>`;
+}
+function probLadder(m){
+  if (!(m.base > 0)) return "";
+  const lx0 = Math.log(m.levels[0].lo), lx1 = Math.log(m.levels[0].hi);
+  const P = v => (Math.log(v) - lx0) / (lx1 - lx0) * 100;
+  const shades = ["var(--a1)", "var(--a2)", "var(--a3)", "var(--a4)", "var(--a5)"];
+  return `<div class="ladder">${m.levels.map((lv, i) => `<div class="lr"><b>${lv.L}%</b>
+      <div class="lt"><div class="lb" style="left:${P(lv.lo)}%;width:${P(lv.hi) - P(lv.lo)}%;background:${shades[i]}"></div><div class="lm" style="left:${P(m.median)}%"></div></div>
+      <span>${fmt(roundNice(lv.lo))} – ${fmt(roundNice(lv.hi))} zł</span></div>`).join("")}</div>`;
+}
+function probSens(m){
+  const tot = m.sc ** 2 + m.sf ** 2 + m.sr ** 2;
+  return hbars([["Stawka CPM", m.sc ** 2], ["Częstotliwość", m.sf ** 2], ["Dokładność zasięgu", m.sr ** 2]], tot, {labelW: 150}) + `<div class="note">Udział w niepewności wyniku — zawężenie zakresu z największym udziałem najbardziej zwęzi przedziały.</div>`;
+}
+function probResults(r, st, pdf){
+  const m = probModel(r, st);
+  if (!(m.base > 0)) return see("Brak aktywnych reklam z danymi o zasięgu w wybranym okresie — nie da się oszacować budżetu.");
+  const L99 = m.levels[0], L80 = m.levels[3], L50 = m.levels[4];
+  return `${see(`Przy przyjętych założeniach model daje <b>99% szans</b>, że ${esc(r.pageName)} wydaje ${periodLabel(st.period)} <b>${fmt(roundNice(L99.lo))}–${fmt(roundNice(L99.hi))} zł</b>, <b>80% szans</b> na ${fmt(roundNice(L80.lo))}–${fmt(roundNice(L80.hi))} zł i <b>50% szans</b> na ${fmt(roundNice(L50.lo))}–${fmt(roundNice(L50.hi))} zł. Najbardziej prawdopodobna wartość: <b>~${fmt(roundNice(m.median))} zł</b>.${st.period === "month" && Math.abs(m.median - r.s.miesSr) / Math.max(1, r.s.miesSr) > 0.03 ? ` <span class="sub">„Środek” z Przeglądu (~${fmt(r.s.miesSr)} zł) to prostsza średnia z krańców widełek — mediana modelu jest ${m.median < r.s.miesSr ? "niższa" : "wyższa"}, bo uwzględnia, że duże wartości są mniej prawdopodobne niż sugeruje zwykła średnia.</span>` : ""}`)}
+    ${blk("[p]Przedziały prawdopodobieństwa", probLadder(m) + `<div class="note">Im wyższe prawdopodobieństwo, tym szerszy przedział. Pomarańczowa kreska = mediana (50% szans, że wydatek jest niższy, 50% — że wyższy).</div>`)}
+    ${blk("[p]Rozkład możliwych wydatków", probChart(m))}
+    <div class="two">
+      ${blk("[p]Sprawdź konkretną kwotę", pdf ? `<ul class="lines">${[0.5, 1, 2].map(k => roundNice(m.median * k)).map(x => `<li>Więcej niż ${fmt(x)} zł: <b>${Math.round(m.pAbove(x) * 100)}%</b> szans</li>`).join("")}</ul>`
+        : `<div class="row" style="flex-wrap:nowrap"><span>Więcej niż</span><input id="probX" type="number" min="0" step="1000" value="${roundNice(m.median)}" style="max-width:150px"><span>zł</span></div>
+          <div id="probXout" class="probx"></div>`)}
+      ${blk("[p]Co najbardziej wpływa na niepewność", probSens(m))}
+    </div>
+    <div class="note">Podstawa: ${m.withR} z ${m.active} aktywnych reklam ma dane o zasięgu${m.cover < 1 ? (st.fill && st.period !== "last30" ? ` — brakujące doszacowano proporcjonalnie (×${(1 / m.cover).toFixed(2).replace(".", ",")})` : " — reklam bez zasięgu nie doszacowano") : ""}. Suma ${st.period === "day" ? "dziennego" : st.period === "last30" ? "zasięgo-dni z ostatnich 30 dni" : "dziennego zasięgu × 30 dni"}: ${fmt(m.base)}. Założenia: CPM ${String(+m.used.cMin.toFixed(2)).replace(".", ",")}–${String(+m.used.cMax.toFixed(2)).replace(".", ",")} zł i częstotliwość ${String(+m.used.fMin.toFixed(2)).replace(".", ",")}–${String(+m.used.fMax.toFixed(2)).replace(".", ",")}${Math.min(st.freqMin, st.freqMax) < 1 ? " (częstotliwość nie może być niższa niż 1 — przyjęto 1)" : ""} — każdy zakres traktowany jako przedział ${st.conf}% pewności; dokładność zasięgu Meta ±${st.reachU}%. To prawdopodobieństwa <b>w ramach modelu</b>: jeśli rzeczywiste stawki są poza podanym zakresem, prawdziwy wydatek może wypaść poza przedziały.</div>`;
+}
+P.budget = (r, idx, pdf) => {
+  const st = probGet(r);
+  const g = opts(), changed = ["cpmMin", "cpmMax", "freqMin", "freqMax"].some(k => +st[k] !== +g[k]);
+  const ctl = pdf ? "" : `<div class="probctl blk" data-k="p"><h3>Założenia tylko dla tej zakładki ${changed ? '<span class="tag">zmienione lokalnie</span>' : ""}</h3>
+      <div class="pgrid">
+        <div><label>CPM min (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMin" value="${st.cpmMin}"></div>
+        <div><label>CPM max (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMax" value="${st.cpmMax}"></div>
+        <div><label>Częstotliwość min</label><input type="number" step="0.1" min="1" data-pk="freqMin" value="${st.freqMin}"></div>
+        <div><label>Częstotliwość max</label><input type="number" step="0.1" min="1" data-pk="freqMax" value="${st.freqMax}"></div>
+        <div><label>Pewność, że zakresy są trafne</label><select data-pk="conf">${[50, 70, 80, 90, 95].map(v => `<option value="${v}" ${+st.conf === v ? "selected" : ""}>${v}%</option>`).join("")}</select></div>
+        <div><label>Dokładność zasięgu Meta</label><select data-pk="reachU">${[10, 25, 40, 60].map(v => `<option value="${v}" ${+st.reachU === v ? "selected" : ""}>±${v}%</option>`).join("")}</select></div>
+        <div><label>Okres</label><select data-pk="period"><option value="month" ${st.period === "month" ? "selected" : ""}>miesięcznie (obecnie)</option><option value="last30" ${st.period === "last30" ? "selected" : ""}>ostatnie 30 dni</option><option value="day" ${st.period === "day" ? "selected" : ""}>dziennie (obecnie)</option></select></div>
+        <div><label>Reklamy bez danych o zasięgu</label><select data-pk="fill"><option value="1" ${st.fill ? "selected" : ""}>doszacuj proporcjonalnie</option><option value="0" ${!st.fill ? "selected" : ""}>pomiń</option></select></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="ghost mini" id="probReset">Przywróć założenia globalne</button><span class="hint" style="margin:0">Zmiany działają tylko tutaj — nie zmieniają kosztów w innych zakładkach, raportach ani ustawieniach.</span></div>
+    </div>`;
+  return `${pdf ? "" : `<div class="hint" style="margin-top:10px">Zamiast jednej kwoty — przedziały z prawdopodobieństwem. Pokazuje, jak pewny jest szacunek przy danych założeniach.</div>`}
+    ${ctl}<div id="probOut">${probResults(r, st, pdf)}</div>`;
+};
+function wireProb(r){
+  const card = $("resultsCard"), out = $("probOut");
+  if (!out) return;
+  const st = probGet(r);
+  const updX = () => { const inp = $("probX"), o = $("probXout"); if (!inp || !o) return; const m = probModel(r, st), x = +inp.value;
+    const pa = m.pAbove(x); o.innerHTML = `<div class="pxv"><b>${Math.round(pa * 100)}%</b><span>szans, że wydaje więcej niż ${fmt(x)} zł</span></div><div class="pxv"><b>${Math.round((1 - pa) * 100)}%</b><span>że mniej</span></div><div class="pxbar"><div style="width:${pa * 100}%"></div></div>`; };
+  const wireX = () => { const inp = $("probX"); if (inp) inp.addEventListener("input", updX); updX(); };
+  let t;
+  card.querySelectorAll("[data-pk]").forEach(el => el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
+    const k = el.dataset.pk; if (["cpmMin", "cpmMax", "freqMin", "freqMax"].includes(k)) st.touched = true; st[k] = k === "period" ? el.value : k === "fill" ? el.value === "1" : +el.value;
+    clearTimeout(t); t = setTimeout(() => {
+      if (["cpmMin", "cpmMax", "freqMin", "freqMax"].includes(k) && !(+el.value > 0)) return;
+      out.innerHTML = probResults(r, st, false); wireX();
+      const g = opts(), h = card.querySelector(".probctl h3"); if (h) h.innerHTML = `Założenia tylko dla tej zakładki ${["cpmMin", "cpmMax", "freqMin", "freqMax"].some(kk => +st[kk] !== +g[kk]) ? '<span class="tag">zmienione lokalnie</span>' : ""}`;
+    }, 200);
+  }));
+  const rb = $("probReset"); if (rb) rb.onclick = () => { probState[r.uid] = probDefaults(); renderAll(); };
+  wireX();
+}
+// przedziały dla porównania (założenia globalne)
+const fmtRange = (lo, hi) => { lo = roundNice(lo); hi = roundNice(hi); const u = hi >= 1e6 ? [1e6, " mln zł"] : hi >= 1e4 ? [1e3, " tys. zł"] : [1, " zł"];
+  const f = v => { const x = v / u[0]; return (x >= 100 || u[0] === 1 ? Math.round(x).toLocaleString("pl-PL") : String(Math.round(x * 10) / 10).replace(".", ",")); };
+  return `${f(lo)}–${f(hi)}${u[1]}`; };
+function probCompare(list){
+  const ms = list.map(r => ({r, m: probModel(r, probDefaults())})).filter(x => x.m.base > 0);
+  if (!ms.length) return NODATA;
+  const lo = Math.min(...ms.map(x => x.m.levels[1].lo)), hi = Math.max(...ms.map(x => x.m.levels[1].hi));
+  const P = v => (Math.log(v) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * 100;
+  return `<div class="forest">${list.map((r, i) => { const x = ms.find(y => y.r === r); if (!x) return ""; const m = x.m, a = m.levels[1], b = m.levels[3];
+    return `<div class="fr"><span class="nm"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span>
+      <div class="ft"><div class="f95" style="left:${P(a.lo)}%;width:${P(a.hi) - P(a.lo)}%;background:${color(i)}"></div><div class="f80" style="left:${P(b.lo)}%;width:${P(b.hi) - P(b.lo)}%;background:${color(i)}"></div><div class="fm" style="left:${P(m.median)}%"></div></div>
+      <span class="fv">${fmtRange(b.lo, b.hi)}<br><small>95%: ${fmtRange(a.lo, a.hi)}</small></span></div>`; }).join("")}</div>
+    <div class="legend"><span><i style="background:var(--text);opacity:.25"></i>przedział 95%</span><span><i style="background:var(--text)"></i>przedział 80%</span><span>| mediana</span></div>
+    <div class="note">Miesięcznie przy obecnej aktywności, założenia globalne. Nakładające się przedziały oznaczają, że nie da się z pewnością powiedzieć, która marka wydaje więcej.</div>`;
+}
+
 // ================================================================ wnioski i rekomendacje
 function diffVsMain(val, mainVal){
   if (mainVal == null || val == null || mainVal === 0) return "";
@@ -1806,6 +2048,7 @@ C.sov = list => {
       ${blk("[c]Aktywne reklamy", shareBlock(list, r => r.s.aktywne, "reklam"))}
       ${blk("[c]Dzienny zasięg", shareBlock(list, r => r.s.dziennyZasieg, "osób"))}
     </div>
+    ${blk("[p]Szacowany budżet z przedziałami prawdopodobieństwa", probCompare(list))}
     ${blk("[c]Udział w zasięgu miesiąc po miesiącu", stackArea100(keys, list.map((r, i) => ({name: r.pageName, color: color(i), values: r.months.map(m => m.reach)}))) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div><div class="note">Udział każdej marki w łącznym zasięgu (zasięg reklamy rozłożony równomiernie na dni emisji).</div>`)}
     ${blk("[c]Emitowane reklamy miesiąc po miesiącu", lineChart(list) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div>`)}`;
 };
@@ -1928,6 +2171,7 @@ function renderAll(){
     const t2 = card.querySelector(".tabs2"); if (t2 && t2.getBoundingClientRect().top < 0) t2.scrollIntoView({block: "start"});
   });
   card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
+  if (!isCmp && active === "budget") wireProb(r);
 }
 
 // ================================================================ pobieranie i analiza marek
@@ -2175,7 +2419,7 @@ function buildReport(o){
       <div class="rp-cover-kpis">
         <div><div class="v">${main.idx.index}<small>/100</small></div><div class="l">indeks aktywności<br>${esc(main.pageName)}</div></div>
         <div><div class="v">${fmt(kp.aktywne)}</div><div class="l">aktywne reklamy</div></div>
-        <div><div class="v">~${fmtK(kp.miesSr)} zł</div><div class="l">szacowany koszt miesięczny</div></div>
+        <div><div class="v">~${kp.miesSr >= 1e6 ? (kp.miesSr / 1e6).toFixed(1).replace(".", ",") + " mln" : kp.miesSr >= 1e4 ? Math.round(kp.miesSr / 1e3) + " tys." : fmt(kp.miesSr)} zł</div><div class="l">szacowany koszt miesięczny</div></div>
         <div><div class="v">${fmt(kp.n30)}</div><div class="l">nowe reklamy w 30 dni</div></div>
       </div>
       <div class="rp-cover-brands">
@@ -2265,6 +2509,7 @@ function exportXlsx(){
   const demo = sheet("Demografia", ["Strona","Wymiar","Wartość","Zasięg","Udział (%)"]);
   const gapsS = sheet("Luki demograficzne", ["Grupa","Różnica: konkurencja − Ty (pp)"]);
   const targ = sheet("Targetowanie", ["Strona","Wymiar","Wartość","Typ","Liczba reklam","Udział (%)"]);
+  const probS = sheet("Budżet — prawdopodobieństwo", ["Strona", "Okres", "CPM min", "CPM max", "Częstotl. min", "Częstotl. max", "Pewność zakresów (%)", "Dokładność zasięgu (±%)", "Mediana (zł)", ...PROB_LEVELS.flatMap(L => [`${L}% od (zł)`, `${L}% do (zł)`]), "Założenia lokalne"]);
   const chg = sheet("Zmiany", ["Strona","Poprzednia migawka","Status","ID reklamy","Start","Stop","Dni","Zasięg","Tekst","Link"]);
   const pol = sheet("Społeczne i polityczne", ["Strona","Reklamy","Aktywne","Wydatki min","Wydatki max","Waluta","Wyświetlenia min","Wyświetlenia max","Płacący"]);
   const ads = sheet("Reklamy", ["Strona","ID reklamy","Aktywna","Evergreen","Start","Stop","Dni emisji","Zasięg UE","Zasięg/dzień","Format","Platformy","Domena","Target wiek","Target płeć","Target lokalizacje","Płatnik","Beneficjent","Warianty tekstu (DCO)","Tekst","Tytuł","Opis linku","Link"]);
@@ -2309,6 +2554,7 @@ function exportXlsx(){
       const row = (st, a) => chg.push([r.pageName, r.changes.prevDate, st, a.id, iso(a.start), iso(a.stop), a.days, a.reach, a.text, `https://www.facebook.com/ads/library/?id=${a.id}`]);
       r.changes.newAds.forEach(a => row("nowa", a)); r.changes.ended.forEach(a => row("wyłączona", a));
     }
+    { const st = probGet(r), m = probModel(r, st); if (m.base > 0) probS.push([r.pageName, periodLabel(st.period), st.cpmMin, st.cpmMax, st.freqMin, st.freqMax, st.conf, st.reachU, Math.round(m.median), ...m.levels.flatMap(lv => [Math.round(lv.lo), Math.round(lv.hi)]), st.touched ? "tak" : "nie"]); }
     if (r.polLoaded) pol.push([r.pageName, r.pol.n, r.pol.active, r.pol.spLo, r.pol.spHi, r.pol.currency, r.pol.imLo, r.pol.imHi, r.pol.bylines.map(x => x[0]).join(", ")]);
     for (const a of [...r.rows].sort((x,y) => y.start - x.start))
       ads.push([r.pageName, a.id, a.active ? "tak" : "nie", a.days >= f.evDays ? "tak" : "nie", iso(a.start), iso(a.stop), a.days, a.reach, a.rpd != null ? Math.round(a.rpd) : null, MEDIA_NAMES[a.media] || "", a.platforms.map(p => PLATFORM_NAMES[p] || p).join(", "), a.domain, a.tAges, GENDER_PL[a.tGender] || a.tGender, a.tLocs.map(l => (l.excluded ? "bez: " : "") + l.name).join(", "),
@@ -2627,6 +2873,8 @@ function buildAiMd(o){
       sel.map(r => [r.pageName, fmt(r.s.miesSr), `${fmt(r.s.miesMin)}–${fmt(r.s.miesMax)}`, fmt(r.s.ost30), tot ? `${Math.round(r.s.miesSr / tot * 100)}%` : "—", totA ? `${Math.round(r.s.aktywne / totA * 100)}%` : "—"])));
     const keys = sel[0].months.map(m => m.key);
     const mt = keys.map((_, i) => sel.reduce((a, r) => a + r.months[i].reach, 0));
+    L.push(`\nPrzedziały prawdopodobieństwa miesięcznego budżetu ${TAG.p} (model log-normalny: niepewność CPM, częstotliwości i zasięgu; prawdopodobieństwa w ramach modelu, nie gwarancja; mediana bywa niższa od „środka widełek” z tabeli powyżej, bo to inna, dokładniejsza miara):\n`);
+    L.push(mdTable(["Marka", "Mediana", ...PROB_LEVELS.map(L => `${L}% szans`), "Założenia"], sel.map(r => { const st = probGet(r), m = probModel(r, st); return [r.pageName, m.base > 0 ? `${fmt(roundNice(m.median))} zł` : "—", ...m.levels.map(lv => m.base > 0 ? `${fmt(roundNice(lv.lo))}–${fmt(roundNice(lv.hi))} zł` : "—"), `CPM ${st.cpmMin}–${st.cpmMax}, częstotl. ${st.freqMin}–${st.freqMax}, zakresy = ${st.conf}% pewności, zasięg ±${st.reachU}%${st.period !== "month" ? `, okres: ${periodLabel(st.period)}` : ""}`]; })));
     L.push(`\nUdział w zasięgu miesiąc po miesiącu ${TAG.c} (zasięg reklamy rozłożony równo na dni emisji):\n`);
     L.push(mdTable(["Miesiąc", ...sel.map(r => r.pageName)], keys.map((k, i) => [k, ...sel.map(r => mt[i] ? `${Math.round(r.months[i].reach / mt[i] * 100)}%` : "—")])));
     L.push(`\nEmitowane / nowe reklamy w miesiącu ${TAG.c}:\n`);
