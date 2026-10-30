@@ -413,6 +413,13 @@ body.mk-d .rp .blk[data-k="d"],body.mk-c .rp .blk[data-k="c"],body.mk-p .rp .blk
 body.mk-x .rp .see[data-k="x"]{padding-right:120px;margin-top:10px}
 
 body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"],body.mk-x .rp [data-k="x"]{box-shadow:none;outline:2px solid var(--k);outline-offset:-2px}
+
+.aigrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
+.aichk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;color:var(--text)}
+.aichk input{width:auto;margin-top:3px}
+.aichk b{display:block;font-size:14px}.aichk small{display:block;font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
+.aichk:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.aichk.dis{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -519,6 +526,11 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
           <option value="uk">ukraiński</option><option value="fr">francuski</option><option value="es">hiszpański</option><option value="it">włoski</option>
         </select>
       </div>
+      <div>
+        <label for="evDays">Evergreen = reklama działająca co najmniej</label>
+        <div class="row" style="flex-wrap:nowrap"><input id="evDays" type="number" min="7" max="365" step="1" value="30" style="max-width:110px"><span style="color:var(--muted);font-size:14px">dni</span></div>
+        <div class="chips" id="evPresets" style="margin-top:6px"></div>
+      </div>
     </div>
 
     <div style="margin-top:16px">
@@ -563,6 +575,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
       <button id="go">Analizuj</button>
       <button id="xlsx" class="ghost hidden">Pobierz Excel</button>
       <button id="pdf" class="ghost hidden">Raport PDF</button>
+      <button id="ai" class="ghost hidden">Eksport dla AI (.md)</button>
       <button id="clear" class="ghost hidden">Wyczyść wyniki</button>
     </div>
     <div id="status"></div>
@@ -591,8 +604,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
         <select id="fDays"><option value="0">cała biblioteka</option><option value="30">ostatnie 30 dni</option><option value="90">ostatnie 90 dni</option><option value="180">ostatnie 180 dni</option><option value="365">ostatnie 365 dni</option></select></div>
       <div><label for="fPlat">Platforma</label>
         <select id="fPlat"><option value="">wszystkie</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="messenger">Messenger</option><option value="audience_network">Audience Network</option><option value="threads">Threads</option></select></div>
-      <div><label for="fEv">Evergreen od</label>
-        <select id="fEv"><option value="30">30 dni emisji</option><option value="45">45 dni</option><option value="60">60 dni</option><option value="90">90 dni</option></select></div>
+      <div><label for="fEv">Evergreen od (dni)</label><input id="fEv" type="number" min="7" max="365" step="1" value="30"></div>
       <div id="fMediaWrap" class="hidden"><label for="fMedia">Format</label>
         <select id="fMedia"><option value="">wszystkie</option><option value="VIDEO">wideo</option><option value="IMAGE">grafika</option><option value="MEME">grafika z tekstem</option><option value="OTHER">inne</option></select></div>
       <div class="check"><input type="checkbox" id="fActive"><span>Tylko aktywne reklamy</span></div>
@@ -600,6 +612,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
   </div>
 
   <div id="pdfCard" class="card hidden"></div>
+  <div id="aiCard" class="card hidden"></div>
   <div id="resultsCard" class="card hidden"></div>
 </div>
 
@@ -760,6 +773,7 @@ async function apiGet(url){
     if (!json.error) return json;
     const c = json.error.code, msg = json.error.message || "";
     if ([4,17,32,613].includes(c) && i < 4){ setStatus(`Limit zapytań API, czekam ${delay/1000}s...`); await sleep(delay); delay *= 2; continue; }
+    if (c === 2 && i < 4){ await sleep(delay); delay *= 2; continue; }
     if (c === 190) throw new FatalApiError(`Błąd Meta 190: ${msg} → token wygasł lub jest błędny. Wygeneruj nowy w Graph API Explorer.`);
     if (c === 10 || c === 200 || /permission|identity|verify/i.test(msg)) throw new FatalApiError(`Błąd Meta ${c}: ${msg} → brak dostępu do Ad Library API. Potwierdź tożsamość na facebook.com/ID.`);
     if (/version/i.test(msg)) throw new FatalApiError(`Błąd Meta ${c}: ${msg} → zmień wersję Graph API w ustawieniach.`);
@@ -769,15 +783,29 @@ async function apiGet(url){
 async function fetchAll(params, max, label, onStatus = setStatus){
   const ver = $("ver").value.trim() || "v25.0";
   const q = new URLSearchParams({limit: 250, ...params, access_token: token()});
-  let data = await apiGet(`https://graph.facebook.com/${ver}/ads_archive?${q}`);
-  const out = [];
+  // przy „zbyt dużej odpowiedzi” Meta (kod 1) ponawiamy tę samą stronę z mniejszym limitem
+  const getPage = async url => {
+    try { return await apiGet(url); }
+    catch(e){
+      const lim = +((/[?&]limit=(\d+)/.exec(url) || [])[1] || 0);
+      if (!(e instanceof FatalApiError) && (e.code === 1 || /reduce the amount of data/i.test(e.message)) && lim > 25)
+        return getPage(url.replace(/([?&]limit=)\d+/, `$1${Math.max(25, Math.floor(lim / 4))}`));
+      throw e;
+    }
+  };
+  let data = await getPage(`https://graph.facebook.com/${ver}/ads_archive?${q}`);
+  const out = [], seen = new Set();
+  let pages = 0;
   while (true){
-    out.push(...(data.data || []));
+    for (const a of (data.data || [])){
+      if (a.id != null){ if (seen.has(a.id)) continue; seen.add(a.id); }   // ta sama reklama nie może być policzona dwa razy
+      out.push(a);
+    }
     onStatus(`${label}: pobrano ${out.length} reklam...`);
     if (max && out.length >= max) return out.slice(0, max);
     const next = data.paging && data.paging.next;
-    if (!next) return out;
-    data = await apiGet(next);
+    if (!next || ++pages > 400) return out;
+    data = await getPage(next);
   }
 }
 function baseParams(region){
@@ -816,7 +844,7 @@ const MEDIA_COLORS = {VIDEO: "var(--c3)", IMAGE: "var(--c0)", MEME: "var(--c5)",
 const PLAT_COLORS = {facebook: "var(--c0)", instagram: "var(--c3)", messenger: "var(--c6)", audience_network: "var(--c5)", threads: "var(--c7)", whatsapp: "var(--c2)", oculus: "var(--c4)"};
 const CTA_RE = /(^|[^\p{L}])(kup|kupuj|sprawdź|sprawdz|zamów|zamow|odbierz|zapisz|pobierz|dołącz|dolacz|kliknij|zarejestruj|zobacz|wypróbuj|wyprobuj|skorzystaj|zgarnij|odwiedź|odwiedz|umów|umow|zadzwoń|zadzwon|przetestuj|wejdź|wejdz|shop|buy|order|sign up|learn more|book)/iu;
 const EMOJI_RE = /\p{Extended_Pictographic}/u;
-const DISC_RE = /(?:[-–]\s?|do\s*[-–]?\s*|aż\s*[-–]?\s*|az\s*[-–]?\s*|rabat\w*\s*|zniżk\w*\s*|znizk\w*\s*)(\d{1,2})\s?%|(\d{1,2})\s?%\s?(?:taniej|rabatu|rabat|zniżki|znizki|zniżka|off|mniej)/giu;
+const DISC_RE = /(?:(?<![\p{L}\d])[-–]\s?|(?<!\p{L})(?:do|aż|az)\s*[-–]?\s*|(?<!\p{L})(?:rabat|zniżk|znizk)\p{L}*\s*(?:do\s*)?[-–]?\s*)(\d{1,2})\s?%|(?<![\d,.])(\d{1,2})\s?%\s?(?:taniej|rabatu|rabat|zniżki|znizki|zniżka|off|mniej)/giu;
 const PRICE_RE = /(\d{1,3}(?:[  .]\d{3})*(?:[,.]\d{1,2})?)\s?(?:zł|zl\b|pln|złotych)/giu;
 const WEEKDAYS = ["pn", "wt", "śr", "cz", "pt", "sb", "nd"];
 const WEEKDAYS_FULL = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
@@ -895,7 +923,7 @@ function buildRows(ads){
 
 // ================================================================ analiza marki
 const lg = (v, ref) => Math.max(0, Math.min(100, Math.log10(1 + v) / Math.log10(1 + ref) * 100));
-const conceptKey = r => (r.body || r.title || "").toLowerCase().replace(/\d+/g, "#").replace(/[^\p{L}#\s]/gu, "").replace(/\s+/g, " ").trim().slice(0, 90);
+const conceptKey = r => (r.body || r.title || "").toLowerCase().replace(/[^\p{L}\p{N}%\s]/gu, "").replace(/\s+/g, " ").trim().slice(0, 90);
 const INDEX_PARTS = [["skala","Skala (aktywne reklamy)",.25],["zasieg","Zasięg dzienny",.25],["swiezosc","Świeżość kreacji",.15],["testowanie","Testowanie (koncepty 90 dni)",.15],["regularnosc","Regularność (miesiące z emisją)",.10],["roznorodnosc","Różnorodność (platformy, formaty)",.10]];
 const indexLabel = v => v >= 81 ? "bardzo wysoka" : v >= 61 ? "wysoka" : v >= 31 ? "średnia" : "niska";
 
@@ -1135,26 +1163,30 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
 function analyzePolitical(ads){
   const today = todayUTC;
   const rng = v => v ? [+(v.lower_bound || 0), +(v.upper_bound || v.lower_bound || 0)] : [0, 0];
-  let spLo = 0, spHi = 0, imLo = 0, imHi = 0, active = 0;
-  const cur = {}, bylines = {}, demo = {}, regions = {}, months = {};
+  // wydatki sumujemy tylko w dominującej walucie — nie dodajemy złotówek do euro
+  const cur = {};
+  for (const a of ads) if (a.currency) cur[a.currency] = (cur[a.currency] || 0) + 1;
+  const mainCur = topN(cur, 1)[0]?.[0] || "";
+  let spLo = 0, spHi = 0, imLo = 0, imHi = 0, active = 0, otherCur = 0, openUpper = false;
+  const bylines = {}, demo = {}, regions = {}, months = {};
   for (const a of ads){
     const [sl, sh] = rng(a.spend), [il, ih] = rng(a.impressions);
-    spLo += sl; spHi += sh; imLo += il; imHi += ih;
+    if (a.spend && a.spend.upper_bound == null) openUpper = true;
+    if (!a.currency || a.currency === mainCur){ spLo += sl; spHi += sh; const st = a.ad_delivery_start_time ? a.ad_delivery_start_time.slice(0, 7) : null; if (st) months[st] = (months[st] || 0) + (sl + sh) / 2; }
+    else otherCur++;
+    imLo += il; imHi += ih;
     const stop = toDay(a.ad_delivery_stop_time);
     if (stop == null || stop >= today) active++;
-    if (a.currency) cur[a.currency] = (cur[a.currency] || 0) + 1;
     if (a.bylines) bylines[a.bylines] = (bylines[a.bylines] || 0) + 1;
     const w = (il + ih) / 2 || 1;
     for (const d of (a.demographic_distribution || [])){ const k = `${d.age}|${d.gender}`; demo[k] = (demo[k] || 0) + (+d.percentage || 0) * w; }
     for (const d of (a.delivery_by_region || [])) regions[d.region] = (regions[d.region] || 0) + (+d.percentage || 0) * w;
-    const st = a.ad_delivery_start_time ? a.ad_delivery_start_time.slice(0, 7) : null;
-    if (st) months[st] = (months[st] || 0) + (sl + sh) / 2;
   }
   const demoTot = Object.values(demo).reduce((a,b) => a+b, 0), regTot = Object.values(regions).reduce((a,b) => a+b, 0);
-  return {n: ads.length, active, spLo, spHi, imLo, imHi, currency: topN(cur, 1)[0]?.[0] || "",
+  return {n: ads.length, active, spLo, spHi, imLo, imHi, currency: mainCur, otherCur, openUpper,
     bylines: topN(bylines, 4), demo: topN(demo, 8).map(([k,v]) => [k, pct(v, demoTot)]), regions: topN(regions, 8).map(([k,v]) => [k, pct(v, regTot)]),
     months: Object.entries(months).sort((a,b) => a[0] < b[0] ? -1 : 1).slice(-12),
-    ads: ads.slice(0, 5).map(a => ({id: a.id, text: cleanTxt((a.ad_creative_bodies || [""])[0]).slice(0, 200), spend: rng(a.spend), start: (a.ad_delivery_start_time || "").slice(0, 10)}))};
+    ads: ads.slice(0, 5).map(a => ({id: a.id, text: cleanTxt((a.ad_creative_bodies || [""])[0]).slice(0, 200), spend: rng(a.spend), cur: a.currency || "", start: (a.ad_delivery_start_time || "").slice(0, 10)}))};
 }
 
 // ================================================================ migawki i zmiany
@@ -1165,9 +1197,10 @@ function handleSnapshot(res){
   const snaps = loadSnaps(), key = snapKey(res), list = snaps[key] || [];
   const now = Date.now();
   const prev = [...list].reverse().find(s => now - s.ts > 20 * 3600 * 1000) || null;
-  const base = analyze(res.rowsAll, opts(), {days: 0, platform: "", media: "", activeOnly: false, evDays: 30}, res.pageName, res.mediaLoaded);
+  const evD = evDaysVal();
+  const base = analyze(res.rowsAll, opts(), {days: 0, platform: "", media: "", activeOnly: false, evDays: evD}, res.pageName, res.mediaLoaded);
   const snap = {ts: now, date: iso(todayUTC), active: res.rowsAll.filter(r => r.active).map(r => r.id), all: res.rowsAll.map(r => r.id),
-    ev: res.rowsAll.filter(r => r.days >= 30).map(r => r.id), s: {aktywne: base.s.aktywne, lacznie: base.s.lacznie, miesSr: base.s.miesSr, evergreeny: base.s.evergreeny, n30: base.s.n30, dziennyZasieg: base.s.dziennyZasieg}};
+    evDays: evD, ev: res.rowsAll.filter(r => r.days >= evD).map(r => r.id), s: {aktywne: base.s.aktywne, lacznie: base.s.lacznie, miesSr: base.s.miesSr, evergreeny: base.s.evergreeny, n30: base.s.n30, dziennyZasieg: base.s.dziennyZasieg}};
   if (list.length && now - list[list.length - 1].ts < 20 * 3600 * 1000) list[list.length - 1] = snap; else list.push(snap);
   snaps[key] = list.slice(-8);
   if (!store.set(SNAP_KEY, JSON.stringify(snaps))){ const all = loadSnaps(); for (const k of Object.keys(all)) all[k] = all[k].slice(-3); all[key] = snaps[key].slice(-3); store.set(SNAP_KEY, JSON.stringify(all)); }
@@ -1177,7 +1210,7 @@ function handleSnapshot(res){
     first: false, prevDate: prev.date, days: Math.round((todayUTC - toDay(prev.date)) / DAY),
     newAds: res.rowsAll.filter(r => !pAll.has(r.id)).sort((a,b) => b.start - a.start),
     ended: res.rowsAll.filter(r => pAct.has(r.id) && !r.active).sort((a,b) => b.end - a.end),
-    newEv: res.rowsAll.filter(r => r.days >= 30 && !pEv.has(r.id)),
+    newEv: res.rowsAll.filter(r => r.days >= evD && !pEv.has(r.id) && (prev.evDays == null || prev.evDays === evD)), evDays: evD,
     now: snap.s, prev: prev.s
   };
 }
@@ -1450,7 +1483,7 @@ function secCost(res){
       <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie (środek ~${fmt(s.miesSr)} zł)</div></div>
       <div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>
     </div>
-    <div class="note">Estymacja, nie dane Meta: dzienny zasięg aktywnych reklam (~${fmt(s.dziennyZasieg)} osób) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}.</div>`;
+    <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}.</div>`;
 }
 function indexBlock(res, {compact = false} = {}){
   const p = res.idx.parts;
@@ -1588,8 +1621,8 @@ P.changes = (r) => {
   if (!c) return NODATA;
   if (c.first) return see(`To pierwsza analiza tej strony na tym obszarze — zapisano migawkę z ${c.saved}. Przy kolejnej analizie (najwcześniej jutro) zobaczysz tu, co się zmieniło: nowe i wyłączone reklamy, zmianę budżetu i nowe evergreeny.`);
   const d = (a, b, f = fmt, u = "") => { const x = a - b; return `<span class="${x > 0 ? "up" : x < 0 ? "down" : ""}">${x > 0 ? "+" : ""}${f(x)}${u}</span>`; };
-  return `${see(`Porównanie z migawką z <b>${c.prevDate}</b> (${c.days} dni temu): <b>+${c.newAds.length}</b> nowych reklam, <b>${c.ended.length}</b> wyłączonych, aktywnych ${d(c.now.aktywne, c.prev.aktywne)}, szacowany koszt ${d(c.now.miesSr, c.prev.miesSr, fmtK, " zł")}/mies.`)}
-    ${miniKpis("c", [[`${fmt(c.now.aktywne)} <small>${d(c.now.aktywne, c.prev.aktywne)}</small>`, "aktywne reklamy"], [`${fmtK(c.now.miesSr)} zł <small>${d(c.now.miesSr, c.prev.miesSr, fmtK)}</small>`, "szac. koszt / mies."], [`+${c.newAds.length}`, "nowe reklamy"], [String(c.ended.length), "wyłączone reklamy"], [`+${c.newEv.length}`, "nowe evergreeny (30+ dni)"]])}
+  return `${see(`Porównanie z migawką z <b>${c.prevDate}</b> (${c.days} dni temu): <b>+${c.newAds.length}</b> nowych reklam w bibliotece, <b>${c.ended.length}</b> wyłączonych, aktywnych ${d(c.now.aktywne, c.prev.aktywne)}, szacowany koszt ${d(c.now.miesSr, c.prev.miesSr, fmtK, " zł")}/mies.`)}
+    ${miniKpis("c", [[`${fmt(c.now.aktywne)} <small>${d(c.now.aktywne, c.prev.aktywne)}</small>`, "aktywne reklamy"], [`${fmtK(c.now.miesSr)} zł <small>${d(c.now.miesSr, c.prev.miesSr, fmtK)}</small>`, "szac. koszt / mies."], [`+${c.newAds.length}`, "nowe reklamy"], [String(c.ended.length), "wyłączone reklamy"], [`+${c.newEv.length}`, `nowe evergreeny (${c.evDays || 30}+ dni)`]])}
     <div class="two">
       ${blk(`[d]Nowe reklamy (${c.newAds.length})`, c.newAds.length ? c.newAds.slice(0, 8).map(x => adLine(x)).join("") + (c.newAds.length > 8 ? `<div class="hint">+ ${c.newAds.length - 8} kolejnych w Excelu (zakładka „Zmiany”).</div>` : "") : `<div class="sub">Brak.</div>`)}
       ${blk(`[d]Wyłączone reklamy (${c.ended.length})`, c.ended.length ? c.ended.slice(0, 8).map(x => adLine(x)).join("") : `<div class="sub">Brak.</div>`)}
@@ -1600,6 +1633,7 @@ P.social = (r) => {
   const p = r.pol;
   if (!p || !p.n) return see("Ta strona nie emitowała reklam społecznych, wyborczych ani politycznych na wybranym obszarze. Dla takich reklam Meta publikuje prawdziwe wydatki i wyświetlenia (w przedziałach).");
   return `${see(`${p.n} reklam społecznych/politycznych (${p.active} aktywnych). Tu Meta podaje <b>prawdziwe dane</b>: wydatki ${fmt(p.spLo)}–${fmt(p.spHi)} ${esc(p.currency)}, wyświetlenia ${fmtK(p.imLo)}–${fmtK(p.imHi)}.`)}
+    ${p.otherCur || p.openUpper ? `<div class="note">${p.otherCur ? `${p.otherCur} reklam w innej walucie niż ${esc(p.currency)} pominięto w sumie wydatków. ` : ""}${p.openUpper ? "Część reklam ma otwarty górny przedział wydatków (Meta podaje tylko dolną granicę) — górna suma jest zaniżona." : ""}</div>` : ""}
     ${miniKpis("d", [[fmt(p.n), "reklam"], [`${fmtK(p.spLo)}–${fmtK(p.spHi)}`, `wydatki (${esc(p.currency)})`], [`${fmtK(p.imLo)}–${fmtK(p.imHi)}`, "wyświetlenia"], [fmt(p.active), "aktywnych"]])}
     <div class="two">
       ${blk("[d]Wydatki wg miesiąca startu", colChart(p.months.map(([k, v]) => [`${k.slice(5)}.${k.slice(2,4)}`, Math.round(v)]), {color: "var(--c5)", h: 120}))}
@@ -1609,7 +1643,7 @@ P.social = (r) => {
       ${blk("[d]Odbiorcy (wiek | płeć)", p.demo.length ? hbars(p.demo.map(([k, v]) => [k.replace("|", " · ").replace("female", "kobiety").replace("male", "mężczyźni").replace("unknown", "nieznana"), v]), 100, {labelW: 150}) : NODATA)}
       ${blk("[d]Regiony", p.regions.length ? hbars(p.regions, 100, {labelW: 150}) : NODATA)}
     </div>
-    ${blk("[d]Przykładowe reklamy", p.ads.map(a => `<div class="ad"><div><div class="t">${esc(a.text) || "<i>(bez tekstu)</i>"}</div><a href="https://www.facebook.com/ads/library/?id=${esc(a.id)}" target="_blank" rel="noopener">Zobacz w Bibliotece Reklam</a></div><div class="m">od ${esc(a.start)}<br>${fmt(a.spend[0])}–${fmt(a.spend[1])} ${esc(p.currency)}</div></div>`).join(""))}`;
+    ${blk("[d]Przykładowe reklamy", p.ads.map(a => `<div class="ad"><div><div class="t">${esc(a.text) || "<i>(bez tekstu)</i>"}</div><a href="https://www.facebook.com/ads/library/?id=${esc(a.id)}" target="_blank" rel="noopener">Zobacz w Bibliotece Reklam</a></div><div class="m">od ${esc(a.start)}<br>${fmt(a.spend[0])}–${fmt(a.spend[1])} ${esc(a.cur || p.currency)}</div></div>`).join(""))}`;
 };
 const brandPanel = (tab, r, idx, pdf = false) => (P[tab] || P.overview)(r, idx, pdf);
 
@@ -1703,10 +1737,11 @@ function recommendations(list){
     add(3, "Oferty", "Głębsze rabaty u konkurencji", `Średni komunikowany rabat konkurencji −${Math.round(disc)}% vs Twój −${main.prices.discAvg}%.`, "Jeśli marża pozwala, przetestuj ofertę z wyższym rabatem na wybraną kategorię — albo podkreśl inną przewagę (jakość, dostawa, program lojalnościowy).");
   // luki demograficzne
   const gaps = demoGaps(list).filter(x => x.v >= 4);
-  if (gaps.length) add(1, "Odbiorcy", `Wolne pole: grupa ${gaps[0].label}`, `Konkurencja dociera do grupy ${gaps[0].label} o ${gaps[0].v.toFixed(1).replace(".", ",")} pp częściej niż Ty${gaps[1] ? `; podobnie ${gaps[1].label}` : ""}.`, "Sprawdź, czy ta grupa jest dla Ciebie wartościowa — jeśli tak, przygotuj dedykowaną kreację i zestaw reklam z tym targetowaniem.");
+  if (gaps.length) add(1, "Odbiorcy", `Wolne pole: grupa ${gaps[0].label}`, `Grupa ${gaps[0].label} stanowi u konkurencji średnio o ${gaps[0].v.toFixed(1).replace(".", ",")} pp większy udział zasięgu niż u Ciebie${gaps[1] ? `; podobnie ${gaps[1].label}` : ""}.`, "Sprawdź, czy ta grupa jest dla Ciebie wartościowa — jeśli tak, przygotuj dedykowaną kreację i zestaw reklam z tym targetowaniem.");
   // evergreeny konkurencji
-  const ce = comps.map(r => ({r, e: r.ev.filter(x => x.active && x.days >= 60)})).sort((a,b) => b.e.length - a.e.length)[0];
-  if (ce && ce.e.length >= 3) add(2, "Inspiracje", `Przeanalizuj evergreeny: ${ce.r.pageName}`, `${ce.e.length} reklam ${esc(ce.r.pageName)} działa nieprzerwanie 60+ dni — prawdopodobnie dobrze konwertują.`, "Przejrzyj ich przekaz i format (zakładka „Kreacje i testy” konkurenta) i zaadaptuj sprawdzone motywy.");
+  const evMin = Math.max(60, evDaysVal());
+  const ce = comps.map(r => ({r, e: r.rows.filter(x => x.active && x.days >= evMin)})).sort((a,b) => b.e.length - a.e.length)[0];
+  if (ce && ce.e.length >= 3) add(2, "Inspiracje", `Przeanalizuj evergreeny: ${ce.r.pageName}`, `${ce.e.length} reklam ${esc(ce.r.pageName)} działa nieprzerwanie ${evMin}+ dni — prawdopodobnie dobrze konwertują.`, "Przejrzyj ich przekaz i format (zakładka „Kreacje i testy” konkurenta) i zaadaptuj sprawdzone motywy.");
   // sezonowość — najbliższa ważna data
   const next = keyDatesAround(todayUTC, todayUTC + 75 * DAY)[0];
   if (next){
@@ -1849,7 +1884,8 @@ const cmpPanel = (tab, list) => (C[tab] || C.recs)(list);
 
 // ================================================================ stan i widok
 const opts = () => ({cpmMin: +$("cpmMin").value || 10, cpmMax: +$("cpmMax").value || 25, freqMin: +$("freqMin").value || 1.3, freqMax: +$("freqMax").value || 2, label: benchLabel()});
-const filters = () => ({days: +$("fDays").value, platform: $("fPlat").value, media: $("fMedia").value, activeOnly: $("fActive").checked, evDays: +$("fEv").value});
+const filters = () => ({days: +$("fDays").value, platform: $("fPlat").value, media: $("fMedia").value, activeOnly: $("fActive").checked, evDays: evDaysVal()});
+function evDaysVal(){ const v = Math.round(+$("evDays").value); return v >= 7 && v <= 365 ? v : 30; }
 let results = [];
 let uidSeq = 0;
 const view = {top: "cmp", cmpTab: "recs", brandTab: "overview"};
@@ -1861,10 +1897,10 @@ function rerender(){ for (const r of results) reanalyze(r); renderAll(); }
 function renderAll(){
   const card = $("resultsCard");
   const any = results.length > 0;
-  ["xlsx","clear","pdf"].forEach(id => $(id).classList.toggle("hidden", !any));
+  ["xlsx","clear","pdf","ai"].forEach(id => $(id).classList.toggle("hidden", !any));
   $("filtersCard").classList.toggle("hidden", !any);
   $("fMediaWrap").classList.toggle("hidden", !results.some(r => r.mediaLoaded));
-  if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); return; }
+  if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); $("aiCard").classList.add("hidden"); return; }
   if (results.length < 2 && view.top === "cmp") view.top = results[0].uid;
   if (view.top !== "cmp" && !results.some(r => r.uid === view.top)) view.top = results.length > 1 ? "cmp" : results[0].uid;
   const isCmp = view.top === "cmp";
@@ -2397,6 +2433,305 @@ $("setFile").onchange = async e => {
 };
 
 
+// ================================================================ eksport dla AI (.md z promptem)
+const AI_KEY = "metaAdsBotAi";
+const AI_FOCUS = [
+  ["overview", "Ogólna pozycja konkurencyjna", "kto jest najaktywniejszy, kto przyspiesza, gdzie marka jest silna i słaba", [],
+   "**Pozycja konkurencyjna** — kto jest najaktywniejszy, kto przyspiesza lub zwalnia (trend, nowe reklamy), gdzie {MAIN} wypada mocno, a gdzie słabo na tle konkurencji. Wypisz 3–5 najważniejszych obserwacji, każdą z liczbami."],
+  ["creative", "Kreacje i testowanie", "testy A/B, formaty, evergreeny, koncepty — co prawdopodobnie działa", ["creative", "texts"],
+   "**Strategia kreatywna i testowanie** — oceń podejście każdej marki do testowania (odsetek reklam wyłączanych w ≤7 dni, liczba konceptów, warianty DCO, liczba reklam działających równolegle), mix formatów oraz co evergreeny i najdłużej żyjące koncepty mówią o tym, co prawdopodobnie działa. Wskaż wzorce warte zaadaptowania."],
+  ["message", "Komunikacja i copy", "motywy, obietnice, ton, CTA, luki komunikacyjne", ["message", "texts"],
+   "**Komunikacja** — przeanalizuj teksty reklam: główne motywy, obietnice, ton, wezwania do działania, długość, różnice między markami i luki komunikacyjne (o czym mówi konkurencja, a {MAIN} nie — i odwrotnie). Jako dowody cytuj krótkie fragmenty tekstów z ID reklamy."],
+  ["offers", "Oferty, ceny i promocje", "rabaty, ceny, mechaniki promocyjne", ["offers", "texts"],
+   "**Oferty i ceny** — jak marki używają rabatów, cen i mechanik promocyjnych (darmowa dostawa, kody, gratisy, konkursy), jak głębokie są rabaty, czy któraś marka komunikuje się bez promocji. Oceń ryzyka i szanse dla marki {MAIN}."],
+  ["audience", "Odbiorcy i targetowanie", "wiek, płeć, kraje, luki demograficzne, lokalizacje, płatnicy", ["audience"],
+   "**Odbiorcy** — do kogo realnie docierają reklamy (rozkład zasięgu wg wieku, płci i kraju) vs targetowanie deklarowane przez reklamodawców; luki demograficzne i potencjalne „wolne pola” dla marki {MAIN}; lokalizacje i wykluczenia; kto płaci za reklamy (agencje/domy mediowe). Pamiętaj: to rozkład zasięgu reklam w UE, nie dane o klientach marek."],
+  ["budget", "Budżet i udział w głosie", "szacowana skala wydatków, SoV, zmiany w czasie", ["budget"],
+   "**Budżet i udział w głosie** — na bazie szacunków oceń skalę inwestycji, udział w głosie i jego zmiany w czasie. Zawsze zaznaczaj, że koszty to estymacja modelowa (podawaj widełki, nie pojedyncze liczby) i porównuj marki względnie."],
+  ["calendar", "Kalendarz i sezonowość", "rytm startów, fale kampanii, aktywność przed ważnymi datami", ["calendar"],
+   "**Kalendarz i sezonowość** — rytm startów kampanii, fale startów, sezonowość, aktywność przed ważnymi datami sprzedażowymi i ulubione dni startu. Zaproponuj kalendarz działań marki {MAIN} na najbliższe 3 miesiące, uwzględniając nadchodzące daty."],
+  ["changes", "Zmiany od ostatniej analizy", "co nowego u każdej marki od poprzedniej migawki", ["changes"],
+   "**Zmiany od ostatniej analizy** — co zmieniło się u każdej marki od poprzedniej migawki (nowe i wyłączone reklamy, zmiana skali), co to może oznaczać (jako hipotezy) i na co marka {MAIN} powinna zareagować."],
+  ["social", "Reklamy społeczne i polityczne", "realne wydatki, odbiorcy i przekaz takich reklam", ["social"],
+   "**Reklamy społeczne/polityczne** — dla nich Meta podaje rzeczywiste przedziały wydatków i wyświetleń. Przeanalizuj skalę, odbiorców i przekaz."],
+  ["recs", "Rekomendacje i plan działań", "priorytety, uzasadnienie w danych, plan 30/60/90 dni", [],
+   "**Rekomendacje i plan** — 5–10 konkretnych rekomendacji dla marki {MAIN}, każda z priorytetem (wysoki/średni/niski), uzasadnieniem w danych, spodziewanym efektem i sposobem pomiaru. Na koniec plan działań 30/60/90 dni."],
+  ["brief", "Brief kreatywny — pomysły na reklamy", "5 konceptów reklam: nagłówek, tekst, CTA, format, grupa", ["message", "creative", "audience", "texts"],
+   "**Brief kreatywny** — zaproponuj 5 konceptów reklam dla marki {MAIN}: nagłówek, tekst główny (do 125 znaków), CTA, format (wideo/grafika/karuzela), grupa docelowa i uzasadnienie w danych. Wykorzystaj luki konkurencji i wzorce z evergreenów, ale nie kopiuj tekstów konkurencji."]
+];
+const AI_PRESETS = {
+  full: ["overview", "creative", "message", "offers", "audience", "budget", "calendar", "changes", "social", "recs"],
+  quick: ["overview", "budget", "recs"],
+  brief: ["overview", "creative", "message", "brief"],
+  comm: ["message", "offers", "audience", "brief"]
+};
+const AI_FORMATS = [
+  ["audit", "Audyt (analiza → plan)", "Struktura odpowiedzi: 1) Ogólna analiza, 2) Hipotezy, 3) Znalezione problemy i szanse, 4) Plan naprawczy / działania, 5) Plan przebudowy kampanii marki {MAIN}. Najpierw osobno wnioski dla każdej marki, potem wspólne. Minimum tabel, rzeczowo, twarde punkty zamiast rozbudowanych opisów."],
+  ["client", "Raport dla klienta", "Forma: raport dla klienta. Zacznij od podsumowania dla zarządu (maks. 5 zdań), potem kluczowe wnioski, rekomendacje z priorytetami i następne kroki. Język zrozumiały bez wiedzy technicznej; terminy branżowe wyjaśniaj w nawiasie."],
+  ["internal", "Notatka dla zespołu", "Forma: notatka wewnętrzna dla zespołu performance. Punktowo, z liczbami, osobna sekcja „Ryzyka” i „Następne kroki” (co, kto, do kiedy — zostaw miejsce na uzupełnienie)."],
+  ["slides", "Konspekt prezentacji", "Forma: konspekt prezentacji na 8–12 slajdów. Dla każdego slajdu: tytuł z wnioskiem, 3–5 punktów, sugerowany wykres lub wizualizacja i notatka dla prowadzącego."]
+];
+const aiPrefs = () => { try { return JSON.parse(store.get(AI_KEY) || "{}"); } catch(e){ return {}; } };
+
+function openAiPanel(){
+  const card = $("aiCard"), p = aiPrefs();
+  const main = results.find(r => r.isMain) || results[0];
+  const hasChanges = results.some(r => r.changes && !r.changes.first), hasSocial = results.some(r => r.pol && r.pol.n);
+  const avail = k => !(k === "changes" && !hasChanges) && !(k === "social" && !hasSocial);
+  const sel = (p.focus || AI_PRESETS.full).filter(avail);
+  const benchName = (BENCHMARKS.find(x => x[0] === $("bench").value) || BENCHMARKS[0])[1];
+  card.innerHTML = `
+    <div class="title-row"><h2 style="margin:0">🤖 Eksport dla AI (.md)</h2><button class="ghost mini" id="aiClose">Zamknij</button></div>
+    <div class="sub" style="margin-top:6px">Plik Markdown z gotowym promptem i danymi z analizy. Wklej go (albo załącz) w Claude, ChatGPT lub innym AI — dostaniesz pogłębioną interpretację. Dane są oznaczone tak jak w „Lupie detektywa”, żeby AI wiedziało, co jest twardą daną, a co szacunkiem.</div>
+    <div class="row" style="margin:14px 0 4px"><b style="margin-right:6px">Gotowe zestawy:</b>
+      <button class="ghost mini" data-preset="full">Pełna analiza</button><button class="ghost mini" data-preset="quick">Szybki przegląd</button>
+      <button class="ghost mini" data-preset="brief">Brief kreatywny</button><button class="ghost mini" data-preset="comm">Komunikacja i oferty</button></div>
+    <h3>Co AI ma przeanalizować</h3>
+    <div class="aigrid">${AI_FOCUS.map(([k, l, d]) => `<label class="aichk ${avail(k) ? "" : "dis"}"><input type="checkbox" data-focus="${k}" ${sel.includes(k) ? "checked" : ""} ${avail(k) ? "" : "disabled"}><span><b>${l}</b><small>${avail(k) ? d : k === "changes" ? "brak poprzedniej migawki do porównania" : "brak reklam społecznych/politycznych"}</small></span></label>`).join("")}</div>
+    <div class="grid" style="margin-top:14px">
+      <div><label for="aiFormat">Forma odpowiedzi AI</label><select id="aiFormat">${AI_FORMATS.map(([k, l]) => `<option value="${k}" ${p.format === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      <div><label for="aiDepth">Szczegółowość</label><select id="aiDepth"><option value="short" ${p.depth === "short" ? "selected" : ""}>zwięźle (najważniejsze punkty)</option><option value="long" ${p.depth !== "short" ? "selected" : ""}>szczegółowo</option></select></div>
+      <div><label for="aiTexts">Teksty reklam w pliku (na markę)</label><select id="aiTexts">${[0, 10, 20, 40].map(n => `<option value="${n}" ${(p.texts ?? 20) === n ? "selected" : ""}>${n ? n + " reklam" : "bez tekstów"}</option>`).join("")}</select></div>
+      <div><label for="aiIndustry">Branża</label><input id="aiIndustry" value="${esc(p.industry && p.lastBrand === main.pageName ? p.industry : ($("bench").value === "custom" || $("bench").value === "general" ? "" : benchName))}" placeholder="np. drogerie i kosmetyki"></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label for="aiGoal">Cel marketingowy marki ${esc(main.pageName)}</label><input id="aiGoal" value="${esc(p.goal && p.lastBrand === main.pageName ? p.goal : "")}" placeholder="np. rejestracje do programu lojalnościowego, sprzedaż online"></div>
+      <div><label for="aiCtx">Dodatkowy kontekst dla AI (opcjonalnie)</label><input id="aiCtx" value="${esc(p.ctx && p.lastBrand === main.pageName ? p.ctx : "")}" placeholder="np. budżet ok. 20 tys. zł/mies., wchodzimy z nową linią produktów"></div>
+    </div>
+    <div class="row" style="margin-top:12px;gap:18px">
+      <label class="check" style="margin:0"><input type="checkbox" id="aiBotNotes" ${p.botNotes ? "checked" : ""}><span>Dołącz wnioski i rekomendacje bota (AI ma je zweryfikować)</span></label>
+    </div>
+    ${results.length > 1 ? `<div class="row" style="margin-top:10px;gap:14px"><span class="sub">Marki w pliku:</span>${results.map((r, i) => `<label class="check" style="margin:0"><input type="checkbox" data-aibrand="${r.uid}" checked><span><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span></label>`).join("")}</div>` : ""}
+    <div class="row" style="margin-top:16px"><button id="aiGo">Pobierz plik .md</button><button class="ghost" id="aiCopy">Kopiuj do schowka</button><button class="ghost" id="aiPrev">Podgląd</button><span class="hint" id="aiSize" style="margin:0"></span></div>
+    <textarea id="aiPreview" class="hidden" readonly style="margin-top:12px;min-height:320px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace"></textarea>`;
+  card.classList.remove("hidden");
+  const upd = () => { const md = buildAiMd(aiOpts()); const kb = new Blob([md]).size / 1024; $("aiSize").textContent = `${kb.toFixed(0)} KB · ok. ${fmt(Math.round(md.length / 3.6))} tokenów${md.length > 350000 ? " — duży plik: zmniejsz liczbę tekstów reklam" : ""}`; if (!$("aiPreview").classList.contains("hidden")) $("aiPreview").value = md; };
+  card.querySelectorAll("input,select").forEach(i => i.addEventListener("change", upd));
+  card.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => { const l = AI_PRESETS[b.dataset.preset]; card.querySelectorAll("input[data-focus]").forEach(cb => { if (!cb.disabled) cb.checked = l.includes(cb.dataset.focus); }); upd(); });
+  $("aiClose").onclick = () => card.classList.add("hidden");
+  $("aiPrev").onclick = () => { $("aiPreview").classList.toggle("hidden"); upd(); };
+  $("aiGo").onclick = () => {
+    const o = aiOpts(); if (!o.focus.length) return setStatus("Zaznacz co najmniej jeden obszar analizy dla AI.", true);
+    saveAiPrefs(o);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buildAiMd(o)], {type: "text/markdown;charset=utf-8"}));
+    a.download = `analiza-ai_${(o.sel.find(r => r.isMain) || o.sel[0]).pageName.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}_${iso(todayUTC)}.md`; a.click();
+  };
+  $("aiCopy").onclick = async () => {
+    const o = aiOpts(); if (!o.focus.length) return setStatus("Zaznacz co najmniej jeden obszar analizy dla AI.", true);
+    saveAiPrefs(o);
+    try { await navigator.clipboard.writeText(buildAiMd(o)); $("aiCopy").textContent = "Skopiowano ✓"; setTimeout(() => { const b = $("aiCopy"); if (b) b.textContent = "Kopiuj do schowka"; }, 2000); }
+    catch(e){ $("aiPreview").classList.remove("hidden"); upd(); $("aiPreview").select(); setStatus("Przeglądarka zablokowała schowek — tekst jest zaznaczony w podglądzie, skopiuj go Ctrl+C.", true); }
+  };
+  upd();
+  card.scrollIntoView({behavior: "smooth", block: "start"});
+}
+function aiOpts(){
+  const card = $("aiCard");
+  const brands = results.length > 1 ? [...card.querySelectorAll("input[data-aibrand]:checked")].map(cb => +cb.dataset.aibrand) : results.map(r => r.uid);
+  return {
+    focus: [...card.querySelectorAll("input[data-focus]:checked")].map(cb => cb.dataset.focus),
+    format: $("aiFormat").value, depth: $("aiDepth").value, texts: +$("aiTexts").value,
+    industry: $("aiIndustry").value.trim(), goal: $("aiGoal").value.trim(), ctx: $("aiCtx").value.trim(), botNotes: $("aiBotNotes").checked,
+    sel: results.filter(r => brands.includes(r.uid))
+  };
+}
+function saveAiPrefs(o){
+  const main = o.sel.find(r => r.isMain) || o.sel[0];
+  store.set(AI_KEY, JSON.stringify({focus: o.focus, format: o.format, depth: o.depth, texts: o.texts, industry: o.industry, goal: o.goal, ctx: o.ctx, botNotes: o.botNotes, lastBrand: main.pageName}));
+}
+
+// --- pomocnicze do Markdown
+const mdEsc = v => String(v ?? "—").replace(/\|/g, "/").replace(/\r?\n/g, " ").trim() || "—";
+const mdTable = (head, rows) => rows.length ? `| ${head.map(mdEsc).join(" | ")} |\n| ${head.map(() => "---").join(" | ")} |\n${rows.map(r => `| ${r.map(mdEsc).join(" | ")} |`).join("\n")}\n` : "_brak danych_\n";
+const mdN = v => v == null || (typeof v === "number" && isNaN(v)) ? "—" : typeof v === "number" ? (Number.isInteger(v) ? String(v) : String(Math.round(v * 10) / 10).replace(".", ",")) : String(v);
+const mdP = v => v == null ? "—" : `${v}%`;
+const TAG = {d: "[DANE]", c: "[OBLICZENIA]", p: "[SZACUNEK]", x: "[INTERPRETACJA BOTA]"};
+
+function aiTexts(r, n){
+  if (!n) return [];
+  const pick = [], seenC = new Set(), add = (x, why) => { if (pick.length >= n || !x.body) return; const k = conceptKey(x); if (seenC.has(k)) return; seenC.add(k); pick.push({x, why}); };
+  const byReach = r.rows.filter(x => x.active).sort((a,b) => (b.reach || 0) - (a.reach || 0));
+  const evs = [...r.ev].sort((a,b) => b.days - a.days), newest = [...r.rows].sort((a,b) => b.start - a.start);
+  const q = Math.max(1, Math.ceil(n / 3));
+  byReach.slice(0, q * 3).forEach(x => pick.length < q && add(x, "duży zasięg"));
+  evs.slice(0, q * 3).forEach(x => pick.length < q * 2 && add(x, `evergreen (${x.days} dni)`));
+  newest.slice(0, q * 4).forEach(x => add(x, "najnowsza"));
+  r.rows.forEach(x => add(x, "inna"));
+  return pick;
+}
+
+function buildAiMd(o){
+  const sel = o.sel.length ? o.sel : results;
+  const main = sel.find(r => r.isMain) || sel[0], comps = sel.filter(r => r !== main);
+  const M = main.pageName, multi = sel.length > 1;
+  const f = filters(), fl = filterLabel();
+  const focus = AI_FOCUS.filter(x => o.focus.includes(x[0]));
+  const needs = new Set(["base", ...focus.flatMap(x => x[3])]);
+  if (o.focus.includes("recs")) ["creative", "message", "offers", "audience", "budget", "calendar"].forEach(k => needs.add(k));
+  const fmtObj = AI_FORMATS.find(x => x[0] === o.format) || AI_FORMATS[0];
+  const L = [];
+  const h = t => L.push(`\n${t}\n`);
+
+  // --- PROMPT
+  L.push(`# Analiza reklam Meta: ${M}${multi ? " na tle konkurencji" : ""}`);
+  L.push(`\n> Plik wygenerowany przez Meta Ads Bot (${iso(todayUTC)}). Zawiera instrukcję dla AI i dane z Biblioteki Reklam Meta. Wklej całość do czatu z AI albo załącz jako plik.`);
+  h(`## Instrukcja dla AI`);
+  L.push(`Jesteś doświadczonym strategiem performance marketingu (Meta Ads) i analitykiem konkurencji. Poniżej są dane z Biblioteki Reklam Meta (Facebook i Instagram) dla marki **${M}**${multi ? ` i ${comps.length} ${comps.length === 1 ? "konkurenta" : "konkurentów"}: ${comps.map(r => `**${r.pageName}**`).join(", ")}` : ""}. Przygotuj pogłębioną analizę według zakresu i formy opisanych niżej.`);
+  h(`### Zasady pracy z danymi`);
+  L.push([
+    `1. Opieraj się **wyłącznie** na danych z tego pliku. Nie wymyślaj liczb, nazw kampanii, produktów ani faktów o markach. Jeśli czegoś nie da się stwierdzić z danych — napisz to wprost.`,
+    `2. Każda sekcja danych ma znacznik pewności: **${TAG.d}** — wartości wprost z Meta API; **${TAG.c}** — matematyka na tych danych; **${TAG.p}** — modele, przyjęte progi i automatyczne wykrywanie w tekstach (mogą się mylić); **${TAG.x}** — automatyczne wnioski narzędzia do zweryfikowania. Wnioski oparte na ${TAG.p} formułuj ostrożniej.`,
+    `3. Koszty to **estymacja modelowa** (zasięg × częstotliwość × CPM z benchmarku), nie realne wydatki — Meta nie publikuje wydatków reklam komercyjnych. Porównuj je między markami względnie i podawaj widełki.`,
+    `4. Zasięg to szacunek Meta dla UE; sumy zasięgu z wielu reklam liczą tę samą osobę wielokrotnie. Demografia to rozkład zasięgu reklam, nie profil klientów marki.`,
+    `5. Przy każdym wniosku wskaż, na jakich liczbach się opierasz. Oddzielaj fakty od hipotez — hipotezy oznacz „**Hipoteza:**” i dopisz, jak je sprawdzić.`,
+    `6. Biblioteka Reklam nie pokazuje wyników (CTR, konwersji, ROAS). Długi czas emisji (evergreen) jest tylko **poszlaką**, że reklama działa — nie dowodem.`,
+    `7. Pisz po polsku, konkretnie, bez ogólników. ${o.depth === "short" ? "Bądź zwięzły: tylko najważniejsze punkty." : "Możesz być szczegółowy, ale każda część ma wnosić coś konkretnego."}`
+  ].join("\n"));
+  h(`### Zakres analizy`);
+  L.push(focus.map((x, i) => `${i + 1}. ${x[4].replace(/\{MAIN\}/g, M)}`).join("\n"));
+  if (!multi) L.push(`\n_Analiza dotyczy jednej marki — zamiast porównań z konkurencją oceniaj ją względem dobrych praktyk Meta Ads i benchmarków branżowych, wyraźnie oznaczając, że to wiedza ogólna, a nie dane z pliku._`);
+  h(`### Forma odpowiedzi`);
+  L.push(fmtObj[2].replace(/\{MAIN\}/g, M));
+  h(`### Kontekst biznesowy`);
+  L.push([
+    `- Marka analizowana: **${M}**${main.isMain ? " (nasz klient / nasza marka)" : ""}`,
+    o.industry ? `- Branża: ${o.industry}` : `- Branża: nie podano`,
+    o.goal ? `- Cel marketingowy: ${o.goal}` : `- Cel marketingowy: nie podano — jeśli ma znaczenie dla wniosków, zaznacz założenie`,
+    o.ctx ? `- Dodatkowy kontekst: ${o.ctx}` : ""
+  ].filter(Boolean).join("\n"));
+
+  // --- DANE
+  h(`---\n\n## Dane`);
+  h(`### Parametry zbierania danych`);
+  L.push([
+    `- Źródło: Meta Ad Library API (ads_archive), stan na ${iso(todayUTC)}`,
+    `- Obszar emisji: ${regionLabel(main.region)}${main.lang ? `; język reklam: ${main.lang}` : ""}`,
+    `- Zakres: reklamy komercyjne, które dotarły do UE — Meta przechowuje je ok. rok od zakończenia emisji; reklamy pojawiają się z opóźnieniem do 1–2 dni`,
+    `- Filtr wyników: ${fl || "brak (cała biblioteka)"}`,
+    `- Evergreen = reklama emitowana co najmniej ${f.evDays} dni; „aktywna” = bez daty zakończenia lub z datą od dziś`,
+    `- Założenia kosztu: ${main.s.zalozenia}`,
+    main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`
+  ].join("\n"));
+
+  h(`### Podsumowanie marek ${TAG.c}`);
+  L.push(mdTable(["Marka", "Rola", "Aktywne reklamy", "Reklamy w zbiorze", "Nowe 30 dni (poprz. 30)", "Nowe 90 dni (poprz. 90)", "Trend", "Śr. czas emisji (dni)", `Evergreeny ≥${f.evDays} dni`, "Śr. zasięg reklamy"],
+    sel.map(r => [r.pageName, r.isMain ? "analizowana marka" : "konkurent", r.s.aktywne, r.s.lacznie, `${r.s.n30} (${r.s.p30})`, `${r.s.n90} (${r.s.p90})`, r.trend, r.s.sredniCzasEmisji, r.s.evergreeny, mdN(r.s.sredniZasieg)])));
+  L.push(`\nIndeks aktywności 0–100 ${TAG.p} (wagi: ${INDEX_PARTS.map(([, l, w]) => `${l.toLowerCase()} ${Math.round(w * 100)}%`).join(", ")}):\n`);
+  L.push(mdTable(["Marka", "Indeks", ...INDEX_PARTS.map(x => x[1])], sel.map(r => [r.pageName, r.idx.index, ...INDEX_PARTS.map(([k]) => Math.round(r.idx.parts[k]))])));
+
+  if (needs.has("budget")){
+    const tot = sel.reduce((a, r) => a + r.s.miesSr, 0), totA = sel.reduce((a, r) => a + r.s.aktywne, 0);
+    h(`### Budżet i udział w głosie ${TAG.p}`);
+    L.push(mdTable(["Marka", "Szac. koszt / mies. (zł)", "Widełki / mies. (zł)", "Szac. koszt ost. 30 dni (zł)", "Udział w szac. wydatkach", "Udział w aktywnych reklamach " + TAG.c],
+      sel.map(r => [r.pageName, fmt(r.s.miesSr), `${fmt(r.s.miesMin)}–${fmt(r.s.miesMax)}`, fmt(r.s.ost30), tot ? `${Math.round(r.s.miesSr / tot * 100)}%` : "—", totA ? `${Math.round(r.s.aktywne / totA * 100)}%` : "—"])));
+    const keys = sel[0].months.map(m => m.key);
+    const mt = keys.map((_, i) => sel.reduce((a, r) => a + r.months[i].reach, 0));
+    L.push(`\nUdział w zasięgu miesiąc po miesiącu ${TAG.c} (zasięg reklamy rozłożony równo na dni emisji):\n`);
+    L.push(mdTable(["Miesiąc", ...sel.map(r => r.pageName)], keys.map((k, i) => [k, ...sel.map(r => mt[i] ? `${Math.round(r.months[i].reach / mt[i] * 100)}%` : "—")])));
+    L.push(`\nEmitowane / nowe reklamy w miesiącu ${TAG.c}:\n`);
+    L.push(mdTable(["Miesiąc", ...sel.map(r => r.pageName)], keys.map((k, i) => [k, ...sel.map(r => `${r.months[i].emitowane} / ${r.months[i].nowe}`)])));
+  }
+
+  if (needs.has("creative")){
+    h(`### Kreacje i testowanie ${TAG.c}`);
+    L.push(mdTable(["Marka", "Wyłączane ≤7 dni", "Mediana życia zakończonych (dni)", "Śr. aktywnych naraz (90 dni)", "Maks. naraz", "Nowych na dzień startu", "Wiele wariantów tekstu (DCO)", "Śr. wiek aktywnych (dni)", "Koncepty / aktywne 90 dni " + TAG.p, "Fale startów w roku " + TAG.p],
+      sel.map(r => { const t = r.testing; return [r.pageName, mdP(t.killRate), mdN(t.lifeMed), mdN(t.concAvg), t.concMax, mdN(t.batchAvg), mdP(t.dco), mdN(t.ageActive), `${r.camp.concepts} / ${r.camp.concepts90}`, r.camp.waves365]; })));
+    L.push(`\nDługość emisji reklam (liczba reklam) ${TAG.c}:\n`);
+    L.push(mdTable(["Marka", ...LIFE_B.map(x => x[2])], sel.map(r => [r.pageName, ...r.testing.lifeHist.map(x => x[1])])));
+    if (sel.some(r => r.mediaLoaded)){
+      L.push(`\nFormaty i platformy ${TAG.d}:\n`);
+      L.push(mdTable(["Marka", ...Object.values(MEDIA_NAMES), "Facebook", "Instagram", "Messenger", "Audience Network"],
+        sel.map(r => [r.pageName, ...Object.keys(MEDIA_NAMES).map(k => r.mediaLoaded ? `${pct(r.media[k] || 0, r.rows.length)}%` : "—"), ...["facebook", "instagram", "messenger", "audience_network"].map(k => `${pct(r.msg.plat[k] || 0, r.rows.length)}%`)])));
+    }
+    for (const r of sel){
+      L.push(`\n**${r.pageName} — najczęstsze koncepty** ${TAG.p} (koncept = ten sam tekst główny):\n`);
+      L.push(mdTable(["Tekst konceptu", "Reklam", "Aktywnych", "Suma zasięgu", "Od", "Do"], r.camp.top.slice(0, 8).map(c => [c.text.slice(0, 180), c.n, c.active, fmt(c.reach), iso(c.first), iso(c.last)])));
+    }
+  }
+
+  if (needs.has("message")){
+    h(`### Komunikacja i copy`);
+    L.push(`Metryki tekstów ${TAG.p} (wykrywane automatycznie):\n`);
+    L.push(mdTable(["Marka", "Śr. długość (znaki)", "Z CTA", "Z emoji", "Z pytaniem", "Z wykrzyknikiem", "Ton sprzedażowy (oferta/cena/rabat)", "Najczęstsze słowa (w ilu reklamach)"],
+      sel.map(r => { const c = r.copy; return [r.pageName, mdN(c.lenAvg), mdP(c.cta), mdP(c.emoji), mdP(c.question), mdP(c.excl), `${pct(c.salesy, r.rows.length)}%`, r.msg.words.slice(0, 10).map(([w, n]) => `${w} (${n})`).join(", ")]; })));
+    L.push(`\nPowtarzające się hasła, domeny i nagłówki ${TAG.d}/${TAG.c}:\n`);
+    for (const r of sel) L.push(`- **${r.pageName}** — hasła: ${r.msg.phrases.map(([w, n]) => `„${w}” (${n})`).join(", ") || "—"}; domeny: ${r.msg.domains.map(([d, n]) => `${d} (${pct(n, r.rows.length)}%)`).join(", ") || "—"}${r.msg.paths.length ? `; podstrony: ${r.msg.paths.map(([p, n]) => `${p} (${n})`).join(", ")}` : ""}; nagłówki pod grafiką: ${r.msg.linkTitles.map(([t, n]) => `„${t}” (${n})`).join(", ") || "—"}`);
+    if (multi && sel.some(r => r.isMain)){
+      const g = wordGaps(sel);
+      L.push(`\nLuka komunikacyjna ${TAG.p}:\n- Konkurencja często używa, ${M} rzadko lub wcale: ${g.theirs.map(([w, v]) => `${w} (${v}% reklam konkurencji)`).join(", ") || "brak wyraźnych różnic"}\n- Wyróżniki marki ${M}: ${g.ours.map(([w, v]) => `${w} (${v}%)`).join(", ") || "brak wyraźnych różnic"}`);
+    }
+  }
+
+  if (needs.has("offers")){
+    h(`### Oferty, rabaty i ceny ${TAG.p}`);
+    L.push(mdTable(["Marka", "Reklamy z rabatem %", "Śr. rabat", "Maks. rabat", "Reklamy z ceną", "Mediana ceny", "Zakres cen", ...OFFERS.map(x => x[0])],
+      sel.map(r => { const p = r.prices; return [r.pageName, mdP(p.discPct), p.discAvg == null ? "—" : `−${p.discAvg}%`, p.discMax == null ? "—" : `−${p.discMax}%`, mdP(p.pricePct), fmtZl(p.priceMed), p.priceMin == null ? "—" : `${fmtZl(p.priceMin)}–${fmtZl(p.priceMax)}`, ...OFFERS.map(([n]) => `${pct(r.msg.offers[n] || 0, r.rows.length)}%`)]; })));
+    L.push(`\n_Rabaty i ceny wykrywane w tekstach automatycznie (np. „-30%”, „49,99 zł”); ceny obejmują też progi typu „darmowa dostawa od 99 zł”._`);
+  }
+
+  if (needs.has("audience")){
+    h(`### Odbiorcy`);
+    L.push(`Rozkład zasięgu wg wieku i płci ${TAG.d} (% zasięgu marki w UE):\n`);
+    const rowsA = [];
+    for (const a of AGE_ORDER) for (const [g, gl] of [["f", "kobiety"], ["m", "mężczyźni"]])
+      if (sel.some(r => r.demo.cells[a] && r.demo.cells[a][g])) rowsA.push([`${a} ${gl}`, ...sel.map(r => r.demo.demoTotal && r.demo.cells[a] ? `${(r.demo.cells[a][g] / r.demo.demoTotal * 100).toFixed(1).replace(".", ",")}%` : "—")]);
+    L.push(mdTable(["Grupa", ...sel.map(r => r.pageName)], rowsA));
+    L.push(`\nKraje (udział w zasięgu) ${TAG.d}: ${sel.map(r => `${r.pageName}: ${topN(r.demo.country, 4).map(([k, v]) => `${k} ${pct(v, r.demo.demoTotal)}%`).join(", ") || "—"}`).join(" · ")}`);
+    if (multi){ const gp = demoGaps(sel); if (gp.length) L.push(`\nLuki demograficzne ${TAG.c} (udział grupy u konkurencji minus u marki ${M}, w pp): ${gp.map(x => `${x.label} ${x.v > 0 ? "+" : ""}${x.v.toFixed(1).replace(".", ",")}`).join("; ")}`); }
+    L.push(`\nTargetowanie deklarowane przez reklamodawców ${TAG.d}:\n`);
+    for (const r of sel){ const t = r.targ; L.push(`- **${r.pageName}** (${t.tAds} reklam z danymi): wiek ${topN(t.tAge, 3).map(([k, v]) => `${k} (${pct(v, t.tAds)}%)`).join(", ") || "—"}; płeć ${topN(t.tGen, 3).map(([k, v]) => `${GENDER_PL[k] || k} (${pct(v, t.tAds)}%)`).join(", ") || "—"}; lokalizacje ${topN(t.tLoc, 5).map(([k, v]) => `${k} (${v})`).join(", ") || "—"}${Object.keys(t.tExc).length ? `; wykluczone ${topN(t.tExc, 4).map(([k, v]) => `${k} (${v})`).join(", ")}` : ""}; płatnicy ${topN(t.payers, 3).map(([k, v]) => `${k} (${pct(v, t.payAds)}%)`).join(", ") || "—"}`); }
+  }
+
+  if (needs.has("calendar")){
+    h(`### Kalendarz i sezonowość ${TAG.c}`);
+    L.push(mdTable(["Marka", ...WEEKDAYS_FULL], sel.map(r => { const t = r.cal.dow.reduce((a, b) => a + b, 0); return [r.pageName, ...r.cal.dow.map(v => t ? `${pct(v, t)}%` : "—")]; })));
+    L.push(`\nFale startów (dni z ≥3 nowymi reklamami) ${TAG.p}:\n`);
+    for (const r of sel) L.push(`- **${r.pageName}**: ${r.camp.waves.slice(0, 10).map(w => `${iso(w.t)} (${w.n} reklam, „${w.text.slice(0, 60)}${w.text.length > 60 ? "…" : ""}”)`).join("; ") || "brak"}`);
+    const kd = keyDatesAround(todayUTC - 365 * DAY, todayUTC + 120 * DAY);
+    L.push(`\nWażne daty i liczba nowych reklam w 30 dniach przed nimi ${TAG.c}:\n`);
+    L.push(mdTable(["Data", "Okazja", ...sel.map(r => r.pageName)], kd.map(k => [iso(k.t), k.name + (k.t > todayUTC ? " (nadchodzi)" : ""), ...sel.map(r => k.t > todayUTC ? "—" : r.rows.filter(x => x.start >= k.t - 30 * DAY && x.start <= k.t).length)])));
+  }
+
+  if (needs.has("changes") && sel.some(r => r.changes && !r.changes.first)){
+    h(`### Zmiany od ostatniej analizy ${TAG.d}`);
+    for (const r of sel){ const c = r.changes; if (!c || c.first) continue;
+      L.push(`- **${r.pageName}** (porównanie z ${c.prevDate}, ${c.days} dni temu): +${c.newAds.length} nowych reklam w bibliotece, ${c.ended.length} wyłączonych; aktywnych ${c.prev.aktywne} → ${c.now.aktywne}; szac. koszt ${fmt(c.prev.miesSr)} → ${fmt(c.now.miesSr)} zł/mies. ${TAG.p}; nowe teksty: ${[...new Set(c.newAds.map(x => (x.text || x.title).slice(0, 80)).filter(Boolean))].slice(0, 5).map(t => `„${t}”`).join("; ") || "—"}`); }
+  }
+
+  if (needs.has("social") && sel.some(r => r.pol && r.pol.n)){
+    h(`### Reklamy społeczne i polityczne ${TAG.d} (rzeczywiste przedziały z Meta)`);
+    L.push(mdTable(["Marka", "Reklamy", "Aktywne", `Wydatki`, "Wyświetlenia", "Płacący"], sel.filter(r => r.pol && r.pol.n).map(r => [r.pageName, r.pol.n, r.pol.active, `${fmt(r.pol.spLo)}–${fmt(r.pol.spHi)} ${r.pol.currency}${r.pol.openUpper ? " (górna granica zaniżona)" : ""}`, `${fmt(r.pol.imLo)}–${fmt(r.pol.imHi)}`, r.pol.bylines.map(x => x[0]).join(", ")])));
+  }
+
+  if (needs.has("texts") && o.texts){
+    h(`### Teksty reklam (próbka) ${TAG.d}`);
+    L.push(`_Do ${o.texts} reklam na markę, bez powtórzeń tego samego tekstu: aktywne o największym zasięgu, najdłużej działające (evergreeny) i najnowsze. Link: https://www.facebook.com/ads/library/?id=ID_`);
+    for (const r of sel){
+      const tx = aiTexts(r, o.texts);
+      L.push(`\n#### ${r.pageName}\n`);
+      L.push(tx.length ? tx.map(({x, why}) => `- **ID ${x.id}** · ${why} · ${x.active ? "aktywna" : "zakończona"} · start ${iso(x.start)} · ${x.days} dni · zasięg ${fmt(x.reach)}${x.media ? ` · ${MEDIA_NAMES[x.media]}` : ""}${x.domain ? ` · ${x.domain}` : ""}\n  > ${x.body.slice(0, 500).replace(/\n/g, " ")}${x.title ? `\n  > Nagłówek: ${x.title}` : ""}`).join("\n") : "_brak tekstów_");
+    }
+  }
+
+  if (o.botNotes){
+    h(`### Automatyczne wnioski narzędzia ${TAG.x} — zweryfikuj je, nie przyjmuj bez sprawdzenia`);
+    const strip = t => String(t).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+    if (multi){ const ins = insights(sel).match(/<li>([\s\S]*?)<\/li>/g) || []; L.push(ins.map(x => `- ${strip(x)}`).join("\n")); }
+    L.push(`\nRekomendacje reguł:\n` + recommendations(sel).map(x => `- [${PRIO[x.prio][0]}] ${x.area}: **${x.title}** — ${strip(x.why)} → ${x.todo}`).join("\n"));
+  }
+
+  h(`---\n\n## Ograniczenia danych (pamiętaj o nich w analizie)`);
+  L.push([
+    `- Brak danych o wynikach reklam (CTR, konwersje, ROAS) i realnych wydatkach reklam komercyjnych.`,
+    `- Koszty, indeks aktywności, koncepty, fale startów, rabaty, ceny, ton i CTA to ${TAG.p} — modele i automatyczne wykrywanie.`,
+    `- Zasięg i demografia dotyczą tylko UE; sumy zasięgu liczą te same osoby wielokrotnie.`,
+    `- Reklamy pojawiają się w bibliotece z opóźnieniem; zakończone reklamy znikają po ok. roku.`,
+    `- Wybór strony reklamodawcy mógł być automatyczny (po nazwie) — jeśli dane marki wyglądają nietypowo, zasygnalizuj to.`
+  ].join("\n"));
+  return L.join("\n").replace(/\n{3,}/g, "\n\n") + "\n";
+}
+
 // ================================================================ lupa detektywa: oznaczenia źródeł
 const MARKS = {d: ["Czyste dane", "var(--kd)"], c: ["Obliczenia", "var(--kc)"], p: ["Poszlaki", "var(--kp)"], x: ["Dedukcja detektywa", "var(--kx)"]};
 const activeMarks = () => Object.keys(MARKS).filter(k => document.body.classList.contains("mk-" + k));
@@ -2417,6 +2752,7 @@ const marksLegend = () => { const a = activeMarks(); return a.length ? `<div cla
 $("go").onclick = run;
 $("xlsx").onclick = exportXlsx;
 $("pdf").onclick = openPdfPanel;
+$("ai").onclick = openAiPanel;
 $("clear").onclick = () => { results = []; renderAll(); setStatus(""); };
 $("discGo").onclick = discover;
 $("discAdd").onclick = addDiscovered;
@@ -2425,7 +2761,20 @@ $("setSave").onclick = saveSet; $("setLoad").onclick = loadSet; $("setDel").oncl
 $("setExport").onclick = exportSets; $("setImport").onclick = () => $("setFile").click();
 $("snapExport").onclick = exportSnaps; $("snapImport").onclick = () => $("snapFile").click(); $("snapFile").onchange = importSnaps;
 ["brand","page","token"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") run(); }));
-["fDays","fPlat","fMedia","fEv","fActive"].forEach(id => $(id).addEventListener("change", rerender));
+["fDays","fPlat","fMedia","fActive"].forEach(id => $(id).addEventListener("change", rerender));
+(function initEv(){
+  const ev = $("evDays"), fev = $("fEv");
+  const sv = +store.get("metaAdsBotEvDays"); if (sv >= 7 && sv <= 365) ev.value = sv;
+  fev.value = ev.value;
+  $("evPresets").innerHTML = [14, 30, 45, 60, 90].map(d => `<button type="button" class="chip" data-ev="${d}">${d}</button>`).join("");
+  const mark = () => $("evPresets").querySelectorAll(".chip").forEach(b => b.classList.toggle("on", +b.dataset.ev === evDaysVal()));
+  let t;
+  const apply = (src) => { if (src !== ev) ev.value = src.value; if (src !== fev) fev.value = src.value; mark();
+    clearTimeout(t); t = setTimeout(() => { const v = evDaysVal(); if (String(v) !== String(ev.value).trim()) { ev.value = v; fev.value = v; } store.set("metaAdsBotEvDays", v); if (results.length) rerender(); }, 350); };
+  ev.addEventListener("input", () => apply(ev)); fev.addEventListener("input", () => apply(fev));
+  $("evPresets").querySelectorAll(".chip").forEach(b => b.onclick = () => { ev.value = b.dataset.ev; apply(ev); });
+  mark();
+})();
 let rt; ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(rt); rt = setTimeout(() => results.length && rerender(), 300); }));
 $("lang").addEventListener("change", () => results.length && setStatus("Zmiana języka wymaga ponownego „Analizuj”."));
 refreshSets();
