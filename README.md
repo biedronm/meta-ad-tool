@@ -1,4 +1,5 @@
 #  https://biedronm.github.io/meta-ad-tool/
+
 # 🔍 Meta Ads Bot — README
 
 Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
@@ -50,6 +51,7 @@ Jeśli widzisz nazwy stron — wszystko działa. Ważne: weryfikacja, aplikacja 
 5. Wpisz **konkurentów** — jeden w linii: sama nazwa albo `Nazwa; ID strony lub link`.
    Nie wiesz, kogo wpisać? Rozwiń **„🔎 Odkryj konkurentów po frazie”**, wpisz np. „krem z filtrem”, zaznacz reklamodawców i kliknij „Dodaj zaznaczone do konkurentów”.
 6. Opcjonalnie ustaw **limit reklam na konto** — domyślny dla wszystkich i osobno dla każdej marki (np. 250 dla dużego konkurenta). Przy limicie bot bierze najpierw aktywne reklamy, potem zakończone. Wyniki takiej marki są oznaczone jako **próba** (żółty baner), bo liczby bezwzględne — liczba reklam, zasięg, koszt, udział w głosie — są wtedy zaniżone; wskaźniki procentowe są bardziej miarodajne. Przy limicie zakładka „Zmiany” nie zapisuje migawki.
+   Pod spodem wybierz **okres** („Z jakiego okresu”): cała historia, ostatnie 7 / 14 dni, ostatni miesiąc, 3 miesiące, pół roku, rok, poprzedni miesiąc, ten / poprzedni kwartał, ten / poprzedni rok albo **własny zakres dat**. Okres jest wspólny dla wszystkich kont, żeby porównanie było uczciwe. Liczą się reklamy **emitowane choć jeden dzień w okresie** (także uruchomione wcześniej); limit reklam liczy się już tylko z nich. Zasięg i wydatki z API dotyczą całej emisji reklamy, nie samego okresu — bot pokazuje to w banerze 🗓, w PDF, Excelu („Zakres danych”) i pliku dla AI. Przy wybranym okresie zakładka „Zmiany” nie zapisuje migawki.
 7. Ustaw próg **evergreen** (ile dni emisji traktujemy jako „sprawdzoną” reklamę, domyślnie 30).
 8. Kliknij **Analizuj**.
 
@@ -156,7 +158,7 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 
 ## 7. Zestawy konkurentów i migawki
 
-**Zestawy** (przyciski u góry formularza): zapisz markę, konkurentów, obszar, język i limity reklam pod nazwą, np. „Natura — drogerie”, i wczytuj jednym kliknięciem. „Eksport / Import” przenosi zestawy między komputerami.
+**Zestawy** (przyciski u góry formularza): zapisz markę, konkurentów, obszar, język, limity reklam i okres pod nazwą, np. „Natura — drogerie”, i wczytuj jednym kliknięciem. „Eksport / Import” przenosi zestawy między komputerami.
 
 **Migawki** zapisują się automatycznie po każdej analizie (jedna dziennie na stronę i obszar). Przy kolejnej analizie — najwcześniej następnego dnia — zakładka **Zmiany** pokaże różnice. Migawki żyją w przeglądarce: przed zmianą komputera lub czyszczeniem danych zrób „Eksport migawek”.
 
@@ -217,4 +219,3 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 - Plik działa w całości w Twojej przeglądarce. Dane idą tylko między przeglądarką a Meta (graph.facebook.com). Biblioteka do Excela ładuje się z cdnjs, czcionka z Google Fonts.
 - Token zapisuje się tylko lokalnie i tylko wtedy, gdy zaznaczysz „Zapamiętaj token”. **Nie wysyłaj tokena nikomu** — działa jak hasło.
 - Zestawy, migawki, ustawienia i logo do PDF są w pamięci przeglądarki (localStorage) na tym komputerze.
-
