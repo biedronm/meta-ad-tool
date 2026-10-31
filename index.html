@@ -42,7 +42,7 @@
   --r-lg:12px; --r-md:8px; --r-sm:6px;
   --appbar:48px;
 }
-:root[data-theme="light"]{
+:root[data-theme="light"],.light-scope{
   color-scheme:light;
   --bg:#FBFBFD; --bg-2:#F7F7F9; --card:#FFFFFF; --card-2:#F5F5F7; --field:#FFFFFF;
   --glass:rgba(251,251,253,.78);
@@ -204,6 +204,8 @@ button:disabled{opacity:.5;cursor:wait}
 
 /* ---------------------------------------------------------------- KPI */
 .kpis{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpis:has(> .kpi:nth-child(6)){grid-template-columns:repeat(3,1fr)}
+@media (max-width:640px){.kpis:has(> .kpi:nth-child(6)){grid-template-columns:repeat(2,1fr)}}
 .kpi{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--bg-2)}
 .kpi .v{font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.03em}
 .kpi .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px;line-height:1.35}
@@ -299,6 +301,8 @@ details.sec > summary > span:first-child{flex:1}
 .rp-label{font:600 7pt var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .rp-note{background:var(--accent-soft);border-left:2px solid var(--accent);border-radius:4px;padding:11px 14px;margin-bottom:6px}
 .rp .kpis{grid-template-columns:repeat(5,1fr);gap:8px}
+.rp .kpis:has(> .kpi:nth-child(6)){grid-template-columns:repeat(6,1fr)}
+.rp .kpis:has(> .kpi:nth-child(6)) .v{font-size:11.5pt}
 .rp .kpi{padding:9px 10px;background:var(--card-2)}
 .rp .kpi .v{font-size:13.5pt}
 .rp .kpi .l{font-size:6.5pt}
@@ -611,6 +615,95 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .limwarn{display:block;margin-top:10px;padding:9px 12px;border-radius:8px;background:color-mix(in srgb,var(--c5) 8%,transparent);border:1px solid color-mix(in srgb,var(--c5) 30%,transparent);font-size:12.5px;line-height:1.5;color:var(--text)}
 .limwarn > .ic{color:var(--c5);margin-right:5px}
 .rp .limwarn{font-size:8.5pt}
+
+/* ---------------------------------------------------------------- ekran ładowania */
+body.is-loading #status{display:none}
+.loader{margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);padding:16px 16px 10px;overflow:hidden}
+.ld-head{display:flex;align-items:center;gap:12px}
+.ld-lens{width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--accent);overflow:hidden}
+.ld-lens svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;animation:ldscan 2.4s ease-in-out infinite}
+@keyframes ldscan{0%,100%{transform:translate(-3px,-2px)}25%{transform:translate(3px,-2px)}50%{transform:translate(3px,2px)}75%{transform:translate(-3px,2px)}}
+.ld-title{flex:1;min-width:0;display:flex;flex-direction:column}
+.ld-title b{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.ld-title span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ld-meta{display:flex;flex-direction:column;align-items:flex-end;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ld-pct{font-size:15px;font-weight:500;letter-spacing:-.02em}
+.ld-time{font-size:11px;color:var(--faint)}
+.ld-bar{height:3px;background:var(--track);border-radius:2px;margin:14px 0 8px;overflow:hidden;position:relative}
+.ld-bar > div{height:100%;background:var(--accent);border-radius:2px;transition:width .5s cubic-bezier(.2,.7,.2,1);position:relative;overflow:hidden}
+.ld-bar > div::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-100%);animation:ldsheen 1.6s ease-in-out infinite}
+@keyframes ldsheen{to{transform:translateX(100%)}}
+.ld-list{list-style:none;margin:0;padding:0}
+.ld-row{display:grid;grid-template-columns:18px minmax(90px,200px) 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px;animation:ldin .3s ease both}
+.ld-row:first-child{border-top:none}
+@keyframes ldin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.ld-ic{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line-3);display:grid;place-items:center;flex:none}
+.ld-ic svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ld-row.run .ld-ic{border-color:var(--track);border-top-color:var(--accent);animation:ldspin .8s linear infinite}
+@keyframes ldspin{to{transform:rotate(360deg)}}
+.ld-row.done .ld-ic,.ld-row.skip .ld-ic{border-color:color-mix(in srgb,var(--good) 55%,transparent);background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+.ld-row.skip .ld-ic{border-color:var(--line-3);background:var(--track);color:var(--muted)}
+.ld-row.err .ld-ic{border-color:color-mix(in srgb,var(--bad) 55%,transparent);background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.ld-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ld-row.wait .ld-name,.ld-row.wait .ld-txt{color:var(--faint)}
+.ld-txt{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ld-row.err .ld-txt{color:var(--bad);white-space:normal}
+.ld-n{font:11.5px var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;white-space:nowrap}
+.ld-row.run .ld-n{color:var(--text)}
+@media (max-width:560px){.ld-row{grid-template-columns:18px 1fr auto}.ld-txt{grid-column:2/-1;grid-row:2}}
+@media (prefers-reduced-motion:reduce){.ld-lens svg,.ld-bar > div::after,.ld-row.run .ld-ic,.ld-row{animation:none}}
+
+/* ---------------------------------------------------------------- puste stany */
+.nodata{display:flex;align-items:center;gap:10px;padding:14px 16px!important;margin:4px 0;border:1px dashed var(--line-2);border-radius:10px;color:var(--muted);font-size:12.5px;line-height:1.5;background:color-mix(in srgb,var(--text) 1.5%,transparent)}
+.nodata::before{content:"";width:16px;height:16px;flex:none;background:var(--faint);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m20 20-4.6-4.6M8 10.5h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m20 20-4.6-4.6M8 10.5h5'/%3E%3C/svg%3E") center/contain no-repeat}
+.rp .nodata{padding:8px 10px!important;font-size:8.5pt}
+.stackrow .nodata,.share .nodata{border:none;background:none;padding:0!important;margin:0}.stackrow .nodata::before,.share .nodata::before{display:none}
+.empty-hero{text-align:center;padding:44px 24px 36px;border-style:dashed;border-color:var(--line-2);background:transparent}
+#resultsCard:not(.hidden) ~ #emptyCard,body.is-loading #emptyCard{display:none}
+.eh-ic{width:48px;height:48px;margin:0 auto 16px;border-radius:12px;border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--muted)}
+.eh-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.eh-t{font-size:16px;font-weight:600;letter-spacing:-.02em}
+.eh-s{max-width:460px;margin:6px auto 0;font-size:13px;color:var(--muted);line-height:1.6}
+.eh-s b{color:var(--text);font-weight:500}
+.eh-steps{list-style:none;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:20px 0 0;padding:0}
+.eh-steps li{display:flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--muted)}
+.eh-steps span{font:500 10.5px var(--mono);color:var(--faint)}
+@media print{#emptyCard,.loader{display:none!important}}
+
+/* ---------------------------------------------------------------- ustawienia zaawansowane */
+.adv{margin-top:20px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2)}
+.adv > summary{margin:0;padding:12px 14px;color:var(--text);flex-wrap:wrap;row-gap:6px}
+.adv-t{font-size:13px;font-weight:500}
+.adv-sum{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+.adv-sum span{font:400 11px var(--mono);color:var(--muted);padding:2px 7px;border:1px solid var(--line);border-radius:5px;background:var(--card)}
+.adv[open] .adv-sum{display:none}
+.adv-body{padding:2px 16px 16px;border-top:1px solid var(--line)}
+.adv-sec{padding-top:16px}
+.adv-sec + .adv-sec{margin-top:18px;border-top:1px solid var(--line)}
+.adv .limits{background:var(--card)}
+@media (max-width:640px){.adv-sum{margin-left:0}}
+
+/* ---------------------------------------------------------------- PNG: przycisk przy wykresie i scena renderowania */
+.blk > h3{display:flex;align-items:center;gap:8px}
+.blkpng{margin-left:auto;min-height:0;padding:2px 7px;gap:4px;border-radius:5px;background:transparent!important;border:1px solid var(--line);color:var(--faint);font:500 10px var(--mono);letter-spacing:.04em;opacity:0;transition:opacity .15s,color .15s,border-color .15s}
+.blkpng .ic{width:11px;height:11px}
+.blk:hover .blkpng,.blkpng:focus-visible{opacity:1}
+.blkpng:hover{color:var(--text);border-color:var(--line-3)}
+@media (hover:none){.blkpng{opacity:1}}
+.png-stage{position:fixed;left:-20000px;top:0;width:1000px;pointer-events:none;color:var(--text);font:14px/1.55 var(--sans)}
+.png-src{width:960px}
+.png-frame{width:960px;padding:28px 32px 20px;background:var(--card);color:var(--text);font:14px/1.55 var(--sans)}
+.png-frame .pf-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:6px;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.png-frame .pf-brand{display:inline-flex;align-items:center;gap:8px;color:var(--text)}
+.png-frame .pf-brand i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.png-frame .blk{margin:0!important;padding:0!important;background:none!important;box-shadow:none!important;outline:none!important}
+.png-frame .blk::before{display:none!important}
+.png-frame .blk > h3{font-size:20px;font-weight:600;letter-spacing:-.02em;text-transform:none;color:var(--text);margin:0 0 18px}
+.png-frame [data-k]{box-shadow:none!important;outline:none!important}
+.png-frame .kpi::after,.png-frame .mk::after{display:none!important}
+.png-frame .pf-foot{display:flex;justify-content:space-between;gap:16px;margin-top:20px;padding-top:10px;border-top:1px solid var(--line);font:400 10.5px var(--mono);color:var(--faint)}
+.png-frame .two,.png-frame .three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+@media print{#stratCard,.blkpng{display:none!important}}
 </style>
 </head>
 <body>
@@ -765,19 +858,6 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
         <input id="page" placeholder="123456789 lub ...view_all_page_id=123...">
         <div class="hint">Pewniejsze niż sama nazwa marki.</div>
       </div>
-      <div>
-        <label for="lang">Język reklam</label>
-        <select id="lang">
-          <option value="">dowolny</option><option value="pl">polski</option><option value="en">angielski</option>
-          <option value="de">niemiecki</option><option value="cs">czeski</option><option value="sk">słowacki</option>
-          <option value="uk">ukraiński</option><option value="fr">francuski</option><option value="es">hiszpański</option><option value="it">włoski</option>
-        </select>
-      </div>
-      <div>
-        <label for="evDays">Evergreen = reklama działająca co najmniej</label>
-        <div class="row" style="flex-wrap:nowrap"><input id="evDays" type="number" min="7" max="365" step="1" value="30" style="max-width:110px"><span class="field-unit">dni</span></div>
-        <div class="chips" id="evPresets" style="margin-top:8px"></div>
-      </div>
     </div>
 
     <div style="margin-top:20px">
@@ -797,63 +877,93 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
       <textarea id="comp" placeholder="Rossmann&#10;Hebe; 123456789&#10;Super-Pharm; https://www.facebook.com/ads/library/?...view_all_page_id=987654321"></textarea>
       <div class="hint">Sama nazwa albo „Nazwa; ID strony lub link”. Nie wiesz, kogo wpisać? Użyj „Odkryj konkurentów po frazie” niżej.</div>
     </div>
-    <div class="limits">
-      <div class="limhead"><label for="limDef" style="margin:0">Ile reklam analizować na konto</label>
-        <select id="limDef" style="width:auto"><option value="0">wszystkie (bez limitu)</option><option value="100">100</option><option value="250">250</option><option value="500">500</option><option value="1000">1000</option><option value="2000">2000</option><option value="5000">5000</option></select>
-        <span class="hint" style="margin:0">— domyślnie dla wszystkich; niżej możesz ustawić inaczej dla każdego konta.</span></div>
-      <div id="limRows" class="limrows"></div>
-      <div class="hint">Przy limicie bot bierze najpierw <b>aktywne</b> reklamy, potem zakończone (w kolejności zwracanej przez Meta). Wyniki dotyczą wtedy próby, nie całej biblioteki — bot to wyraźnie oznaczy. Limit przyspiesza analizę dużych marek.</div>
-      <div class="limhead limgap"><label for="period" style="margin:0">Z jakiego okresu</label>
-        <select id="period" style="width:auto">
-          <option value="all">cała historia (bez ograniczenia)</option>
-          <option value="d7">ostatnie 7 dni</option>
-          <option value="d14">ostatnie 14 dni</option>
-          <option value="m1">ostatni miesiąc (30 dni)</option>
-          <option value="m3">ostatnie 3 miesiące (90 dni)</option>
-          <option value="m6">ostatnie pół roku (182 dni)</option>
-          <option value="y1">ostatni rok (365 dni)</option>
-          <option value="pm">poprzedni miesiąc kalendarzowy</option>
-          <option value="tq">ten kwartał (od początku)</option>
-          <option value="pq">poprzedni kwartał kalendarzowy</option>
-          <option value="ty">ten rok (od 1 stycznia)</option>
-          <option value="py">poprzedni rok kalendarzowy</option>
-          <option value="custom">własny zakres dat…</option>
-        </select>
-        <span id="periodCustom" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="date" id="pFrom" style="width:auto"> – <input type="date" id="pTo" style="width:auto">
-        </span>
-        <span class="hint" id="periodHint" style="margin:0"></span></div>
-      <div class="hint">Okres dotyczy wszystkich kont (żeby porównanie było uczciwe). Bot bierze reklamy, które <b>były emitowane choć jeden dzień w tym okresie</b> — także te uruchomione wcześniej. Limit liczby reklam liczy się już tylko z reklam z tego okresu. Uwaga: zasięg z API to zasięg całej emisji reklamy, nie tylko z wybranego okresu.</div>
-    </div>
 
-    <details>
-      <summary>Założenia do szacowania kosztu i ustawienia</summary>
-      <div class="bench">
-        <div><label for="bench">Benchmark branżowy</label><select id="bench"></select></div>
-        <div class="hint" id="benchHint" style="margin:0"></div>
+    <details id="adv" class="adv">
+      <summary><span class="adv-t">Ustawienia zaawansowane</span><span class="adv-sum" id="advSum"></span></summary>
+      <div class="adv-body">
+        <div class="adv-sec">
+          <div class="section-lbl">Zakres analizy</div>
+          <div class="grid" style="margin-top:12px">
+          <div>
+            <label for="lang">Język reklam</label>
+            <select id="lang">
+              <option value="">dowolny</option><option value="pl">polski</option><option value="en">angielski</option>
+              <option value="de">niemiecki</option><option value="cs">czeski</option><option value="sk">słowacki</option>
+              <option value="uk">ukraiński</option><option value="fr">francuski</option><option value="es">hiszpański</option><option value="it">włoski</option>
+            </select>
+          </div>
+          <div>
+            <label for="evDays">Evergreen = reklama działająca co najmniej</label>
+            <div class="row" style="flex-wrap:nowrap"><input id="evDays" type="number" min="7" max="365" step="1" value="30" style="max-width:110px"><span class="field-unit">dni</span></div>
+            <div class="chips" id="evPresets" style="margin-top:8px"></div>
+          </div>
+            <div>
+              <label for="conc">Pobieranie marek</label>
+              <select id="conc"><option value="3">równolegle — 3 naraz (najszybciej)</option><option value="2">równolegle — 2 naraz</option><option value="1">po kolei (najbezpieczniej przy limitach API)</option></select>
+              <div class="hint">Przy błędach limitu zapytań zmniejsz do 1–2.</div>
+            </div>
+          </div>
+        <div class="limits">
+          <div class="limhead"><label for="limDef" style="margin:0">Ile reklam analizować na konto</label>
+            <select id="limDef" style="width:auto"><option value="0">wszystkie (bez limitu)</option><option value="100">100</option><option value="250">250</option><option value="500">500</option><option value="1000">1000</option><option value="2000">2000</option><option value="5000">5000</option></select>
+            <span class="hint" style="margin:0">— domyślnie dla wszystkich; niżej możesz ustawić inaczej dla każdego konta.</span></div>
+          <div id="limRows" class="limrows"></div>
+          <div class="hint">Przy limicie bot bierze najpierw <b>aktywne</b> reklamy, potem zakończone (w kolejności zwracanej przez Meta). Wyniki dotyczą wtedy próby, nie całej biblioteki — bot to wyraźnie oznaczy. Limit przyspiesza analizę dużych marek.</div>
+          <div class="limhead limgap"><label for="period" style="margin:0">Z jakiego okresu</label>
+            <select id="period" style="width:auto">
+              <option value="all">cała historia (bez ograniczenia)</option>
+              <option value="d7">ostatnie 7 dni</option>
+              <option value="d14">ostatnie 14 dni</option>
+              <option value="m1">ostatni miesiąc (30 dni)</option>
+              <option value="m3">ostatnie 3 miesiące (90 dni)</option>
+              <option value="m6">ostatnie pół roku (182 dni)</option>
+              <option value="y1">ostatni rok (365 dni)</option>
+              <option value="pm">poprzedni miesiąc kalendarzowy</option>
+              <option value="tq">ten kwartał (od początku)</option>
+              <option value="pq">poprzedni kwartał kalendarzowy</option>
+              <option value="ty">ten rok (od 1 stycznia)</option>
+              <option value="py">poprzedni rok kalendarzowy</option>
+              <option value="custom">własny zakres dat…</option>
+            </select>
+            <span id="periodCustom" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="pFrom" style="width:auto"> – <input type="date" id="pTo" style="width:auto">
+            </span>
+            <span class="hint" id="periodHint" style="margin:0"></span></div>
+          <div class="hint">Okres dotyczy wszystkich kont (żeby porównanie było uczciwe). Bot bierze reklamy, które <b>były emitowane choć jeden dzień w tym okresie</b> — także te uruchomione wcześniej. Limit liczby reklam liczy się już tylko z reklam z tego okresu. Uwaga: zasięg z API to zasięg całej emisji reklamy, nie tylko z wybranego okresu.</div>
+        </div>
+        </div>
+        <div class="adv-sec">
+          <div class="section-lbl">Założenia do szacowania kosztu i wyświetleń</div>
+        <div class="bench">
+          <div><label for="bench">Benchmark branżowy</label><select id="bench"></select></div>
+          <div class="hint" id="benchHint" style="margin:0"></div>
+        </div>
+        <div class="grid">
+          <div><label for="cpmMin">CPM min (PLN)</label><input id="cpmMin" type="number" step="0.5" value="10"></div>
+          <div><label for="cpmMax">CPM max (PLN)</label><input id="cpmMax" type="number" step="0.5" value="25"></div>
+          <div><label for="freqMin">Częstotliwość min</label><input id="freqMin" type="number" step="0.1" value="1.3"></div>
+          <div><label for="freqMax">Częstotliwość max</label><input id="freqMax" type="number" step="0.1" value="2.0"></div>
+          <div><label for="ver">Wersja Graph API</label><input id="ver" value="v25.0"><div class="hint">Przy błędzie wersji wpisz np. v24.0</div></div>
+        </div>
+        <div class="hint" id="cpmHint"></div>
+        <div class="check"><input type="checkbox" id="withDemo" checked><span>Pobieraj demografię, targetowanie i płatników (wolniej przy dużych markach)</span></div>
+        <div class="check"><input type="checkbox" id="withMedia" checked><span>Pobieraj typ mediów — wideo / grafika (3 dodatkowe zapytania na markę)</span></div>
+        <div class="check"><input type="checkbox" id="withPol" checked><span>Sprawdzaj reklamy społeczne i polityczne (z prawdziwymi wydatkami)</span></div>
+        <div class="row" style="margin-top:12px"><span class="hint" style="margin:0">Migawki do śledzenia zmian zapisują się automatycznie w tej przeglądarce:</span>
+          <button class="ghost mini" id="snapExport">Eksport migawek</button><button class="ghost mini" id="snapImport">Import migawek</button><input type="file" id="snapFile" accept=".json" class="hidden"></div>
+        </div>
       </div>
-      <div class="grid">
-        <div><label for="cpmMin">CPM min (PLN)</label><input id="cpmMin" type="number" step="0.5" value="10"></div>
-        <div><label for="cpmMax">CPM max (PLN)</label><input id="cpmMax" type="number" step="0.5" value="25"></div>
-        <div><label for="freqMin">Częstotliwość min</label><input id="freqMin" type="number" step="0.1" value="1.3"></div>
-        <div><label for="freqMax">Częstotliwość max</label><input id="freqMax" type="number" step="0.1" value="2.0"></div>
-        <div><label for="ver">Wersja Graph API</label><input id="ver" value="v25.0"><div class="hint">Przy błędzie wersji wpisz np. v24.0</div></div>
-      </div>
-      <div class="hint" id="cpmHint"></div>
-      <div class="check"><input type="checkbox" id="withDemo" checked><span>Pobieraj demografię, targetowanie i płatników (wolniej przy dużych markach)</span></div>
-      <div class="check"><input type="checkbox" id="withMedia" checked><span>Pobieraj typ mediów — wideo / grafika (3 dodatkowe zapytania na markę)</span></div>
-      <div class="check"><input type="checkbox" id="withPol" checked><span>Sprawdzaj reklamy społeczne i polityczne (z prawdziwymi wydatkami)</span></div>
-      <div class="row" style="margin-top:12px"><span class="hint" style="margin:0">Migawki do śledzenia zmian zapisują się automatycznie w tej przeglądarce:</span>
-        <button class="ghost mini" id="snapExport">Eksport migawek</button><button class="ghost mini" id="snapImport">Import migawek</button><input type="file" id="snapFile" accept=".json" class="hidden"></div>
     </details>
     <div class="row actions">
       <button id="go">Analizuj</button>
       <button id="xlsx" class="ghost hidden">Pobierz Excel</button>
       <button id="pdf" class="ghost hidden">Raport PDF</button>
+      <button id="strat" class="ghost hidden">Pakiet do strategii (PNG + dane)</button>
       <button id="ai" class="ghost hidden">Eksport dla AI (.md)</button>
       <button id="clear" class="ghost hidden">Wyczyść wyniki</button>
     </div>
     <div id="status"></div>
+    <div id="loader" class="loader hidden" aria-live="polite"></div>
   </div>
 
   <div class="card">
@@ -888,7 +998,18 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 
   <div id="pdfCard" class="card hidden"></div>
   <div id="aiCard" class="card hidden"></div>
+  <div id="stratCard" class="card hidden"></div>
   <div id="resultsCard" class="card hidden"></div>
+  <div id="emptyCard" class="card empty-hero">
+    <div class="eh-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/><path d="M7.5 12.5v-2M10.5 12.5V8.5M13.5 12.5v-3"/></svg></div>
+    <div class="eh-t">Tu pojawi się raport</div>
+    <div class="eh-s">Akta są jeszcze puste. Uzupełnij dane wejściowe i kliknij <b>Analizuj</b> — wyniki marki i konkurencji pojawią się w tym miejscu.</div>
+    <ol class="eh-steps">
+      <li><span>01</span>Wklej token Meta</li>
+      <li><span>02</span>Wpisz markę i konkurentów</li>
+      <li><span>03</span>Wybierz obszar i okres</li>
+    </ol>
+  </div>
 </div>
 
 <div id="report"></div>
@@ -901,14 +1022,14 @@ const CPM = {PL:[10,25],CZ:[12,28],SK:[10,25],HU:[9,22],RO:[7,18],BG:[6,16],HR:[
 const AGE_ORDER = ["13-17","18-24","25-34","35-44","45-54","55-64","65+"];
 const PLATFORM_NAMES = {facebook:"Facebook",instagram:"Instagram",messenger:"Messenger",audience_network:"Audience Network",threads:"Threads",oculus:"Oculus",whatsapp:"WhatsApp"};
 const OFFERS = [
-  ["Rabat / % zniżki", /(-\s?\d{1,2}\s?%|\d{1,2}\s?%\s?(taniej|rabatu|zniżki|off|mniej)|\brabat|zniżk|\bdiscount|\b\d{1,2}% off)/i],
-  ["Darmowa dostawa", /(darmow\w* dostaw|bezpłatn\w* dostaw|free (shipping|delivery)|dostaw\w* gratis|dostawa 0 ?zł)/i],
-  ["Kod rabatowy", /(\bkod\w*\b|\bcode\b|\bkupon)/i],
-  ["Promocja / wyprzedaż", /(promocj|wyprzeda|okazj|\bsale\b|black ?friday|cyber ?monday|outlet|\bdeal)/i],
-  ["Gratis / prezent", /(gratis|prezent|w zestawie|free gift|\bdo zakupu\b)/i],
-  ["Konkurs", /(konkurs|wygraj|giveaway|losowani|do wygrania)/i],
-  ["Nowość", /(nowość|nowości|nowosc|nowa kolekcja|nowy produkt|premiera|\bnew\b|\bnowy\b|\bnowa\b)/i],
-  ["Pilność / ograniczony czas", /(ostatni\w* (dni|szans|sztuk|godzin)|tylko do|tylko dziś|tylko dzis|do końca|kończy się|konczy sie|limited|ograniczon|zostało|zostalo)/i],
+  ["Rabat / % zniżki", {test: t => discountsIn(t).length > 0 || /(?<!\p{L})(rabat|zniżk|znizk|przecen|discount)/iu.test(t)}],
+  ["Darmowa dostawa", /(darmow\p{L}* dostaw|bezpłatn\p{L}* dostaw|bezplatn\p{L}* dostaw|free (shipping|delivery)|dostaw\p{L}* gratis|dostaw\p{L}* (za )?0 ?zł)/iu],
+  ["Kod rabatowy", {test: t => /(kod\p{L}*\s+(rabatow|promocyjn|zniżkow|znizkow)|kupon|promo ?code|discount code|coupon)/iu.test(t) || /(?<!\p{L})(?:z\s+kodem|[Uu]żyj\s+kodu|[Uu]zyj\s+kodu|[Ww]pisz\s+kod|[Pp]odaj\s+kod|[Kk]od(?:em|u)?\s*:)\s*[„"']?[A-Z][A-Z0-9]{3,}/u.test(t)}],
+  ["Promocja / wyprzedaż", /((?<!\p{L})promocj|wyprzeda|okazyjn|(?<!\p{L})okazj[aęe](?!\p{L})|\bsale\b|black ?friday|cyber ?monday|\boutlet\b|\bdeals?\b)/iu],
+  ["Gratis / prezent", /((?<!\p{L})gratis|(?<!\p{L})prezent(y|u|em|ów|ow|ach|ami)?(?!\p{L})|w prezencie|free gift)/iu],
+  ["Konkurs", /(konkurs|wygraj|giveaway|losowani|do wygrania)/iu],
+  ["Nowość", /(nowość|nowości|nowosc|nowa kolekcja|nowy produkt|nowe produkty|premiera|(?<!\p{L})new(?!\p{L})|(?<!\p{L})nowy(?!\p{L})|(?<!\p{L})nowa(?!\p{L}))/iu],
+  ["Pilność / ograniczony czas", /(ostatni\p{L}* (dni|szans|sztuk|godzin)|tylko do (końca|konca|niedziel|poniedział|poniedzial|wtork|środy|srody|czwartk|piątk|piatk|soboty|\d)|tylko dziś|tylko dzis|tylko teraz|do końca (promocji|tygodnia|miesiąca|miesiaca|dnia|weekendu|zapasów|zapasow)|kończy się|konczy sie|limited|ograniczon\p{L}* (czas|ilość|ilosc|liczb|edycj|nakład|naklad|ofert)|zostało (tylko |już |juz |jeszcze )?\d|zostalo (tylko |juz |jeszcze )?\d)/iu],
 ];
 const STOP = new Set(("a aby ale bez bo by być był była było były co czy dla do gdy gdzie go i ich im ja jak jako je jego jej jest jestem jeszcze już juz ku lub ma mamy masz mi mnie może można na nad nam nas nasz nasza nasze naszych naszej naszym nawet nie niech nim nich nic no o od oraz po pod przez przy sie się są sa ta tak tam te tego tej ten też tez to tu tutaj twoje twój twoja twoich u w we wiele więcej wszystko wszystkie z za ze że zł zl już twojej twoim swoje swój swoja które który która które których dzięki teraz tylko kiedy coś cos bardzo jeśli jesli każdy kazdy każda kazda the and for you your with our are this that from all now get more new have has can will out not but its it's off what when who how why was were his her him she they them their there here than then just also into about over only very www com https http pl").split(" "));
 
@@ -933,7 +1054,92 @@ const topN = (obj, n) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0,
 const COLORS = 8;
 const color = i => `var(--c${i % COLORS})`;
 const ageColor = i => `var(--a${i})`;
-function setStatus(msg, err){ const el = $("status"); el.textContent = msg; el.className = err ? "err" : ""; }
+function setStatus(msg, err){
+  if (LOAD.on && !err) return loaderMsg(msg);
+  const el = $("status"); el.textContent = msg; el.className = err ? "err" : "";
+}
+// ================================================================ ekran ładowania (postęp analizy marek)
+const LOAD = {on: false, jobs: [], cur: -1, labels: [], note: "", t0: 0, timer: null};
+const LD_ICONS = {
+  done: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  err: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+function loaderStart(jobs){
+  LOAD.on = true; LOAD.cur = -1; LOAD.labels = []; LOAD.note = ""; LOAD.t0 = Date.now();
+  LOAD.jobs = jobs.map(j => ({name: j.brand || ("ID " + j.pageId), state: "wait", text: "w kolejce", subs: {}, n: null, p: 0}));
+  document.body.classList.add("is-loading");
+  $("loader").classList.remove("hidden");
+  clearInterval(LOAD.timer); LOAD.timer = setInterval(loaderRender, 500);
+  loaderRender();
+}
+function loaderJob(i, label){
+  LOAD.cur = i; LOAD.labels[i] = label;
+  const j = LOAD.jobs[i]; if (!j) return;
+  j.state = "run"; j.text = j.name.startsWith("ID ") ? "pobieram reklamy strony…" : "szukam strony marki…"; j.p = .04;
+  loaderRender();
+}
+function loaderMsg(msg){
+  let t = String(msg);
+  // przy równoległym pobieraniu przypisujemy komunikat do marki po jej etykiecie
+  const i = LOAD.labels.findIndex((l, k) => l && LOAD.jobs[k].state === "run" && t.startsWith(l + ": "));
+  if (i < 0){ if (/^Limit zapytań/.test(t)){ LOAD.note = "Meta ogranicza tempo zapytań — bot odczeka i pobierze dalej"; loaderRender(); } return; }
+  const j = LOAD.jobs[i];
+  t = t.slice(LOAD.labels[i].length + 2);
+  LOAD.note = "";
+  const m = t.match(/^(.*?):\s*pobrano (\d+) reklam/);
+  const step = (m ? m[1] : t).replace(/\.{3}$|…$/, "");
+  if (/^Limit zapytań/.test(t)){ j.text = "Meta ogranicza tempo zapytań — chwila przerwy…"; return loaderRender(); }
+  if (/szukam/.test(step)){ j.text = "szukam strony marki"; j.p = Math.max(j.p, .08); }
+  else if (/^pobieram/.test(step)){
+    if (m) j.subs[step] = +m[2];
+    j.n = Object.values(j.subs).reduce((a, b) => a + b, 0) || j.n;
+    j.text = /aktywne/.test(step) ? "pobieram aktywne reklamy" : /zakończone/.test(step) ? "pobieram zakończone reklamy" : "pobieram reklamy";
+    j.p = Math.max(j.p, .12 + .56 * (1 - Math.exp(-(j.n || 0) / 250)));
+  }
+  else if (/formaty/.test(step)){
+    const k = /wideo/.test(step) ? 0 : /tekstem|mem/.test(step) ? 2 : 1;
+    j.text = "rozpoznaję formaty (wideo / grafika)"; j.p = Math.max(j.p, .7 + k * .05);
+  }
+  else if (/społeczne|polityczne/.test(step)){ j.text = "sprawdzam reklamy społeczne i polityczne"; j.p = Math.max(j.p, .88); }
+  else j.text = step;
+  loaderRender();
+}
+function loaderDone(i, res, note){
+  const j = LOAD.jobs[i]; if (!j) return;
+  j.state = note ? "skip" : "done"; j.p = 1;
+  if (res){ j.name = res.pageName; j.n = res.rowsAll.length; }
+  j.text = note || (res ? `${fmt(res.s.aktywne)} aktywnych · ~${fmtK(res.s.miesSr)} zł / mies.` : "gotowe");
+  loaderRender();
+}
+function loaderFail(i, msg){
+  const j = LOAD.jobs[i]; if (!j) return;
+  j.state = "err"; j.p = 1; j.text = msg;
+  loaderRender();
+}
+function loaderEnd(){
+  LOAD.on = false; clearInterval(LOAD.timer);
+  document.body.classList.remove("is-loading");
+  $("loader").classList.add("hidden");
+}
+function loaderRender(){
+  const box = $("loader"); if (!box || !LOAD.jobs.length) return;
+  const total = LOAD.jobs.length, done = LOAD.jobs.filter(j => j.state !== "wait" && j.state !== "run").length;
+  const prog = Math.round(LOAD.jobs.reduce((a, j) => a + j.p, 0) / total * 100);
+  const sec = Math.floor((Date.now() - LOAD.t0) / 1000), el = `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  const running = LOAD.jobs.filter(j => j.state === "run");
+  box.innerHTML = `<div class="ld-head">
+      <span class="ld-lens" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m19.5 19.5-4.6-4.6"/></svg></span>
+      <div class="ld-title"><b>${done === total ? "Składam raport…" : "Śledztwo w toku"}</b><span>${done === total ? "liczę wskaźniki i rysuję wykresy" : LOAD.note && running.length ? esc(LOAD.note) : `gotowe ${done} z ${total}${running.length ? " · teraz: " + running.map(j => esc(j.name)).join(", ") : ""}`}</span></div>
+      <span class="ld-meta"><span class="ld-pct">${prog}%</span><span class="ld-time">${el}</span></span>
+    </div>
+    <div class="ld-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${prog}"><div style="width:${prog}%"></div></div>
+    <ul class="ld-list">${LOAD.jobs.map(j => `<li class="ld-row ${j.state}">
+      <span class="ld-ic">${LD_ICONS[j.state] || LD_ICONS[j.state === "skip" ? "done" : ""] || ""}</span>
+      <span class="ld-name">${esc(j.name)}</span>
+      <span class="ld-txt">${esc(j.text)}</span>
+      <span class="ld-n">${j.n != null ? fmt(j.n) + " reklam" : ""}</span></li>`).join("")}</ul>`;
+}
+
 
 // ================================================================ token
 const saved = store.get("metaAdsBotToken");
@@ -1121,8 +1327,41 @@ const MEDIA_COLORS = {VIDEO: "var(--c3)", IMAGE: "var(--c0)", MEME: "var(--c5)",
 const PLAT_COLORS = {facebook: "var(--c0)", instagram: "var(--c3)", messenger: "var(--c6)", audience_network: "var(--c5)", threads: "var(--c7)", whatsapp: "var(--c2)", oculus: "var(--c4)"};
 const CTA_RE = /(^|[^\p{L}])(kup|kupuj|sprawdź|sprawdz|zamów|zamow|odbierz|zapisz|pobierz|dołącz|dolacz|kliknij|zarejestruj|zobacz|wypróbuj|wyprobuj|skorzystaj|zgarnij|odwiedź|odwiedz|umów|umow|zadzwoń|zadzwon|przetestuj|wejdź|wejdz|shop|buy|order|sign up|learn more|book)/iu;
 const EMOJI_RE = /\p{Extended_Pictographic}/u;
-const DISC_RE = /(?:(?<![\p{L}\d])[-–]\s?|(?<!\p{L})(?:do|aż|az)\s*[-–]?\s*|(?<!\p{L})(?:rabat|zniżk|znizk)\p{L}*\s*(?:do\s*)?[-–]?\s*)(\d{1,2})\s?%|(?<![\d,.])(\d{1,2})\s?%\s?(?:taniej|rabatu|rabat|zniżki|znizki|zniżka|off|mniej)/giu;
 const PRICE_RE = /(\d{1,3}(?:[  .]\d{3})*(?:[,.]\d{1,2})?)\s?(?:zł|zl\b|pln|złotych)/giu;
+// Rabat procentowy liczymy tylko w jednoznacznym kontekście — żeby statystyki („aż 87% kobiet”), składy („50% mniej cukru”),
+// zakresy („20–30%”) czy oznaczenia produktów („SPF 30-50%”) nie były brane za promocję.
+const PCT_RE = /(\d{1,2})\s?%/gu;
+const DISC_WORD_AFTER = /^\s?(?:taniej|rabatu|rabat|zniżki|znizki|zniżka|znizka|obniżki|obnizki|upustu|off(?!\p{L})|mniej\s+(?:płacisz|placisz|zapłacisz|zaplacisz|za\s))/iu;
+const DISC_CTX_BEFORE = /(?:rabat|zniżk|znizk|promocj|wyprzeda|obniżk|obnizk|przecen|taniej|upust|(?<!\p{L})sale|black ?friday|cyber ?monday|kupon)\p{L}*[\s:,–-]*(?:(?:do|aż|az|nawet|o|na|z|wynosi|sięga|siega|sięgają|siegaja)\s+){0,2}[-–−]?\s?$/iu;
+function discountsIn(t){
+  t = String(t || "");
+  const out = [];
+  for (const m of t.matchAll(PCT_RE)){
+    const i = m.index, v = +m[1];
+    if (i > 0 && /[\d,.]/.test(t[i - 1])) continue;                      // część większej liczby: 100%, 2,5%
+    if (v < 5 || v > 90) continue;
+    const before = t.slice(Math.max(0, i - 60), i), after = t.slice(i + m[0].length, i + m[0].length + 30);
+    if (/^\s?[-–−]\s?\d/u.test(after)) continue;                          // początek zakresu „20–30%”
+    const minus = /(?:^|[^\p{L}\d])[-–−]\s?$/u.test(before) && !/\d\s*[-–−]\s?$/u.test(before);   // „-30%”, ale nie „20-30%”, „SPF 30-50%”
+    if (minus || DISC_WORD_AFTER.test(after) || DISC_CTX_BEFORE.test(before)) out.push(v);
+  }
+  return out;
+}
+// Kwoty, które nie są ceną produktu: progi darmowej dostawy, kwoty rabatów, bony, nagrody, cashback
+const PRICE_NOT_BEFORE = /(?:dostaw\p{L}*[^.!?\n]{0,25}(?:od|powyżej|powyzej)|(?:od|powyżej|powyzej)\s+zamówie\p{L}*|(?:od|powyzej)\s+zamowie\p{L}*|zamówie\p{L}*\s+(?:od|powyżej|powyzej|za)|zamowie\p{L}*\s+(?:od|powyzej|za)|min\.|minimum|minimaln\p{L}*(?:\s+\p{L}+)?|wygraj|wygrać|wygrac|do wygrania|nagrod\p{L}*|(?<!\p{L})bon\p{L}*|voucher\p{L}*|kart\p{L}* podarunkow\p{L}*|zyskaj|zyskujesz|rabat\p{L}*|zniżk\p{L}*|znizk\p{L}*|upust\p{L}*|oszczęd\p{L}*|oszczed\p{L}*|taniej\s+o|obniżk\p{L}*\s+o|obnizk\p{L}*\s+o|mniej\s+o|cashback\p{L}*|zwrot\p{L}*)\s*(?:aż|az|do|o|nawet)?\s*[-–−]?\s*$/iu;
+const PRICE_NOT_AFTER = /^\s?(?:taniej|rabatu|zniżki|znizki|upustu|mniej|na\s+(?:zakupy|start|pierwsze|kolejne|konto)|w\s+nagrod|do\s+wygrania|zwrotu|cashback|na\s+dostaw)/iu;
+function pricesIn(t){
+  t = String(t || "");
+  const out = [];
+  for (const m of t.matchAll(PRICE_RE)){
+    const before = t.slice(Math.max(0, m.index - 45), m.index), after = t.slice(m.index + m[0].length, m.index + m[0].length + 25);
+    if (/[-–−]\s?$/u.test(before) && !/\d\s?[-–−]\s?$/u.test(before)) continue;   // „-50 zł” = kwota rabatu
+    if (PRICE_NOT_BEFORE.test(before) || PRICE_NOT_AFTER.test(after)) continue;
+    const v = +m[1].replace(/[   ]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
+    if (v >= 0.5 && v <= 100000) out.push(v);
+  }
+  return out;
+}
 const WEEKDAYS = ["pn", "wt", "śr", "cz", "pt", "sb", "nd"];
 const WEEKDAYS_FULL = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
 const LIFE_B = [[1,3,"1–3 dni"],[4,7,"4–7"],[8,14,"8–14"],[15,30,"15–30"],[31,60,"31–60"],[61,90,"61–90"],[91,1e9,"90+"]];
@@ -1316,9 +1555,9 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
   const discounts = [], prices = [];
   let salesy = 0;
   for (const r of rows){
-    const ds = [...r.fullText.matchAll(DISC_RE)].map(m => +(m[1] || m[2])).filter(v => v >= 5 && v <= 90);
+    const ds = discountsIn(r.fullText);
     if (ds.length) discounts.push(Math.max(...ds));
-    const ps = [...r.fullText.matchAll(PRICE_RE)].map(m => +m[1].replace(/[  ]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".")).filter(v => v >= 0.5 && v <= 100000);
+    const ps = pricesIn(r.fullText);
     if (ps.length) prices.push(Math.min(...ps));
     if (ds.length || ps.length || OFFERS.slice(0, 5).some(([,re]) => re.test(r.fullText))) salesy++;
   }
@@ -1334,7 +1573,7 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
     priceAds: prices.length, pricePct: pct(prices.length, n),
     priceMed: prices.length ? median(prices) : null, priceMin: prices.length ? Math.min(...prices) : null, priceMax: prices.length ? Math.max(...prices) : null,
     priceHist: bucket(prices, PRICE_B),
-    topDisc: rows.map(r => ({r, d: Math.max(0, ...[...r.fullText.matchAll(DISC_RE)].map(m => +(m[1] || m[2])).filter(v => v >= 5 && v <= 90))})).filter(x => x.d > 0).sort((a,b) => b.d - a.d).slice(0, 4).map(x => ({...x.r, disc: x.d}))
+    topDisc: rows.map(r => ({r, d: Math.max(0, ...discountsIn(r.fullText))})).filter(x => x.d > 0).sort((a,b) => b.d - a.d).slice(0, 4).map(x => ({...x.r, disc: x.d}))
   };
 
   // --- testowanie kreacji
@@ -1429,6 +1668,14 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
       dzienMin: Math.round(dayMin), dzienMax: Math.round(dayMax), dzienSr: Math.round(dayMid),
       miesMin: Math.round(dayMin*30), miesMax: Math.round(dayMax*30), miesSr: Math.round(dayMid*30),
       ost30: Math.round(reach30 * fMid / 1000 * cMid),
+      // szacowane wyświetlenia = zasięg × częstotliwość (Meta nie podaje wyświetleń reklam komercyjnych)
+      wyswDzienMin: Math.round(dailyReach * o.freqMin), wyswDzienMax: Math.round(dailyReach * o.freqMax), wyswDzienSr: Math.round(dailyReach * fMid),
+      wyswMiesMin: Math.round(dailyReach * o.freqMin * 30), wyswMiesMax: Math.round(dailyReach * o.freqMax * 30), wyswMiesSr: Math.round(dailyReach * fMid * 30),
+      wysw30: Math.round(reach30 * fMid),
+      freqMin: o.freqMin, freqMax: o.freqMax,
+      wyswLacznie: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * fMid) : null,
+      wyswLacznieMin: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * o.freqMin) : null,
+      wyswLacznieMax: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * o.freqMax) : null,
       wideo: mediaLoaded ? pct(media.VIDEO || 0, n) : null,
       indeks: index,
       zalozenia: `CPM ${o.cpmMin}–${o.cpmMax} PLN, częstotliwość ${o.freqMin}–${o.freqMax}${o.label ? ` (${o.label})` : ""}`
@@ -1493,7 +1740,7 @@ function handleSnapshot(res){
 }
 
 // ================================================================ wykresy
-const NODATA = `<div class="sub nodata">Brak danych.</div>`;
+const NODATA = `<div class="sub nodata">Brak danych w tym zakresie.</div>`;
 const see = t => `<div class="see" data-k="x"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1V16h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/></svg></span><div>${t}</div></div>`;
 const blk = (title, body, extra = "") => { const m = /^\[(\w)\]/.exec(title || ""); const k = m ? m[1] : ""; if (m) title = title.slice(3); return `<div class="blk ${extra}"${k ? ` data-k="${k}"` : ""}>${title ? `<h3>${title}</h3>` : ""}${body}</div>`; };
 const miniKpis = (a, b) => { const k = typeof a === "string" ? a : "", items = typeof a === "string" ? b : a; return `<div class="mkpis">${items.map(([v, l, kk]) => `<div class="mk"${(kk || k) ? ` data-k="${kk || k}"` : ""}><b>${v}</b><span>${l}</span></div>`).join("")}</div>`; };
@@ -1688,7 +1935,7 @@ function ageStacks(list){
   return list.map((r, idx) => {
     const t = r.demo.demoTotal;
     const bar = t ? AGE_ORDER.map((g, i) => { const v = (r.demo.ageList.find(x => x[0] === g) || [g,0])[1]; return v ? `<span style="width:${v/t*100}%;background:${ageColor(i)}" title="${g}: ${pct(v,t)}%">${v / t >= 0.09 ? pct(v,t) + "%" : ""}</span>` : ""; }).join("") : "";
-    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${bar}</div>` : `<div class="sub">brak danych</div>`}</div>`;
+    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${bar}</div>` : `<div class="sub nodata">brak danych</div>`}</div>`;
   }).join("") + `<div class="legend">${AGE_ORDER.map((g,i) => `<span><i style="background:${ageColor(i)}"></i>${g}</span>`).join("")}</div>`;
 }
 
@@ -1696,11 +1943,13 @@ function stack100(list, keys, getCounts, names, colors){
   if (!list.some(r => Object.values(getCounts(r) || {}).some(v => v > 0))) return NODATA;
   return list.map((r, idx) => {
     const c = getCounts(r) || {}, t = Object.values(c).reduce((a,b) => a+b, 0);
-    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${keys.map(k => c[k] ? `<span style="width:${c[k]/t*100}%;background:${colors[k]}" title="${names[k]}: ${pct(c[k],t)}%">${c[k] / t >= 0.1 ? pct(c[k],t) + "%" : ""}</span>` : "").join("")}</div>` : `<div class="sub">brak danych</div>`}</div>`;
+    return `<div class="stackrow"><div class="nm"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>${t ? `<div class="stack lab">${keys.map(k => c[k] ? `<span style="width:${c[k]/t*100}%;background:${colors[k]}" title="${names[k]}: ${pct(c[k],t)}%">${c[k] / t >= 0.1 ? pct(c[k],t) + "%" : ""}</span>` : "").join("")}</div>` : `<div class="sub nodata">brak danych</div>`}</div>`;
   }).join("") + `<div class="legend">${keys.map(k => `<span><i style="background:${colors[k]}"></i>${names[k]}</span>`).join("")}</div>`;
 }
 
 // ================================================================ panele marki (ekran i PDF)
+const fmtKR = (lo, hi) => { if (lo == null || hi == null) return "—"; const u = hi >= 1e6 ? [1e6, " mln"] : hi >= 1e4 ? [1e3, " tys."] : [1, ""];
+  const f = v => u[0] === 1 ? fmt(v) : (v / u[0]).toFixed(1).replace(".", ","); return `${f(lo)}–${f(hi)}${u[1]}`; };
 const fmtK = n => n == null || isNaN(n) ? "—" : n >= 1e6 ? (n/1e6).toFixed(1).replace(".", ",") + " mln" : n >= 1e4 ? (n/1e3).toFixed(1).replace(".", ",") + " tys." : fmt(n);
 const fmtZl = v => v == null ? "—" : (v >= 100 ? fmt(v) : String(Math.round(v * 100) / 100).replace(".", ",")) + " zł";
 const filterLabel = () => {
@@ -1739,6 +1988,7 @@ function secKpis(res){
       <div class="kpi" data-k="d"><div class="v">${fmt(s.aktywne)}</div><div class="l">aktywne reklamy</div></div>
       <div class="kpi" data-k="d"><div class="v">${fmt(s.lacznie)}</div><div class="l">reklamy ${fl ? "w wybranym zakresie" : "w bibliotece"}</div></div>
       <div class="kpi" data-k="c"><div class="v">${fmtK(s.sredniZasieg)}</div><div class="l">średni zasięg reklamy (mediana ${fmtK(s.medianaZasiegu)})</div></div>
+      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.wyswMiesSr)}</div><div class="l">szac. wyświetlenia / mies.</div></div>
       <div class="kpi" data-k="p"><div class="v">~${fmtK(s.miesSr)} zł</div><div class="l">szacowany koszt / mies.</div></div>
       <div class="kpi" data-k="c"><div class="v">${fmt(s.evergreeny)}</div><div class="l">evergreeny (≥${f.evDays} dni)</div></div>
     </div>`;
@@ -1754,6 +2004,16 @@ function secTrend(res){
     </div>
     <div class="xl">${months.map(m => `<span>${m.key.slice(5)}.${m.key.slice(2,4)}</span>`).join("")}</div>
     <div class="legend"><span><i style="background:var(--bar1)"></i>emitowane w miesiącu</span><span><i style="background:var(--bar2)"></i>nowe w miesiącu</span></div>`;
+}
+function secImpr(res){
+  const s = res.s, fl = filterLabel();
+  return `<div class="grid costgrid">
+      <div class="kpi"><div class="cost">${fmtKR(s.wyswDzienMin, s.wyswDzienMax)}</div><div class="l">dziennie (środek ~${fmtK(s.wyswDzienSr)})</div></div>
+      <div class="kpi"><div class="cost">${fmtKR(s.wyswMiesMin, s.wyswMiesMax)}</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (środek ~${fmtK(s.wyswMiesSr)})</div></div>
+      <div class="kpi"><div class="cost">~${fmtK(s.wysw30)}</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>
+      <div class="kpi"><div class="cost">${s.wyswLacznie == null ? "—" : "~" + fmtK(s.wyswLacznie)}</div><div class="l">łącznie dotychczas, wszystkie reklamy ${fl ? "w wybranym zakresie" : "w bibliotece"} (${s.wyswLacznieMin == null ? "brak zasięgu" : fmtKR(s.wyswLacznieMin, s.wyswLacznieMax)})</div></div>
+    </div>
+    <div class="note">Estymacja, nie dane Meta: Meta podaje dla reklam komercyjnych tylko zasięg (unikalne osoby), więc wyświetlenia = zasięg × częstotliwość ${String(s.freqMin).replace(".", ",")}–${String(s.freqMax).replace(".", ",")}. Dziennie i miesięcznie to prognoza przy obecnym tempie aktywnych reklam; „ostatnie 30 dni” i „łącznie dotychczas” to to, co już wyemitowano. Suma łączna dodaje zasięgi wszystkich reklam — ta sama osoba widząca kilka reklam jest liczona kilka razy, tak jak w wyświetleniach.</div>`;
 }
 function secCost(res){
   const s = res.s;
@@ -1793,8 +2053,9 @@ P.overview = (r, idx, pdf) => {
       ${blk("[x]Najważniejsze w skrócie", brandBullets(r))}
     </div>
     ${blk("[c]Tendencja (12 miesięcy)", secTrend(r))}
+    ${blk("[p]Szacowane wyświetlenia", secImpr(r))}
     ${blk("[p]Szacowany aktualny koszt", secCost(r))}
-    ${blk("[d]Największe aktywne reklamy (wg zasięgu)", top.length ? top.map(x => adLine(x)).join("") : `<div class="sub">Brak aktywnych reklam.</div>`)}
+    ${blk("[d]Największe aktywne reklamy (wg zasięgu)", top.length ? top.map(x => adLine(x)).join("") : `<div class="sub nodata">Brak aktywnych reklam.</div>`)}
     ${!pdf && others.length ? `<div class="cands"><div class="hint">Zła strona? Inne znalezione dla „${esc(r.brand)}” (kliknij, żeby podmienić):</div>
       ${others.map(c => `<button class="ghost" data-swap="${r.uid}" data-id="${esc(c.id)}">${esc(c.name)} · ${c.count}</button>`).join("")}</div>` : ""}
     ${r.demoMissing ? `<div class="note">Demografia i targetowanie niedostępne dla tego zapytania — pobrano dane podstawowe.</div>` : ""}`;
@@ -1816,7 +2077,7 @@ P.creative = (r, idx, pdf) => {
       <h3>Najszybciej zbierające zasięg (zasięg na dzień)</h3>${r.eff.top.length ? r.eff.top.map(x => adLine(x, `<span class="evbadge">${fmtK(Math.round(x.rpd))} / dzień</span>`)).join("") : NODATA}
       ${r.mediaLoaded && Object.keys(r.eff.byMedia).length ? `<div class="note">Mediana zasięgu na dzień wg formatu: ${Object.entries(r.eff.byMedia).map(([k, v]) => `${MEDIA_NAMES[k]} ${fmtK(v)}`).join(" · ")}.</div>` : ""}`)}
     ${blk(`[c]Evergreeny — najdłużej działające (≥${f.evDays} dni)`, `<div class="note" style="margin-top:0">${r.s.evergreeny} reklam (${r.s.evergreenyProc}%), ${r.s.evergreenyAktywne} wciąż aktywnych. Takie reklamy zwykle dowożą wyniki — warto podejrzeć przekaz i kreację.</div>
-      ${r.ev.length ? r.ev.slice(0, pdf ? 5 : 8).map(x => adLine(x, x.active ? '<span class="evbadge">wciąż aktywna</span>' : "")).join("") : `<div class="sub">Brak reklam emitowanych ${f.evDays}+ dni.</div>`}
+      ${r.ev.length ? r.ev.slice(0, pdf ? 5 : 8).map(x => adLine(x, x.active ? '<span class="evbadge">wciąż aktywna</span>' : "")).join("") : `<div class="sub nodata">Brak reklam emitowanych ${f.evDays}+ dni.</div>`}
       ${r.ev.length > (pdf ? 5 : 8) ? `<div class="hint">+ ${r.ev.length - (pdf ? 5 : 8)} kolejnych w Excelu (zakładka „Evergreeny”).</div>` : ""}`)}`;
 };
 P.campaigns = (r) => {
@@ -1828,7 +2089,7 @@ P.campaigns = (r) => {
         <div class="sub">${x.n} reklam · ${x.active} aktywnych · zasięg ${fmtK(x.reach)} · ${iso(x.first)} → ${iso(x.last)} · <a href="https://www.facebook.com/ads/library/?id=${esc(x.ids[0])}" target="_blank" rel="noopener">przykład</a></div></div></div>`).join("") : NODATA)
       + `<div class="note">Koncept = reklamy z tym samym tekstem głównym (różne grafiki, formaty i zestawy reklam liczą się razem).</div>`}
     ${blk("[p]Fale startów kampanii", c.waves.length ? `<div class="waves">${c.waves.slice(0, 12).map(w => `<div class="wave"><div class="wd">${iso(w.t)}<br><span class="sub">${WEEKDAYS_FULL[(new Date(w.t).getUTCDay() + 6) % 7]}</span></div>
-        <div class="wb"><div style="width:${Math.min(100, w.n / Math.max(...c.waves.map(x => x.n)) * 100)}%"></div></div><div class="wn"><b>${w.n}</b> reklam · ${w.variants} wariant${w.variants === 1 ? "" : "ów"} tekstu<br><span class="sub">${esc(w.text.slice(0, 90))}${w.text.length > 90 ? "…" : ""}</span></div></div>`).join("")}</div>` : `<div class="sub">Brak dni z co najmniej 3 nowymi reklamami.</div>`)}`;
+        <div class="wb"><div style="width:${Math.min(100, w.n / Math.max(...c.waves.map(x => x.n)) * 100)}%"></div></div><div class="wn"><b>${w.n}</b> reklam · ${w.variants} wariant${w.variants === 1 ? "" : "ów"} tekstu<br><span class="sub">${esc(w.text.slice(0, 90))}${w.text.length > 90 ? "…" : ""}</span></div></div>`).join("")}</div>` : `<div class="sub nodata">Brak dni z co najmniej 3 nowymi reklamami.</div>`)}`;
 };
 P.message = (r) => {
   const c = r.copy, msg = r.msg, n = r.rows.length;
@@ -1856,7 +2117,7 @@ P.offers = (r) => {
     ${miniKpis("p", [[p.discPct + "%", "reklam z rabatem %"], [p.discAvg == null ? "—" : "−" + p.discAvg + "%", "średni rabat"], [p.discMax == null ? "—" : "−" + p.discMax + "%", "najwyższy rabat"], [p.pricePct + "%", "reklam z ceną"], [fmtZl(p.priceMed), "mediana ceny"], [p.priceMin == null ? "—" : `${fmtZl(p.priceMin)} – ${fmtZl(p.priceMax)}`, "zakres cen"]])}
     <div class="two">
       ${blk("[p]Głębokość rabatów", colChart(p.discHist, {color: "var(--c1)", h: 130}))}
-      ${blk("[p]Poziomy cen w reklamach", colChart(p.priceHist, {color: "var(--c2)", h: 130}) + `<div class="note">Najniższa cena z każdej reklamy (także progi typu „darmowa dostawa od 99 zł”).</div>`)}
+      ${blk("[p]Poziomy cen w reklamach", colChart(p.priceHist, {color: "var(--c2)", h: 130}) + `<div class="note">Najniższa cena z każdej reklamy. Nie liczymy: progów darmowej dostawy, kwot rabatów („-50 zł”, „50 zł taniej”), bonów, nagród i cashbacku.</div>`)}
     </div>
     ${blk("[p]Mechaniki promocyjne", hbars(OFFERS.map(([name]) => [name, r.msg.offers[name] || 0]).filter(x => x[1] > 0), r.rows.length, {labelW: 190}) || NODATA)}
     ${blk("[p]Reklamy z najwyższym rabatem", p.topDisc.length ? p.topDisc.map(x => adLine(x, `<span class="evbadge" style="color:var(--c1)">−${x.disc}%</span>`)).join("") : NODATA)}`;
@@ -1874,13 +2135,13 @@ P.audience = (r) => {
       ${blk("[d]Targetowanie ustawione przez reklamodawcę", targ.tAds ? `<ul class="lines">
           ${topN(targ.tAge, 4).map(([k,v]) => `<li>Wiek ${esc(k)}: <b>${pct(v, targ.tAds)}%</b> reklam</li>`).join("")}
           ${topN(targ.tGen, 3).map(([k,v]) => `<li>Płeć „${esc(GENDER_PL[k] || k)}”: <b>${pct(v, tGenTotal)}%</b> reklam</li>`).join("")}
-        </ul><div class="note">Na podstawie ${targ.tAds} reklam z danymi targetowania (UE).</div>` : `<div class="sub">Brak danych targetowania (włącz „Pobieraj demografię i targetowanie”).</div>`)}
+        </ul><div class="note">Na podstawie ${targ.tAds} reklam z danymi targetowania (UE).</div>` : `<div class="sub nodata">Brak danych targetowania (włącz „Pobieraj demografię i targetowanie”).</div>`)}
       ${blk("[d]Lokalizacje targetowania", (locs.length ? hbars(locs.map(([k, v]) => [`${k}${targ.tType[k] ? ` (${({countries:"kraj",regions:"region",cities:"miasto",zips:"kod",places:"miejsce"})[targ.tType[k]] || targ.tType[k]})` : ""}`, v]), targ.tAds, {labelW: 170}) : NODATA)
         + (exc.length ? `<h3>Wykluczone</h3>${hbars(exc, targ.tAds, {labelW: 170})}` : ""))}
     </div>
     ${blk("[d]Kto płaci i kto jest beneficjentem", targ.payAds ? `<div class="two"><div><div class="sub">Płatnik</div><ul class="lines">${topN(targ.payers, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div>
       <div><div class="sub">Beneficjent</div><ul class="lines">${topN(targ.bens, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div></div>
-      <div class="note">Dane wymagane w UE (DSA). Jeśli płatnik różni się od marki, często jest to agencja lub dom mediowy.</div>` : `<div class="sub">Brak danych o płatniku (pole dostępne dla reklam emitowanych w UE).</div>`)}`;
+      <div class="note">Dane wymagane w UE (DSA). Jeśli płatnik różni się od marki, często jest to agencja lub dom mediowy.</div>` : `<div class="sub nodata">Brak danych o płatniku (pole dostępne dla reklam emitowanych w UE).</div>`)}`;
 };
 P.calendar = (r) => {
   const dowMax = r.cal.dow.indexOf(Math.max(...r.cal.dow));
@@ -1893,7 +2154,7 @@ P.calendar = (r) => {
       ${blk("[c]Dzień tygodnia startu", colChart(r.cal.dow.map((v, i) => [WEEKDAYS[i], v]), {color: "var(--c6)", highlight: dowMax, h: 120}))}
       ${blk("[c]Nowe reklamy miesiąc po miesiącu", colChart(r.months.map(m => [`${m.key.slice(5)}.${m.key.slice(2,4)}`, m.nowe]), {color: "var(--bar1)", h: 120}))}
     </div>
-    ${blk("[c]Aktywność przed ważnymi datami (30 dni przed)", near.length ? `<ul class="lines">${near.map(x => `<li><b>${x.k.name}</b> (${iso(x.k.t)}): ${x.nAds} nowych reklam${x.w.length ? `, ${x.w.length} ${x.w.length === 1 ? "fala" : x.w.length < 5 ? "fale" : "fal"} startów, pierwsza ~${x.lead} dni przed` : ""}</li>`).join("")}</ul>` : `<div class="sub">Brak nowych reklam w okresach przed ważnymi datami w ostatnim roku.</div>`)}`;
+    ${blk("[c]Aktywność przed ważnymi datami (30 dni przed)", near.length ? `<ul class="lines">${near.map(x => `<li><b>${x.k.name}</b> (${iso(x.k.t)}): ${x.nAds} nowych reklam${x.w.length ? `, ${x.w.length} ${x.w.length === 1 ? "fala" : x.w.length < 5 ? "fale" : "fal"} startów, pierwsza ~${x.lead} dni przed` : ""}</li>`).join("")}</ul>` : `<div class="sub nodata">Brak nowych reklam w okresach przed ważnymi datami w ostatnim roku.</div>`)}`;
 };
 P.changes = (r) => {
   const c = r.changes;
@@ -1905,8 +2166,8 @@ P.changes = (r) => {
   return `${see(`Porównanie z migawką z <b>${c.prevDate}</b> (${c.days} dni temu): <b>+${c.newAds.length}</b> nowych reklam w bibliotece, <b>${c.ended.length}</b> wyłączonych, aktywnych ${d(c.now.aktywne, c.prev.aktywne)}, szacowany koszt ${d(c.now.miesSr, c.prev.miesSr, fmtK, " zł")}/mies.`)}
     ${miniKpis("c", [[`${fmt(c.now.aktywne)} <small>${d(c.now.aktywne, c.prev.aktywne)}</small>`, "aktywne reklamy"], [`${fmtK(c.now.miesSr)} zł <small>${d(c.now.miesSr, c.prev.miesSr, fmtK)}</small>`, "szac. koszt / mies."], [`+${c.newAds.length}`, "nowe reklamy"], [String(c.ended.length), "wyłączone reklamy"], [`+${c.newEv.length}`, `nowe evergreeny (${c.evDays || 30}+ dni)`]])}
     <div class="two">
-      ${blk(`[d]Nowe reklamy (${c.newAds.length})`, c.newAds.length ? c.newAds.slice(0, 8).map(x => adLine(x)).join("") + (c.newAds.length > 8 ? `<div class="hint">+ ${c.newAds.length - 8} kolejnych w Excelu (zakładka „Zmiany”).</div>` : "") : `<div class="sub">Brak.</div>`)}
-      ${blk(`[d]Wyłączone reklamy (${c.ended.length})`, c.ended.length ? c.ended.slice(0, 8).map(x => adLine(x)).join("") : `<div class="sub">Brak.</div>`)}
+      ${blk(`[d]Nowe reklamy (${c.newAds.length})`, c.newAds.length ? c.newAds.slice(0, 8).map(x => adLine(x)).join("") + (c.newAds.length > 8 ? `<div class="hint">+ ${c.newAds.length - 8} kolejnych w Excelu (zakładka „Zmiany”).</div>` : "") : `<div class="sub nodata">Brak.</div>`)}
+      ${blk(`[d]Wyłączone reklamy (${c.ended.length})`, c.ended.length ? c.ended.slice(0, 8).map(x => adLine(x)).join("") : `<div class="sub nodata">Brak.</div>`)}
     </div>`;
 };
 P.social = (r) => {
@@ -2221,7 +2482,7 @@ function scoreCard(r, i){
       <div><b>~${fmtK(s.miesSr)} zł</b><span>szac. koszt / mies.</span></div>
       <div><b>${fmt(s.n30)}</b><span>nowe w 30 dni</span></div>
       <div><b>${r.testing.killRate == null ? "—" : r.testing.killRate + "%"}</b><span>wyłączanych ≤7 dni</span></div>
-      <div><b>${fmtK(s.sredniZasieg)}</b><span>śr. zasięg reklamy</span></div>
+      <div><b>~${fmtK(s.wyswMiesSr)}</b><span>szac. wyświetlenia / mies.</span></div>
       <div><b>${s.zOfertaProc}%</b><span>reklam z ofertą</span></div>
       <div><b>${d.demoTotal ? esc(d.topAge[0]) : "—"}</b><span>główna grupa wieku</span></div>
       <div><b>${fem != null ? fem + "%" : "—"}</b><span>kobiet w zasięgu</span></div>
@@ -2267,8 +2528,8 @@ C.message = list => {
   const gw = wordGaps(list), main = list.find(r => r.isMain);
   return `${blk("[p]Przekaz w skrócie", `<ul class="lines">${list.map((r, i) => `<li><span class="dot" style="background:${color(i)}"></span><b>${esc(r.pageName)}</b>: ${r.msg.words.slice(0,6).map(w => esc(w[0])).join(", ") || "brak tekstów"} · ton ${r.copy.salesy >= r.copy.image ? "sprzedażowy" : "wizerunkowy"} · oferta w ${r.s.zOfertaProc}%</li>`).join("")}</ul>`)}
     ${main ? `<div class="two">
-      ${blk("[p]Konkurencja mówi, Ty nie", gw.theirs.length ? `<div class="wordchips">${gw.theirs.map(([w, v]) => `<span class="wc warn">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">% reklam konkurencji zawierających słowo (średnio), u Ciebie rzadko lub wcale.</div>` : `<div class="sub">Brak wyraźnych różnic.</div>`)}
-      ${blk("[p]Twoje wyróżniki", gw.ours.length ? `<div class="wordchips">${gw.ours.map(([w, v]) => `<span class="wc good">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">Słowa częste u Ciebie, rzadkie u konkurencji.</div>` : `<div class="sub">Brak wyraźnych różnic.</div>`)}
+      ${blk("[p]Konkurencja mówi, Ty nie", gw.theirs.length ? `<div class="wordchips">${gw.theirs.map(([w, v]) => `<span class="wc warn">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">% reklam konkurencji zawierających słowo (średnio), u Ciebie rzadko lub wcale.</div>` : `<div class="sub nodata">Brak wyraźnych różnic.</div>`)}
+      ${blk("[p]Twoje wyróżniki", gw.ours.length ? `<div class="wordchips">${gw.ours.map(([w, v]) => `<span class="wc good">${esc(w)}<b>${v}%</b></span>`).join("")}</div><div class="note">Słowa częste u Ciebie, rzadkie u konkurencji.</div>` : `<div class="sub nodata">Brak wyraźnych różnic.</div>`)}
     </div>` : ""}
     <div class="two">
       ${blk("[p]Reklamy z ofertą", brandBars(list, r => r.s.zOfertaProc, {unit: "%"}))}
@@ -2311,6 +2572,7 @@ C.ranks = list => `${blk("[p]Indeks aktywności reklamowej", `<div class="gauges
   ${blk("[c]Rankingi", `<div class="rank">
     ${rankBlock(list, "Aktywne reklamy", r => r.s.aktywne)}
     ${rankBlock(list, "Szacowany koszt / mies.", r => r.s.miesSr, " zł")}
+    ${rankBlock(list, "Szac. wyświetlenia / mies.", r => r.s.wyswMiesSr)}
     ${rankBlock(list, "Nowe reklamy (30 dni)", r => r.s.n30)}
     ${rankBlock(list, "Evergreeny", r => r.s.evergreeny)}
     ${rankBlock(list, "Średni zasięg reklamy", r => r.s.sredniZasieg)}
@@ -2337,10 +2599,10 @@ function rerender(){ for (const r of results) reanalyze(r); renderAll(); }
 function renderAll(){
   const card = $("resultsCard");
   const any = results.length > 0;
-  ["xlsx","clear","pdf","ai"].forEach(id => $(id).classList.toggle("hidden", !any));
+  ["xlsx","clear","pdf","ai","strat"].forEach(id => $(id).classList.toggle("hidden", !any));
   $("filtersCard").classList.toggle("hidden", !any);
   $("fMediaWrap").classList.toggle("hidden", !results.some(r => r.mediaLoaded));
-  if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); $("aiCard").classList.add("hidden"); return; }
+  if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); $("aiCard").classList.add("hidden"); $("stratCard").classList.add("hidden"); return; }
   if (results.length < 2 && view.top === "cmp") view.top = results[0].uid;
   if (view.top !== "cmp" && !results.some(r => r.uid === view.top)) view.top = results.length > 1 ? "cmp" : results[0].uid;
   const isCmp = view.top === "cmp";
@@ -2369,6 +2631,7 @@ function renderAll(){
   });
   card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
   if (!isCmp && active === "budget") wireProb(r);
+  addPngButtons(card);
 }
 
 // ================================================================ pobieranie i analiza marek
@@ -2478,18 +2741,37 @@ async function run(){
 
   $("go").disabled = true;
   const errors = [], fresh = [];
+  loaderStart(jobs);
   try {
-    for (let i = 0; i < jobs.length; i++){
-      const label = jobs.length > 1 ? `[${i+1}/${jobs.length}] ${jobs[i].brand || jobs[i].pageId}` : (jobs[i].brand || jobs[i].pageId);
-      try {
-        const res = await analyzeOne(jobs[i], region, label);
-        if (fresh.some(x => x.pageId === res.pageId)) errors.push(`${jobs[i].brand || jobs[i].pageId}: pominięto — ta sama strona już jest w analizie (${res.pageName}).`);
-        else fresh.push(res);
+    // równoległe pobieranie: kilka marek naraz (ustawienie „Pobieranie marek”), wyniki w kolejności z formularza
+    const out = new Array(jobs.length);
+    let next = 0, fatal = null;
+    const worker = async () => {
+      while (next < jobs.length && !fatal){
+        const i = next++;
+        const label = jobs.length > 1 ? `[${i+1}/${jobs.length}] ${jobs[i].brand || jobs[i].pageId}` : (jobs[i].brand || jobs[i].pageId);
+        loaderJob(i, label);
+        try { out[i] = {res: await analyzeOne(jobs[i], region, label)}; loaderDone(i, out[i].res); }
+        catch(e){
+          if (e instanceof FatalApiError){ fatal = fatal || e; loaderFail(i, e.message); }
+          else { out[i] = {err: e.message}; loaderFail(i, e.message); }
+        }
       }
-      catch(e){ if (e instanceof FatalApiError) throw e; errors.push(`${jobs[i].brand || jobs[i].pageId}: ${e.message}`); }
+    };
+    await Promise.all(Array.from({length: Math.max(1, Math.min(concLimit(), jobs.length))}, worker));
+    for (let i = 0; i < jobs.length; i++){
+      const o = out[i];
+      if (!o){ if (fatal && LOAD.jobs[i] && LOAD.jobs[i].state === "wait") loaderFail(i, "przerwano"); continue; }
+      if (o.err){ errors.push(`${jobs[i].brand || jobs[i].pageId}: ${o.err}`); continue; }
+      const res = o.res;
+      if (fresh.some(x => x.pageId === res.pageId)){ errors.push(`${jobs[i].brand || jobs[i].pageId}: pominięto — ta sama strona już jest w analizie (${res.pageName}).`); loaderDone(i, res, "pominięto — ta sama strona jest już w analizie"); }
+      else fresh.push(res);
     }
+    if (fatal) throw fatal;
   } catch(e){ errors.unshift(e.message); }
   finally {
+    if (fresh.length) await new Promise(r => setTimeout(r, 350));   // chwila na „Składam raport…”
+    loaderEnd();
     if (fresh.length){ results = fresh; view.top = fresh.length > 1 ? "cmp" : fresh[0].uid; renderAll(); $("resultsCard").scrollIntoView({behavior: "smooth", block: "start"}); }
     $("go").disabled = false;
     const okMsg = fresh.length ? `Gotowe: przeanalizowano ${fresh.length} ${plural(fresh.length)}.` : "";
@@ -2646,7 +2928,7 @@ function buildReport(o){
         <div><div class="v">${main.idx.index}<small>/100</small></div><div class="l">indeks aktywności<br>${esc(main.pageName)}</div></div>
         <div><div class="v">${fmt(kp.aktywne)}</div><div class="l">aktywne reklamy</div></div>
         <div><div class="v">~${kp.miesSr >= 1e6 ? (kp.miesSr / 1e6).toFixed(1).replace(".", ",") + " mln" : kp.miesSr >= 1e4 ? Math.round(kp.miesSr / 1e3) + " tys." : fmt(kp.miesSr)} zł</div><div class="l">szacowany koszt miesięczny</div></div>
-        <div><div class="v">${fmt(kp.n30)}</div><div class="l">nowe reklamy w 30 dni</div></div>
+        <div><div class="v">~${fmtK(kp.wyswMiesSr)}</div><div class="l">szac. wyświetlenia / mies.</div></div>
       </div>
       <div class="rp-cover-brands">
         <div class="rp-label">Marki w raporcie</div>
@@ -2697,6 +2979,8 @@ function buildReport(o){
         <li><b>Aktywna reklama:</b> bez daty zakończenia emisji albo z datą zakończenia od dziś wzwyż.</li>
         <li><b>Zasięg:</b> eu_total_reach — szacowana przez Meta liczba kont w UE, do których dotarła reklama. Demografia: rozbicie zasięgu wg wieku, płci i kraju. Targetowanie i płatnik: dane deklarowane przez reklamodawcę (DSA).</li>
         <li><b>Szacowany koszt:</b> estymacja, nie dane Meta — dzienny zasięg aktywnych reklam × częstotliwość × CPM. ${esc(main.s.zalozenia)}. Do porównań między markami.</li>
+        <li><b>Szacowane wyświetlenia:</b> estymacja — zasięg × częstotliwość (te same założenia co koszt). Meta podaje dla reklam komercyjnych tylko zasięg, nie wyświetlenia.</li>
+        <li><b>Rabaty i ceny:</b> rabat procentowy liczony tylko w jednoznacznym kontekście („-30%”, „rabat 20%”, „15% taniej”); statystyki („87% kobiet”), składy („50% mniej cukru”) i zakresy nie są brane za promocję. Progi dostawy, bony, nagrody i kwoty rabatów nie są liczone jako ceny.</li>
         <li><b>Testowanie kreacji:</b> % zakończonych reklam emitowanych maks. 7 dni; aktywne naraz — średnia dzienna z ostatnich 90 dni; DCO — reklamy z wieloma wariantami tekstu.</li>
         <li><b>Koncepty i fale:</b> koncept = reklamy z tym samym tekstem głównym; fala startów = dzień z co najmniej 3 nowymi reklamami.</li>
         <li><b>Przekaz, rabaty i ceny:</b> wykrywane automatycznie w tekstach reklam (np. „-30%”, „49,99 zł”, „darmowa dostawa”); słowa bez nazwy marki i słów pomocniczych. Pełne adresy stron docelowych nie są dostępne w API — widoczna jest domena.</li>
@@ -2715,15 +2999,15 @@ function buildReport(o){
 }
 
 // ================================================================ eksport Excel (same wartości)
-function exportXlsx(){
+function exportXlsx(asData = false){
   const f = filters(), fl = filterLabel() || "brak";
   const main = results.find(r => r.isMain);
   const totCost = results.reduce((s,r) => s + r.s.miesSr, 0), totAct = results.reduce((s,r) => s + r.s.aktywne, 0);
   const dpct = (v, m) => (m ? Math.round((v - m) / m * 100) : null);
   const S = {};
   const sheet = (name, header) => (S[name] = [header]);
-  const cmp = sheet("Porównanie", ["Strona","Rola","Indeks aktywności","Aktywne reklamy","Udział w aktywnych (%)","Koszt mies. środek (PLN)","Udział w wydatkach (%)","Nowe 30 dni","Evergreeny","Wyłączane ≤7 dni (%)","Koncepty 90 dni","Reklamy z ofertą (%)","Średni rabat (%)","Mediana ceny (zł)","Wideo (%)","CTA (%)","Średni zasięg","Dominująca grupa wieku","Kobiety (%)","Aktywne vs Ty (%)","Koszt vs Ty (%)","Tendencja"]);
-  const sum = sheet("Podsumowanie", ["Rola","Marka (zapytanie)","Strona","page_id","Obszar emisji","Język","Filtr","Data","Aktywne reklamy","Reklamy","Średni zasięg","Mediana zasięgu","Średni czas emisji (dni)","Nowe 30 dni","Nowe poprz. 30 dni","Nowe 90 dni","Nowe poprz. 90 dni","Tendencja",`Evergreeny (≥${f.evDays} dni)`,"Dzienny zasięg aktywnych","Koszt dzienny min","Koszt dzienny max","Koszt mies. min","Koszt mies. max","Koszt mies. środek","Koszt ostatnie 30 dni","Indeks",...INDEX_PARTS.map(x => "Indeks: " + x[1]),"Założenia"]);
+  const cmp = sheet("Porównanie", ["Strona","Rola","Indeks aktywności","Aktywne reklamy","Udział w aktywnych (%)","Koszt mies. środek (PLN)","Udział w wydatkach (%)","Szac. wyświetlenia / mies.","Nowe 30 dni","Evergreeny","Wyłączane ≤7 dni (%)","Koncepty 90 dni","Reklamy z ofertą (%)","Średni rabat (%)","Mediana ceny (zł)","Wideo (%)","CTA (%)","Średni zasięg","Dominująca grupa wieku","Kobiety (%)","Aktywne vs Ty (%)","Koszt vs Ty (%)","Tendencja"]);
+  const sum = sheet("Podsumowanie", ["Rola","Marka (zapytanie)","Strona","page_id","Obszar emisji","Język","Filtr","Data","Aktywne reklamy","Reklamy","Średni zasięg","Mediana zasięgu","Średni czas emisji (dni)","Nowe 30 dni","Nowe poprz. 30 dni","Nowe 90 dni","Nowe poprz. 90 dni","Tendencja",`Evergreeny (≥${f.evDays} dni)`,"Dzienny zasięg aktywnych","Koszt dzienny min","Koszt dzienny max","Koszt mies. min","Koszt mies. max","Koszt mies. środek","Koszt ostatnie 30 dni","Szac. wyświetlenia dziennie (środek)","Szac. wyświetlenia / mies. min","Szac. wyświetlenia / mies. max","Szac. wyświetlenia / mies. środek","Szac. wyświetlenia ost. 30 dni","Szac. wyświetlenia łącznie (wszystkie reklamy)","Indeks",...INDEX_PARTS.map(x => "Indeks: " + x[1]),"Założenia"]);
   const rec = sheet("Rekomendacje", ["Priorytet","Obszar","Rekomendacja","Uzasadnienie","Co zrobić"]);
   const trend = sheet("Tendencja", ["Strona","Miesiąc","Nowe reklamy","Emitowane reklamy","Zasięg (rozłożony)","Udział w zasięgu (%)"]);
   const test = sheet("Kreacje i testy", ["Strona","Wyłączane ≤7 dni (%)","Mediana życia zakończonych (dni)","Średnio aktywnych naraz","Maks. aktywnych naraz","Nowych na dzień startu","DCO (%)","Średni wiek aktywnych (dni)",...LIFE_B.map(x => "Życie " + x[2]),"Wideo","Grafika","Mem","Inne","Mediana zasięgu/dzień"]);
@@ -2749,9 +3033,9 @@ function exportXlsx(){
   for (const r of results){
     const s = r.s, role = r.isMain ? "Twoja marka" : "konkurent", n = r.rows.length, t = r.testing, p = r.prices, c = r.copy;
     const fem = r.demo.gKnown ? pct(r.demo.gender.female, r.demo.gKnown) : null;
-    cmp.push([r.pageName, role, r.idx.index, s.aktywne, totAct ? Math.round(s.aktywne/totAct*1000)/10 : null, s.miesSr, totCost ? Math.round(s.miesSr/totCost*1000)/10 : null, s.n30, s.evergreeny, t.killRate, r.camp.concepts90, s.zOfertaProc, p.discAvg, p.priceMed, s.wideo, c.cta, s.sredniZasieg, r.demo.demoTotal ? r.demo.topAge[0] : null, fem,
+    cmp.push([r.pageName, role, r.idx.index, s.aktywne, totAct ? Math.round(s.aktywne/totAct*1000)/10 : null, s.miesSr, totCost ? Math.round(s.miesSr/totCost*1000)/10 : null, s.wyswMiesSr, s.n30, s.evergreeny, t.killRate, r.camp.concepts90, s.zOfertaProc, p.discAvg, p.priceMed, s.wideo, c.cta, s.sredniZasieg, r.demo.demoTotal ? r.demo.topAge[0] : null, fem,
       main && !r.isMain ? dpct(s.aktywne, main.s.aktywne) : null, main && !r.isMain ? dpct(s.miesSr, main.s.miesSr) : null, r.trend]);
-    sum.push([role, r.brand, r.pageName, r.pageId, regionLabel(r.region), r.lang || "dowolny", fl, iso(todayUTC), s.aktywne, s.lacznie, s.sredniZasieg, s.medianaZasiegu, s.sredniCzasEmisji, s.n30, s.p30, s.n90, s.p90, r.trend, s.evergreeny, s.dziennyZasieg, s.dzienMin, s.dzienMax, s.miesMin, s.miesMax, s.miesSr, s.ost30, r.idx.index, ...INDEX_PARTS.map(([k]) => Math.round(r.idx.parts[k])), s.zalozenia]);
+    sum.push([role, r.brand, r.pageName, r.pageId, regionLabel(r.region), r.lang || "dowolny", fl, iso(todayUTC), s.aktywne, s.lacznie, s.sredniZasieg, s.medianaZasiegu, s.sredniCzasEmisji, s.n30, s.p30, s.n90, s.p90, r.trend, s.evergreeny, s.dziennyZasieg, s.dzienMin, s.dzienMax, s.miesMin, s.miesMax, s.miesSr, s.ost30, s.wyswDzienSr, s.wyswMiesMin, s.wyswMiesMax, s.wyswMiesSr, s.wysw30, s.wyswLacznie, r.idx.index, ...INDEX_PARTS.map(([k]) => Math.round(r.idx.parts[k])), s.zalozenia]);
     r.months.forEach((m, i) => trend.push([r.pageName, m.key, m.nowe, m.emitowane, Math.round(m.reach), monthTot[i] ? Math.round(m.reach / monthTot[i] * 1000) / 10 : null]));
     test.push([r.pageName, t.killRate, t.lifeMed, t.concAvg, t.concMax, t.batchAvg, t.dco, t.ageActive, ...t.lifeHist.map(x => x[1]), ...(r.mediaLoaded ? ["VIDEO","IMAGE","MEME","OTHER"].map(k => r.media[k] || 0) : [null,null,null,null]), r.eff.med]);
     r.camp.top.forEach(x => conc.push([r.pageName, "koncept", x.text, x.n, x.active, x.reach, iso(x.first), iso(x.last), null]));
@@ -2791,7 +3075,9 @@ function exportXlsx(){
         [...new Set(a.payers.map(x => x.payer))].join(", "), [...new Set(a.payers.map(x => x.ben))].join(", "), a.dco ? "tak" : "nie", a.text, a.title, a.desc, `https://www.facebook.com/ads/library/?id=${a.id}`]);
   }
   const name = `raport_meta_${iso(todayUTC)}`;
+  S["Fakty do strategii"] = [STRAT_HEAD, ...strategyFacts(results)];
   if (!window.XLSX){
+    if (asData) return {name, ext: "csv", data: "\ufeff" + sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n")};
     const csv = sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(["﻿" + csv], {type: "text/csv"}));
@@ -2807,7 +3093,274 @@ function exportXlsx(){
     ws["!cols"] = aoa[0].map((h, i) => ({wch: Math.min(60, Math.max(10, ...aoa.slice(0, 200).map(r => String(r[i] ?? "").length)) + 1)}));
     XLSX.utils.book_append_sheet(wb, ws, nm.slice(0, 31));
   }
+  if (asData) return {name, ext: "xlsx", data: XLSX.write(wb, {bookType: "xlsx", type: "array"})};
   XLSX.writeFile(wb, name + ".xlsx");
+}
+
+
+// ================================================================ pakiet do strategii: PNG wykresów + dane (Excel, CSV) + opis
+const LIBS = {
+  img: ["https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js", () => window.htmlToImage],
+  zip: ["https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", () => window.JSZip]
+};
+function loadLib(k){
+  const [url, ok] = LIBS[k];
+  if (ok()) return Promise.resolve(ok());
+  return new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = url; sc.async = true;
+    sc.onload = () => ok() ? res(ok()) : rej(new Error("biblioteka nie załadowała się"));
+    sc.onerror = () => rej(new Error("nie udało się pobrać biblioteki (" + url.split("/")[2] + ") — sprawdź połączenie z internetem"));
+    document.head.appendChild(sc);
+  });
+}
+const KIND = {d: "czyste dane z Meta API", c: "obliczenia na danych", p: "szacunek / poszlaki", x: "interpretacja"};
+const slug = t => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "wykres";
+const STRAT_KEY = "metaAdsBotStrat";
+const stratPrefs = () => { try { return JSON.parse(store.get(STRAT_KEY) || "{}"); } catch(e){ return {}; } };
+const STRAT_BRAND_DEF = ["overview", "budget", "creative", "message", "offers", "audience", "calendar"];
+
+// fakty do strategii: jedna tabela „marka · wskaźnik · wartość · pochodzenie”
+function strategyFacts(list){
+  const rows = [];
+  const totCost = list.reduce((a, r) => a + r.s.miesSr, 0), totAct = list.reduce((a, r) => a + r.s.aktywne, 0), totImp = list.reduce((a, r) => a + (r.s.wyswMiesSr || 0), 0);
+  for (const r of list){
+    const s = r.s, d = r.demo, add = (area, name, val, unit, kind, note = "") => rows.push([r.pageName, r.isMain ? "analizowana marka" : "konkurent", area, name, val == null || val === "" ? "brak danych" : val, unit, KIND[kind], note]);
+    add("Skala", "Aktywne reklamy", s.aktywne, "szt.", "d");
+    add("Skala", "Reklamy w analizowanym zbiorze", s.lacznie, "szt.", "d", r.period ? "okres: " + r.period.label : "");
+    add("Skala", "Nowe reklamy w 30 dni", s.n30, "szt.", "c", `poprzednie 30 dni: ${s.p30}`);
+    add("Skala", "Tendencja liczby nowych reklam (90 dni)", r.trend, "", "c");
+    add("Skala", "Udział w aktywnych reklamach (zestaw)", totAct ? pct(s.aktywne, totAct) : null, "%", "c");
+    add("Zasięg", "Średni zasięg reklamy (UE)", s.sredniZasieg, "osób", "c", `mediana ${fmt(s.medianaZasiegu)}`);
+    add("Zasięg", "Dzienny zasięg aktywnych reklam", s.dziennyZasieg, "osób / dzień", "c", "suma po reklamach — ta sama osoba może być liczona kilka razy");
+    add("Wyświetlenia", "Szacowane wyświetlenia / mies. (prognoza przy obecnej aktywności)", s.wyswMiesSr, "wyświetleń", "p", `przedział ${fmt(s.wyswMiesMin)}–${fmt(s.wyswMiesMax)}; zasięg × częstotliwość ${String(s.freqMin).replace(".", ",")}–${String(s.freqMax).replace(".", ",")}`);
+    add("Wyświetlenia", "Szacowane wyświetlenia — ostatnie 30 dni", s.wysw30, "wyświetleń", "p");
+    add("Wyświetlenia", "Szacowane wyświetlenia — łącznie dotychczas (wszystkie reklamy w zbiorze)", s.wyswLacznie, "wyświetleń", "p");
+    add("Wyświetlenia", "Udział w szac. wyświetleniach (zestaw)", totImp ? pct(s.wyswMiesSr, totImp) : null, "%", "p");
+    add("Budżet", "Szacowany koszt / mies.", s.miesSr, "zł", "p", `przedział ${fmt(s.miesMin)}–${fmt(s.miesMax)} zł; ${s.zalozenia}`);
+    add("Budżet", "Szacowany koszt — ostatnie 30 dni", s.ost30, "zł", "p");
+    add("Budżet", "Udział w szac. wydatkach (zestaw)", totCost ? pct(s.miesSr, totCost) : null, "%", "p");
+    add("Aktywność", "Indeks aktywności reklamowej", r.idx.index, "/100", "p", "wskaźnik autorski — do porównań między markami");
+    add("Kreacje", "Evergreeny (reklamy długo działające)", s.evergreeny, "szt.", "c", `próg ${filters().evDays} dni`);
+    add("Kreacje", "Średni czas emisji reklamy", s.sredniCzasEmisji, "dni", "c");
+    add("Kreacje", "Zakończone reklamy wyłączone w ≤7 dni", r.testing.killRate, "%", "c", "miara intensywności testów");
+    add("Kreacje", "Koncepty kreatywne w 90 dni", r.camp.concepts90, "szt.", "c");
+    if (r.mediaLoaded) add("Kreacje", "Udział wideo", s.wideo, "%", "c");
+    add("Przekaz", "Reklamy z ofertą / mechaniką promocyjną", s.zOfertaProc, "%", "p", "wykrywanie w tekstach");
+    add("Przekaz", "Reklamy z rabatem procentowym", r.prices.discPct, "%", "p");
+    add("Przekaz", "Średni komunikowany rabat", r.prices.discAvg == null ? null : r.prices.discAvg, "%", "p");
+    add("Przekaz", "Mediana ceny w reklamach", r.prices.priceMed == null ? null : Math.round(r.prices.priceMed * 100) / 100, "zł", "p");
+    add("Przekaz", "Reklamy z wezwaniem do działania (CTA)", r.copy.cta, "%", "c");
+    add("Przekaz", "Najczęstsze słowa w reklamach", r.msg.words.slice(0, 8).map(([w, n]) => `${w} (${n})`).join(", "), "", "c");
+    const pl = Object.entries(r.msg.plat).sort((a, b) => b[1] - a[1]);
+    if (pl.length) add("Kanały", "Platformy (udział reklam)", pl.map(([k, v]) => `${k} ${pct(v, s.lacznie)}%`).join(", "), "", "d");
+    if (d.demoTotal){
+      add("Odbiorcy", "Główna grupa wieku (zasięg)", `${d.topAge[0]} (${pct(d.topAge[1], d.demoTotal)}%)`, "", "c");
+      if (d.gKnown) add("Odbiorcy", "Kobiety w zasięgu", pct(d.gender.female, d.gKnown), "%", "c");
+    }
+  }
+  return rows;
+}
+const STRAT_HEAD = ["Marka", "Rola", "Obszar", "Wskaźnik", "Wartość", "Jednostka", "Pochodzenie", "Uwagi"];
+const csvCell = v => typeof v === "number" ? String(v).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
+const toCsv = (head, rows) => "﻿" + [head, ...rows].map(r => r.map(csvCell).join(";")).join("\r\n");
+
+// scena do renderowania PNG (poza ekranem, w wybranym motywie)
+function pngStage(theme){
+  let st = $("pngStage");
+  if (!st){ st = document.createElement("div"); st.id = "pngStage"; document.body.appendChild(st); }
+  st.className = "png-stage" + (theme === "dark" ? "" : " light-scope");
+  return st;
+}
+let FONT_CSS = null;
+async function nodeToPng(node, meta, o){
+  const lib = await loadLib("img");
+  const st = pngStage(o.theme);
+  const frame = document.createElement("div"); frame.className = "png-frame";
+  frame.innerHTML = `<div class="pf-head"><span class="pf-brand">${meta.dot ? `<i style="background:${meta.dot}"></i>` : ""}${esc(meta.brand)}</span><span class="pf-tab">${esc(meta.tab)}</span></div>`;
+  const clone = node.cloneNode(true);
+  clone.querySelectorAll(".blkpng,input,button,select").forEach(e => e.remove());
+  frame.appendChild(clone);
+  if (o.caption) frame.insertAdjacentHTML("beforeend", `<div class="pf-foot"><span>Źródło: Meta Ad Library API${meta.kind ? " · " + esc(KIND[meta.kind]) : ""}${meta.note ? " · " + esc(meta.note) : ""}</span><span>stan na ${iso(todayUTC)}</span></div>`);
+  st.appendChild(frame);
+  const marks = [...document.body.classList].filter(c => /^mk-/.test(c));   // oznaczenia Lupy nie trafiają na PNG
+  document.body.classList.remove(...marks);
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const bg = getComputedStyle(frame).backgroundColor;
+    // czcionki osadzamy raz na sesję (to najwolniejsza część renderu) i używamy dla kolejnych wykresów
+    if (FONT_CSS === null){ try { FONT_CSS = await lib.getFontEmbedCSS(frame); } catch(e){ FONT_CSS = ""; } }
+    return await lib.toBlob(frame, {pixelRatio: o.scale, backgroundColor: bg, cacheBust: false, ...(FONT_CSS ? {fontEmbedCSS: FONT_CSS} : {skipFonts: true})});
+  } finally { frame.remove(); document.body.classList.add(...marks); }
+}
+// pojedynczy wykres z ekranu: przycisk PNG przy tytule bloku
+function addPngButtons(card){
+  card.querySelectorAll(".panel .blk > h3").forEach(h => {
+    if (h.querySelector(".blkpng")) return;
+    h.dataset.t = h.textContent.trim();
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "blkpng"; b.title = "Pobierz ten wykres jako PNG";
+    b.innerHTML = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>PNG';
+    b.onclick = async e => {
+      e.stopPropagation();
+      const blk = h.closest(".blk"), p = stratPrefs();
+      const isCmp = view.top === "cmp", r = isCmp ? null : results.find(x => x.uid === view.top);
+      const tabs = isCmp ? CMP_TABS : BRAND_TABS, cur = isCmp ? view.cmpTab : view.brandTab;
+      const tabName = (tabs.find(t => t[0] === cur) || tabs[0])[1], title = h.dataset.t || "wykres";
+      b.disabled = true; b.lastChild.textContent = "…";
+      try {
+        const blob = await nodeToPng(blk, {brand: isCmp ? "Porównanie marek" : r.pageName, tab: tabName, kind: blk.dataset.k, dot: isCmp ? "" : color(results.indexOf(r)), note: blkNote(isCmp ? results : [r])},
+          {theme: p.theme || "light", scale: +p.scale || 2, caption: p.caption !== false});
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+        a.download = `${slug(isCmp ? "porownanie" : r.pageName)}_${slug(tabName)}_${slug(title)}.png`; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      } catch(err){ setStatus("Nie udało się zapisać PNG: " + err.message, true); }
+      finally { b.disabled = false; b.lastChild.textContent = "PNG"; }
+    };
+    h.appendChild(b);
+  });
+}
+const blkNote = list => [list.some(r => r.period) ? "okres: " + list.find(r => r.period).period.name : "", list.some(r => r.limited) ? "część marek: próba (limit)" : ""].filter(Boolean).join(" · ");
+
+function openStratPanel(){
+  const card = $("stratCard"), p = stratPrefs();
+  const multi = results.length > 1;
+  const cmpSel = p.cmp || CMP_TABS.map(t => t[0]);
+  const brandTabs = BRAND_TABS.filter(([k]) => k !== "social" || results.some(r => r.polLoaded) ).filter(([k]) => k !== "changes" || results.some(r => r.changes && !r.changes.first));
+  const bSel = p.tabs || STRAT_BRAND_DEF;
+  const chk = (attr, val, label, on) => `<label class="aichk"><input type="checkbox" ${attr}="${val}" ${on ? "checked" : ""}><span><b>${label}</b></span></label>`;
+  card.innerHTML = `
+    <div class="title-row"><h2 style="margin:0"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Pakiet do strategii</h2><button class="ghost mini" id="stratClose">Zamknij</button></div>
+    <div class="sub" style="margin-top:6px">Gotowe materiały do strategii i prezentacji: wykresy PNG (z podpisem źródła), tabela faktów (marka · wskaźnik · wartość · pochodzenie), pełny Excel z danymi i opis zawartości — w jednym pliku .zip. Pojedynczy wykres pobierzesz też przyciskiem <b>PNG</b> przy jego tytule w wynikach.</div>
+    <div class="row" style="margin:14px 0 4px"><b style="margin-right:6px">Zestawy:</b>
+      <button class="ghost mini" data-sp="rec">Rekomendowany</button><button class="ghost mini" data-sp="all">Wszystkie wykresy</button><button class="ghost mini" data-sp="none">Tylko dane</button></div>
+    ${multi ? `<h3>Wykresy porównania marek</h3><div class="aigrid">${CMP_TABS.map(([k, l]) => chk("data-sc", k, l, cmpSel.includes(k))).join("")}</div>` : ""}
+    <h3>Wykresy dla każdej marki</h3><div class="aigrid">${brandTabs.map(([k, l]) => chk("data-sb", k, l, bSel.includes(k))).join("")}</div>
+    ${multi ? `<h3>Wykresy marek dla</h3><div class="hint" style="margin:-4px 0 8px">Konkurencja jest już na wykresach porównania — zaznacz ją tutaj, jeśli potrzebujesz też jej osobnych wykresów.</div><div class="row">${results.map((r, i) => `<label class="check" style="margin:0 14px 0 0"><input type="checkbox" data-sbr="${r.uid}" ${r.isMain || !results.some(x => x.isMain) ? "checked" : ""}><span><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span></label>`).join("")}</div>` : ""}
+    <h3>Format</h3>
+    <div class="grid">
+      <div><label for="sTheme">Motyw wykresów</label><select id="sTheme"><option value="light">jasny — do prezentacji i dokumentów</option><option value="dark">ciemny — jak w aplikacji</option></select></div>
+      <div><label for="sScale">Rozdzielczość</label><select id="sScale"><option value="2">2× — slajdy, dokumenty</option><option value="3">3× — druk, duże ekrany</option><option value="1">1× — lekkie pliki</option></select></div>
+      <div><label for="sCap">Podpis pod wykresem</label><select id="sCap"><option value="1">źródło, rodzaj danych i data</option><option value="0">bez podpisu</option></select></div>
+    </div>
+    <h3>Dane w paczce</h3>
+    <div class="row">
+      <label class="check" style="margin:0 14px 0 0"><input type="checkbox" id="sXlsx" ${p.xlsx === false ? "" : "checked"}><span>Pełny Excel z danymi (wszystkie arkusze + „Fakty do strategii”)</span></label>
+      <label class="check" style="margin:0 14px 0 0"><input type="checkbox" id="sCsv" ${p.csv === false ? "" : "checked"}><span>Fakty do strategii (.csv)</span></label>
+      <label class="check" style="margin:0"><input type="checkbox" id="sMd" ${p.md === false ? "" : "checked"}><span>Opis zawartości i założeń (.md)</span></label>
+    </div>
+    <div class="row actions">
+      <button id="stratGo">Pobierz paczkę .zip</button>
+      <button class="ghost" id="stratPdf">Raport PDF z danymi</button>
+      <span class="hint" id="stratEst" style="margin:0"></span>
+    </div>
+    <div class="hint" id="stratStatus"></div>`;
+  card.classList.remove("hidden");
+  $("sTheme").value = p.theme || "light"; $("sScale").value = String(p.scale || 2); $("sCap").value = p.caption === false ? "0" : "1";
+  const est = () => {
+    const nb = multi ? card.querySelectorAll("input[data-sbr]:checked").length : 1;
+    const nc = multi ? card.querySelectorAll("input[data-sc]:checked").length : 0, nt = card.querySelectorAll("input[data-sb]:checked").length;
+    const n = nc * 4 + nt * nb * 5;
+    $("stratEst").textContent = n ? `ok. ${n} wykresów · ok. ${Math.max(5, Math.round(n * 0.35))} s` : "same dane (bez wykresów)";
+  };
+  const save = () => store.set(STRAT_KEY, JSON.stringify({
+    cmp: [...card.querySelectorAll("input[data-sc]:checked")].map(c => c.dataset.sc), tabs: [...card.querySelectorAll("input[data-sb]:checked")].map(c => c.dataset.sb),
+    theme: $("sTheme").value, scale: +$("sScale").value, caption: $("sCap").value === "1", xlsx: $("sXlsx").checked, csv: $("sCsv").checked, md: $("sMd").checked}));
+  card.querySelectorAll("button[data-sp]").forEach(b => b.onclick = () => {
+    const v = b.dataset.sp;
+    card.querySelectorAll("input[data-sc]").forEach(c => c.checked = v === "all" || v === "rec");
+    card.querySelectorAll("input[data-sb]").forEach(c => c.checked = v === "all" || (v === "rec" && STRAT_BRAND_DEF.includes(c.dataset.sb)));
+    save(); est();
+  });
+  card.addEventListener("change", () => { save(); est(); });
+  est();
+  $("stratClose").onclick = () => card.classList.add("hidden");
+  $("stratPdf").onclick = () => { card.classList.add("hidden"); openPdfPanel(); $("pdfCard").scrollIntoView({behavior: "smooth", block: "start"}); };
+  $("stratGo").onclick = buildStratZip;
+  card.scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+async function buildStratZip(){
+  const card = $("stratCard"), btn = $("stratGo"), stat = $("stratStatus");
+  const o = {theme: $("sTheme").value, scale: +$("sScale").value || 2, caption: $("sCap").value === "1"};
+  const multi = results.length > 1;
+  const brands = multi ? results.filter(r => card.querySelector(`input[data-sbr="${r.uid}"]`).checked) : results;
+  const cmpTabs = multi ? CMP_TABS.filter(([k]) => card.querySelector(`input[data-sc="${k}"]`)?.checked) : [];
+  const bTabs = BRAND_TABS.filter(([k]) => card.querySelector(`input[data-sb="${k}"]`)?.checked);
+  if (!brands.length) return stat.textContent = "Zaznacz co najmniej jedną markę.";
+  btn.disabled = true;
+  const files = [], log = [];
+  const say = t => { stat.textContent = t; };
+  try {
+    say("Ładuję biblioteki…");
+    const JSZip = await loadLib("zip");
+    if (cmpTabs.length || bTabs.length) await loadLib("img");
+    const zip = new JSZip();
+    const main = results.find(r => r.isMain) || results[0];
+    const root = `strategia_${slug(main.pageName)}_${iso(todayUTC)}`;
+    // --- wykresy
+    const st = pngStage(o.theme);
+    const jobs = [];
+    const collect = (html, meta, dir, prefix) => {
+      const tmp = document.createElement("div"); tmp.className = "png-src"; tmp.innerHTML = html; st.appendChild(tmp);
+      const blocks = [...tmp.querySelectorAll(".blk")].filter(b => {
+        if (b.parentElement.closest(".blk") || !b.querySelector(":scope > h3")) return false;
+        const kids = [...b.children].filter(c => c.tagName !== "H3");
+        return !(kids.length === 1 && kids[0].classList.contains("nodata"));   // pomijamy puste wykresy
+      });
+      blocks.forEach((b, i) => jobs.push({node: b, tmp, meta: {...meta, kind: b.dataset.k, title: b.querySelector(":scope > h3").textContent.trim()}, path: `${dir}/${prefix}${String(i + 1).padStart(2, "0")}-${slug(b.querySelector(":scope > h3").textContent)}.png`}));
+      return tmp;
+    };
+    const temps = [];
+    const note = blkNote(results);
+    for (const [k, l] of cmpTabs) temps.push(collect(cmpPanel(k, results), {brand: "Porównanie marek", tab: l, note}, `${root}/wykresy/00-porownanie`, `${slug(l)}-`));
+    for (const r of brands){
+      const i = results.indexOf(r);
+      if (bTabs.length){
+        // kluczowe liczby marki jako osobny obraz
+        const tk = document.createElement("div"); tk.className = "png-src"; tk.innerHTML = `<div class="blk" data-k="p"><h3>Kluczowe wskaźniki</h3>${secKpis(r)}</div>`; st.appendChild(tk); temps.push(tk);
+        jobs.push({node: tk.firstChild, tmp: tk, meta: {brand: r.pageName, tab: "Przegląd", dot: color(i), kind: "p", title: "Kluczowe wskaźniki", note: blkNote([r])}, path: `${root}/wykresy/${String(i + 1).padStart(2, "0")}-${slug(r.pageName)}/00-kluczowe-wskazniki.png`});
+      }
+      for (const [k, l] of bTabs) temps.push(collect(brandPanel(k, r, i, true), {brand: r.pageName, tab: l, dot: color(i), note: blkNote([r])}, `${root}/wykresy/${String(i + 1).padStart(2, "0")}-${slug(r.pageName)}`, `${slug(l)}-`));
+    }
+    let n = 0;
+    for (const j of jobs){
+      n++; say(`Renderuję wykres ${n} z ${jobs.length}: ${j.meta.brand} · ${j.meta.title}`);
+      try {
+        const blob = await nodeToPng(j.node, {brand: j.meta.brand, tab: j.meta.tab, kind: j.meta.kind, dot: j.meta.dot, note: j.meta.note}, o);
+        zip.file(j.path, blob); files.push([j.path.slice(root.length + 1), j.meta.brand, `${j.meta.tab} · ${j.meta.title}`, j.meta.kind ? KIND[j.meta.kind] : ""]);
+      } catch(e){ log.push(`${j.path}: ${e.message}`); }
+    }
+    temps.forEach(t => t.remove());
+    // --- dane
+    say("Przygotowuję dane…");
+    const facts = strategyFacts(results);
+    if ($("sCsv").checked){ zip.file(`${root}/dane/fakty-do-strategii.csv`, toCsv(STRAT_HEAD, facts)); files.push(["dane/fakty-do-strategii.csv", "wszystkie", "Fakty do strategii: marka · wskaźnik · wartość · pochodzenie", "mieszane (kolumna Pochodzenie)"]); }
+    if ($("sXlsx").checked){
+      const x = exportXlsx(true);
+      if (x){ zip.file(`${root}/dane/${x.name}.${x.ext}`, x.data); files.push([`dane/${x.name}.${x.ext}`, "wszystkie", x.ext === "xlsx" ? "Pełne dane z analizy (wszystkie arkusze) + Fakty do strategii" : "Podsumowanie (CSV — Excel niedostępny)", "mieszane"]); }
+    }
+    if ($("sMd").checked) zip.file(`${root}/CZYTAJ-MNIE.md`, stratReadme(results, files, log));
+    say("Pakuję…");
+    const blob = await zip.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 6}});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = root + ".zip"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+    say(`Gotowe: ${files.filter(f => f[0].endsWith(".png")).length} wykresów PNG${$("sXlsx").checked ? ", Excel" : ""}${$("sCsv").checked ? ", fakty CSV" : ""}${$("sMd").checked ? ", opis" : ""} — plik ${root}.zip.${log.length ? ` Pominięto ${log.length} wykresów (szczegóły w CZYTAJ-MNIE.md).` : ""}`);
+  } catch(e){ say("Nie udało się przygotować paczki: " + e.message); }
+  finally { btn.disabled = false; const st = $("pngStage"); if (st) st.innerHTML = ""; }
+}
+function stratReadme(brands, files, log){
+  const main = brands.find(r => r.isMain) || brands[0], L = [];
+  L.push(`# Pakiet do strategii — ${main.pageName}`, "", `Wygenerowano: ${iso(todayUTC)} · Meta Ads Bot · źródło: Meta Ad Library API (Biblioteka Reklam Meta)`, "");
+  L.push("## Zakres", `- Marki: ${brands.map(r => r.pageName + (r.isMain ? " (analizowana)" : "")).join(", ")}`, `- Obszar emisji: ${regionLabel(main.region)}${main.lang ? `, język: ${main.lang}` : ""}`,
+    `- Okres: ${main.period ? main.period.label : "cała dostępna historia"}`, `- Filtry wyników: ${filterLabel() || "brak"}`,
+    brands.some(r => r.limited) ? `- Próba (limit reklam): ${brands.filter(r => r.limited).map(r => `${r.pageName} — ${r.limited.n} reklam`).join("; ")} — liczby bezwzględne dla tych marek są zaniżone` : "- Pobrano wszystkie dostępne reklamy każdej marki", "");
+  L.push("## Jak czytać liczby", "- **Czyste dane z Meta API** — liczby reklam, daty, zasięg, demografia, płatnik.", "- **Obliczenia** — średnie, udziały, trendy policzone z tych danych.",
+    `- **Szacunek / poszlaki** — koszt i wyświetlenia (Meta nie podaje ich dla reklam komercyjnych), indeks aktywności, wykrywanie ofert w tekstach. Założenia: ${main.s.zalozenia}. Wyświetlenia = zasięg × częstotliwość; koszt = wyświetlenia × CPM.`,
+    "- **Interpretacja** — wnioski i rekomendacje bota.", "- Zasięg z API dotyczy wyłącznie UE (DSA). Szacunki to rząd wielkości do porównań między markami, nie faktyczne wydatki.", "");
+  L.push("## Pliki", "", "| Plik | Marka | Co pokazuje | Rodzaj danych |", "| --- | --- | --- | --- |", ...files.map(f => `| ${f[0]} | ${f[1]} | ${f[2]} | ${f[3]} |`), "");
+  if (log.length) L.push("## Pominięte wykresy", ...log.map(l => "- " + l), "");
+  L.push("## Cytowanie w strategii", `Przy liczbach szacowanych podawaj przedział i dopisek: „szacunek na podstawie Biblioteki Reklam Meta, ${iso(todayUTC)}”.`);
+  return L.join("\n");
 }
 
 // ================================================================ odkrywanie konkurentów
@@ -2837,7 +3390,7 @@ async function discover(){
         <input type="checkbox" data-i="${i}" ${i < 5 && !own.has(p.id) ? "checked" : ""}>
         <span><b>${esc(p.name)}</b> <span class="sub">· page_id ${esc(p.id)}</span></span>
         <span class="m">${p.active} aktywnych / ${p.ads} reklam<br>zasięg ${fmt(p.reach)}</span></label>`).join("")
-      : `<div class="sub">Brak reklam z tą frazą na wybranym obszarze.</div>`;
+      : `<div class="sub nodata">Brak reklam z tą frazą na wybranym obszarze.</div>`;
     $("discActions").classList.toggle("hidden", !discFound.length);
     st(discFound.length ? `Znaleziono ${Object.keys(by).length} reklamodawców w ${ads.length} reklamach (pokazuję top 25, sortowane po aktywnych reklamach).` : "");
   } catch(e){ st(e.message); }
@@ -3092,6 +3645,7 @@ function buildAiMd(o){
     `- Filtr wyników: ${fl || "brak (cała biblioteka)"}`,
     `- Evergreen = reklama emitowana co najmniej ${f.evDays} dni; „aktywna” = bez daty zakończenia lub z datą od dziś`,
     `- Założenia kosztu: ${main.s.zalozenia}`,
+    `- Szacowane wyświetlenia = zasięg × częstotliwość (Meta nie podaje wyświetleń reklam komercyjnych, tylko zasięg) — to szacunek, nie dane Meta`,
     main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`,
     main.period ? `- **Okres analizy:** ${main.period.label}, wspólny dla wszystkich marek. Uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Zasięg i wydatki z API dotyczą całej emisji reklamy, nie tylko okresu — nie przeliczaj ich na „wynik okresu” bez zastrzeżenia. Trendy miesięczne mogą obejmować miesiące sprzed okresu (start długich reklam).` : `- Okres analizy: cała dostępna historia biblioteki`,
     sel.some(r => r.limited) ? `- **UWAGA — próba danych:** ${sel.filter(r => r.limited).map(r => `${r.pageName}: przeanalizowano ${r.limited.n} reklam (limit ${r.limited.limit}, najpierw aktywne), marka ma ich więcej`).join("; ")}. Liczby bezwzględne (reklamy, zasięg, koszt, udział w głosie) są dla tych marek zaniżone — opieraj porównania na wskaźnikach procentowych i zaznacz to w analizie.` : `- Pobrano wszystkie dostępne reklamy każdej marki (bez limitu)`
@@ -3106,8 +3660,8 @@ function buildAiMd(o){
   if (needs.has("budget")){
     const tot = sel.reduce((a, r) => a + r.s.miesSr, 0), totA = sel.reduce((a, r) => a + r.s.aktywne, 0);
     h(`### Budżet i udział w głosie ${TAG.p}`);
-    L.push(mdTable(["Marka", "Szac. koszt / mies. (zł)", "Widełki / mies. (zł)", "Szac. koszt ost. 30 dni (zł)", "Udział w szac. wydatkach", "Udział w aktywnych reklamach " + TAG.c],
-      sel.map(r => [r.pageName, fmt(r.s.miesSr), `${fmt(r.s.miesMin)}–${fmt(r.s.miesMax)}`, fmt(r.s.ost30), tot ? `${Math.round(r.s.miesSr / tot * 100)}%` : "—", totA ? `${Math.round(r.s.aktywne / totA * 100)}%` : "—"])));
+    L.push(mdTable(["Marka", "Szac. koszt / mies. (zł)", "Widełki / mies. (zł)", "Szac. koszt ost. 30 dni (zł)", "Szac. wyświetlenia / mies.", "Szac. wyświetlenia ost. 30 dni", "Udział w szac. wydatkach", "Udział w aktywnych reklamach " + TAG.c],
+      sel.map(r => [r.pageName, fmt(r.s.miesSr), `${fmt(r.s.miesMin)}–${fmt(r.s.miesMax)}`, fmt(r.s.ost30), `${fmt(r.s.wyswMiesSr)} (${fmt(r.s.wyswMiesMin)}–${fmt(r.s.wyswMiesMax)})`, fmt(r.s.wysw30), tot ? `${Math.round(r.s.miesSr / tot * 100)}%` : "—", totA ? `${Math.round(r.s.aktywne / totA * 100)}%` : "—"])));
     const keys = sel[0].months.map(m => m.key);
     const mt = keys.map((_, i) => sel.reduce((a, r) => a + r.months[i].reach, 0));
     L.push(`\nPrzedziały prawdopodobieństwa miesięcznego budżetu ${TAG.p} (model log-normalny: niepewność CPM, częstotliwości i zasięgu; prawdopodobieństwa w ramach modelu, nie gwarancja; mediana bywa niższa od „środka widełek” z tabeli powyżej, bo to inna, dokładniejsza miara):\n`);
@@ -3274,6 +3828,28 @@ function renderLimits(){
   let t; ["brand", "page", "comp"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(t); t = setTimeout(renderLimits, 250); }));
   renderLimits();
 })();
+// ================================================================ ustawienia zaawansowane: podsumowanie i równoległość
+const concLimit = () => Math.max(1, Math.min(3, +$("conc").value || 3));
+function advSummary(){
+  const el = $("advSum"); if (!el) return;
+  const parts = [];
+  const lang = $("lang").selectedOptions[0]; if (lang && lang.value) parts.push("język: " + lang.text);
+  parts.push(`evergreen ≥${evDaysVal()} dni`);
+  const ld = +$("limDef").value || 0, nInd = Object.keys(limMap).length;
+  parts.push(ld ? `limit ${fmt(ld)} reklam` : "bez limitu reklam");
+  if (nInd) parts.push(`${nInd} ${nInd === 1 ? "limit indywidualny" : "limity indywidualne"}`);
+  const per = typeof periodRange === "function" ? periodRange() : null;
+  parts.push(per ? per.name : per === undefined ? "okres: błędne daty" : "cała historia");
+  parts.push(`CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł`);
+  parts.push(concLimit() > 1 ? `${concLimit()} marki naraz` : "po kolei");
+  el.innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
+}
+(function initAdv(){
+  const sv = store.get("metaAdsBotConc"); if (sv && [...$("conc").options].some(o => o.value === sv)) $("conc").value = sv;
+  $("conc").addEventListener("change", () => store.set("metaAdsBotConc", $("conc").value));
+  ["change", "input"].forEach(ev => $("adv").addEventListener(ev, () => setTimeout(advSummary, 0)));
+  setTimeout(advSummary, 0);
+})();
 // ================================================================ okres analizy
 const PERIOD_KEY = "metaAdsBotPeriod";
 const PERIOD_NAMES = {d7: "ostatnie 7 dni", d14: "ostatnie 14 dni", m1: "ostatni miesiąc", m3: "ostatnie 3 miesiące", m6: "ostatnie pół roku", y1: "ostatni rok",
@@ -3324,6 +3900,7 @@ function syncPeriodUi(){
   const p = periodRange();
   $("periodHint").textContent = v === "all" ? "" : p ? `${p.min} – ${p.max} (${p.days} dni)` : "— podaj poprawny zakres dat";
   store.set(PERIOD_KEY, JSON.stringify({v, from: $("pFrom").value, to: $("pTo").value}));
+  if (typeof advSummary === "function") advSummary();
 }
 function setPeriod(s){
   if (!s) return;
@@ -3340,7 +3917,8 @@ function setPeriod(s){
 })();
 // ================================================================ podpięcia
 $("go").onclick = run;
-$("xlsx").onclick = exportXlsx;
+$("xlsx").onclick = () => exportXlsx();
+$("strat").onclick = openStratPanel;
 $("pdf").onclick = openPdfPanel;
 $("ai").onclick = openAiPanel;
 $("clear").onclick = () => { results = []; renderAll(); setStatus(""); };
