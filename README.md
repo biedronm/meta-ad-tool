@@ -1,6 +1,6 @@
 #  https://biedronm.github.io/meta-ad-tool/
 
-# 🔍 Meta Ads Bot — README
+# Meta Ads Bot — README
 
 Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
 
@@ -13,7 +13,7 @@ Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (F
 3. [Ustawienia](#3-ustawienia)
 4. [Wyniki — zakładki](#4-wyniki--zakładki)
 5. [Lupa detektywa — skąd pochodzi każda informacja](#5-lupa-detektywa--skąd-pochodzi-każda-informacja)
-6. [Eksporty: PDF, Excel, plik dla AI](#6-eksporty-pdf-excel-plik-dla-ai)
+6. [Eksporty: PDF, Excel, plik dla AI, pakiet do strategii](#6-eksporty-pdf-excel-plik-dla-ai-pakiet-do-strategii)
 7. [Zestawy konkurentów i migawki](#7-zestawy-konkurentów-i-migawki)
 8. [Słowniczek wskaźników](#8-słowniczek-wskaźników)
 9. [Ograniczenia danych — przeczytaj przed wysłaniem raportu klientowi](#9-ograniczenia-danych--przeczytaj-przed-wysłaniem-raportu-klientowi)
@@ -47,13 +47,15 @@ Jeśli widzisz nazwy stron — wszystko działa. Ważne: weryfikacja, aplikacja 
 1. Otwórz `meta-ads-bot.html` w Chrome lub Edge (dwuklik).
 2. Wklej **token** (opcjonalnie zaznacz „Zapamiętaj token na tym komputerze”).
 3. Wpisz **Twoją markę**. Pewniej: wklej **ID strony** albo link z Biblioteki Reklam (z `view_all_page_id=…`) — wtedy bot nie musi zgadywać strony po nazwie.
-4. Wybierz **obszar emisji** — kraje (kafelki, można kilka) albo „🌍 Cały świat”.
+4. Wybierz **obszar emisji** — kraje (kafelki, można kilka) albo „Cały świat”.
 5. Wpisz **konkurentów** — jeden w linii: sama nazwa albo `Nazwa; ID strony lub link`.
-   Nie wiesz, kogo wpisać? Rozwiń **„🔎 Odkryj konkurentów po frazie”**, wpisz np. „krem z filtrem”, zaznacz reklamodawców i kliknij „Dodaj zaznaczone do konkurentów”.
-6. Opcjonalnie ustaw **limit reklam na konto** — domyślny dla wszystkich i osobno dla każdej marki (np. 250 dla dużego konkurenta). Przy limicie bot bierze najpierw aktywne reklamy, potem zakończone. Wyniki takiej marki są oznaczone jako **próba** (żółty baner), bo liczby bezwzględne — liczba reklam, zasięg, koszt, udział w głosie — są wtedy zaniżone; wskaźniki procentowe są bardziej miarodajne. Przy limicie zakładka „Zmiany” nie zapisuje migawki.
-   Pod spodem wybierz **okres** („Z jakiego okresu”): cała historia, ostatnie 7 / 14 dni, ostatni miesiąc, 3 miesiące, pół roku, rok, poprzedni miesiąc, ten / poprzedni kwartał, ten / poprzedni rok albo **własny zakres dat**. Okres jest wspólny dla wszystkich kont, żeby porównanie było uczciwe. Liczą się reklamy **emitowane choć jeden dzień w okresie** (także uruchomione wcześniej); limit reklam liczy się już tylko z nich. Zasięg i wydatki z API dotyczą całej emisji reklamy, nie samego okresu — bot pokazuje to w banerze 🗓, w PDF, Excelu („Zakres danych”) i pliku dla AI. Przy wybranym okresie zakładka „Zmiany” nie zapisuje migawki.
-7. Ustaw próg **evergreen** (ile dni emisji traktujemy jako „sprawdzoną” reklamę, domyślnie 30).
-8. Kliknij **Analizuj**.
+   Nie wiesz, kogo wpisać? Rozwiń **„Odkryj konkurentów po frazie”**, wpisz np. „krem z filtrem”, zaznacz reklamodawców i kliknij „Dodaj zaznaczone do konkurentów”.
+6. Pozostałe ustawienia są schowane pod **„Ustawienia zaawansowane”** (zwinięty pasek pokazuje ich aktualne wartości, np. „evergreen ≥30 dni · bez limitu reklam · cała historia · CPM 10–25 zł · 3 marki naraz”). W środku:
+   **Pobieranie marek** — domyślnie 3 marki naraz (szybciej o ok. 40–50% przy kilku konkurentach); przy błędach limitu zapytań zmień na 2 albo „po kolei”.
+   Opcjonalnie ustaw **limit reklam na konto** — domyślny dla wszystkich i osobno dla każdej marki (np. 250 dla dużego konkurenta). Przy limicie bot bierze najpierw aktywne reklamy, potem zakończone. Wyniki takiej marki są oznaczone jako **próba** (żółty baner), bo liczby bezwzględne — liczba reklam, zasięg, koszt, udział w głosie — są wtedy zaniżone; wskaźniki procentowe są bardziej miarodajne. Przy limicie zakładka „Zmiany” nie zapisuje migawki.
+   Pod spodem wybierz **okres** („Z jakiego okresu”): cała historia, ostatnie 7 / 14 dni, ostatni miesiąc, 3 miesiące, pół roku, rok, poprzedni miesiąc, ten / poprzedni kwartał, ten / poprzedni rok albo **własny zakres dat**. Okres jest wspólny dla wszystkich kont, żeby porównanie było uczciwe. Liczą się reklamy **emitowane choć jeden dzień w okresie** (także uruchomione wcześniej); limit reklam liczy się już tylko z nich. Zasięg i wydatki z API dotyczą całej emisji reklamy, nie samego okresu — bot pokazuje to w banerze z ikoną kalendarza, w PDF, Excelu („Zakres danych”) i pliku dla AI. Przy wybranym okresie zakładka „Zmiany” nie zapisuje migawki.
+7. Tam też język reklam, próg **evergreen** (ile dni emisji traktujemy jako „sprawdzoną” reklamę, domyślnie 30) oraz założenia kosztu (benchmarki, CPM, częstotliwość).
+8. Kliknij **Analizuj**. Pod przyciskiem pojawi się panel postępu: każda marka z aktualnym krokiem (szukanie strony, pobieranie reklam, formaty, reklamy społeczne), liczbą pobranych reklam, czasem i paskiem postępu.
 
 Jeśli bot trafił na złą stronę (np. fanpage zamiast oficjalnej), w zakładce „Przegląd” tej marki są przyciski z innymi znalezionymi stronami — kliknij właściwą.
 
@@ -80,18 +82,18 @@ Rozwiń **„Założenia do szacowania kosztu i ustawienia”**.
 
 ## 4. Wyniki — zakładki
 
-Na górze wybierasz **📊 Porównanie** albo konkretną markę (liczba obok nazwy to indeks aktywności 0–100). Niżej — zakładki tematyczne. Każda zaczyna się od ramki 💡 z najważniejszym wnioskiem.
+Na górze wybierasz **Porównanie** albo konkretną markę (liczba obok nazwy to indeks aktywności 0–100). Niżej — zakładki tematyczne. Każda zaczyna się od wyróżnionej ramki (ikona żarówki) z najważniejszym wnioskiem.
 
 ### Zakładki marki
 
 | Zakładka | Co zawiera |
 | --- | --- |
-| **Przegląd** | KPI, indeks aktywności, najważniejsze w skrócie, trend 12 miesięcy, szacowany koszt, największe aktywne reklamy |
+| **Przegląd** | KPI (w tym szacowane wyświetlenia), indeks aktywności, najważniejsze w skrócie, trend 12 miesięcy, szacowane wyświetlenia, szacowany koszt, największe aktywne reklamy |
 | **Prawdopodobny budżet** | Przedziały wydatków z prawdopodobieństwem (99% / 95% / 90% / 80% / 50%), rozkład, kalkulator „jakie są szanse, że wydaje więcej niż X zł”, co najbardziej wpływa na niepewność. Własne CPM, częstotliwość i inne założenia — działają tylko w tej zakładce |
 | **Kreacje i testy** | % reklam wyłączanych w ≤7 dni, reklamy działające równolegle, DCO, formaty, platformy, długość życia reklam, efektywność zasięgu, evergreeny |
 | **Kampanie** | Koncepty kreatywne (ten sam tekst = jeden koncept) i fale startów (dni z ≥3 nowymi reklamami) |
 | **Przekaz** | Ton (sprzedażowy / wizerunkowy), CTA, emoji, długość tekstów, najczęstsze słowa i hasła, mechaniki, strony docelowe, nagłówki |
-| **Oferty i ceny** | Rabaty (średni, maksymalny, rozkład), ceny, mechaniki promocyjne, reklamy z najwyższym rabatem |
+| **Oferty i ceny** | Rabaty (średni, maksymalny, rozkład), ceny, mechaniki promocyjne, reklamy z najwyższym rabatem. Rabat liczy się tylko w jednoznacznym kontekście („-30%”, „rabat 20%”, „15% taniej”) — statystyki („87% kobiet”), składy („50% mniej cukru”) i zakresy nie są promocją; progi dostawy, bony, nagrody i kwoty rabatów nie są cenami |
 | **Odbiorcy** | Piramida wieku i płci, kraje, targetowanie deklarowane, lokalizacje i wykluczenia, płatnik i beneficjent |
 | **Kalendarz** | Mapa cieplna startów z całego roku, dzień tygodnia startu, aktywność przed ważnymi datami |
 | **Zmiany** | Co nowego od poprzedniej analizy (nowe i wyłączone reklamy, zmiana budżetu, nowe evergreeny) |
@@ -120,15 +122,24 @@ Pasek pod nagłówkiem strony. Zaznacz, co chcesz oznaczyć na wynikach — blok
 | 🟩 **Czyste dane** | Wartości wprost z Meta API | listy reklam, zasięg, demografia, targetowanie, płatnik, formaty |
 | 🟦 **Obliczenia** | Matematyka na danych | średnie, udziały, trendy, rankingi, rozkłady |
 | 🟨 **Poszlaki** | Dyskusyjne: modele, przyjęte progi, wykrywanie w tekstach | szacowany koszt, indeks aktywności, rabaty, ceny, ton, CTA, koncepty |
-| 🟪 **Dedukcja detektywa** | Interpretacje narzędzia | ramki 💡, „Najważniejsze w skrócie”, rekomendacje |
+| 🟪 **Dedukcja detektywa** | Interpretacje narzędzia | ramki z żarówką, „Najważniejsze w skrócie”, rekomendacje |
 
 Przed wysłaniem raportu klientowi warto włączyć „Poszlaki” i „Dedukcję”, żeby świadomie zdecydować, co zostawić.
 
 ---
 
-## 6. Eksporty: PDF, Excel, plik dla AI
+## 6. Eksporty: PDF, Excel, plik dla AI, pakiet do strategii
 
-### 📄 Raport PDF
+### Pakiet do strategii (PNG + dane)
+Przycisk **„Pakiet do strategii (PNG + dane)”** po analizie. Wybierasz wykresy porównania, wykresy marek i dla których marek, motyw (jasny do prezentacji / ciemny), rozdzielczość (1×/2×/3×) i podpis. Dostajesz jeden plik `.zip`:
+- `wykresy/` — każdy wykres jako PNG z tytułem, nazwą marki i podpisem źródła (Meta Ad Library API · rodzaj danych · data), uporządkowane w folderach: porównanie + osobny folder na markę, plus obraz „Kluczowe wskaźniki” każdej marki;
+- `dane/fakty-do-strategii.csv` — tabela marka · obszar · wskaźnik · wartość · jednostka · pochodzenie (dane / obliczenia / szacunek) · uwagi — gotowa do wklejenia do strategii;
+- `dane/raport_meta_….xlsx` — pełny Excel (wszystkie arkusze + „Fakty do strategii”), same wartości, bez formuł;
+- `CZYTAJ-MNIE.md` — zakres analizy, jak czytać liczby, założenia szacunków i lista plików z opisem.
+
+Pojedynczy wykres pobierzesz też od razu z wyników: najedź na wykres i kliknij **PNG** przy jego tytule. PDF z danymi to przycisk „Raport PDF”.
+
+### Raport PDF
 
 Przycisk **Raport PDF** → panel z ustawieniami:
 
@@ -138,11 +149,11 @@ Przycisk **Raport PDF** → panel z ustawieniami:
 
 Otworzy się okno drukowania — jako drukarkę wybierz **„Zapisz jako PDF”**. Jeśli tła się nie drukują, zaznacz „Grafika tła”.
 
-### 📊 Excel
+### Excel
 
 Przycisk **Pobierz Excel** — 18 zakładek (porównanie, podsumowanie, rekomendacje, tendencja, kreacje i testy, kampanie, kalendarz, evergreeny, copy, przekaz, rabaty i ceny, demografia, luki, targetowanie, zmiany, reklamy społeczne, wszystkie reklamy). **Same wartości, bez formuł.**
 
-### 🤖 Eksport dla AI (.md)
+### Eksport dla AI (.md)
 
 Plik Markdown z gotowym promptem i danymi — do wklejenia lub załączenia w Claude, ChatGPT lub innym AI.
 
@@ -172,6 +183,7 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 | **Evergreen** | Reklama emitowana co najmniej X dni (ustawiasz sam, domyślnie 30) |
 | **Zasięg** | `eu_total_reach` — szacunek Meta: ile kont w UE zobaczyło reklamę |
 | **Szacowany koszt** | Zasięg dzienny aktywnych reklam × częstotliwość × CPM (z benchmarku) |
+| **Szacowane wyświetlenia** | Zasięg × częstotliwość. Meta nie podaje wyświetleń reklam komercyjnych, tylko zasięg — to szacunek. Pokazywane dziennie, miesięcznie, za ostatnie 30 dni i łącznie dla wszystkich reklam |
 | **Wyłączane ≤7 dni** | % zakończonych reklam, które działały maks. 7 dni — miara intensywności testów |
 | **Aktywne naraz** | Średnia dzienna liczba równolegle działających reklam z ostatnich 90 dni |
 | **DCO** | Reklamy z kilkoma wariantami tekstu (dynamiczne kreacje) |
