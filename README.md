@@ -27,7 +27,7 @@ Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (F
 Robisz to raz. Weryfikacja tożsamości może potrwać od kilku godzin do 1–2 dni.
 
 1. **Potwierdź tożsamość** — wejdź na [facebook.com/ID](https://www.facebook.com/ID) i przejdź weryfikację (dokument + kraj). Bez tego API zwraca błąd 10, nawet z poprawnym tokenem.
-2. **Zaakceptuj dostęp do API** — wejdź na [facebook.com/ads/library/api](https://www.facebook.com/ads/library/api) i kliknij „Rozpocznij”.
+2. **Zaakceptuj dostęp do API** — wejdź na [facebook.com/ads/library/api](https://www.facebook.com/ads/library/api) i kliknij „Rozpocznij”. Co dziwne to mam wrażenie, że można spróbować tego nie robić ale w jednym z poradników było wiec lepiej spróbować. 
 3. **Utwórz aplikację** — [developers.facebook.com](https://developers.facebook.com) → Moje aplikacje → Utwórz aplikację (typ „Inne” / „Firma”). Nie musisz niczego w niej konfigurować.
 4. **Wygeneruj token** — [Graph API Explorer](https://developers.facebook.com/tools/explorer): wybierz aplikację → „User Token” → **Generate Access Token**. Żadnych dodatkowych uprawnień (scopes) nie trzeba.
 5. **Przedłuż token do ~60 dni** — [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken): wklej token → „Przedłuż token dostępu”.
