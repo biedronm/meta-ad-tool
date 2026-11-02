@@ -27,7 +27,7 @@ Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (F
 Robisz to raz. Weryfikacja tożsamości może potrwać od kilku godzin do 1–2 dni.
 
 1. **Potwierdź tożsamość** — wejdź na [facebook.com/ID](https://www.facebook.com/ID) i przejdź weryfikację (dokument + kraj). Bez tego API zwraca błąd 10, nawet z poprawnym tokenem.
-2. **Zaakceptuj dostęp do API** — wejdź na [facebook.com/ads/library/api](https://www.facebook.com/ads/library/api) i kliknij „Rozpocznij”. Co dziwne to mam wrażenie, że można spróbować tego nie robić ale w jednym z poradników było wiec lepiej spróbować. 
+2. **Zaakceptuj dostęp do API** — wejdź na [facebook.com/ads/library/api](https://www.facebook.com/ads/library/api) i kliknij „Rozpocznij”.
 3. **Utwórz aplikację** — [developers.facebook.com](https://developers.facebook.com) → Moje aplikacje → Utwórz aplikację (typ „Inne” / „Firma”). Nie musisz niczego w niej konfigurować.
 4. **Wygeneruj token** — [Graph API Explorer](https://developers.facebook.com/tools/explorer): wybierz aplikację → „User Token” → **Generate Access Token**. Żadnych dodatkowych uprawnień (scopes) nie trzeba.
 5. **Przedłuż token do ~60 dni** — [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken): wklej token → „Przedłuż token dostępu”.
@@ -54,10 +54,23 @@ Jeśli widzisz nazwy stron — wszystko działa. Ważne: weryfikacja, aplikacja 
    **Pobieranie marek** — domyślnie 3 marki naraz (szybciej o ok. 40–50% przy kilku konkurentach); przy błędach limitu zapytań zmień na 2 albo „po kolei”.
    Opcjonalnie ustaw **limit reklam na konto** — domyślny dla wszystkich i osobno dla każdej marki (np. 250 dla dużego konkurenta). Przy limicie bot bierze najpierw aktywne reklamy, potem zakończone. Wyniki takiej marki są oznaczone jako **próba** (żółty baner), bo liczby bezwzględne — liczba reklam, zasięg, koszt, udział w głosie — są wtedy zaniżone; wskaźniki procentowe są bardziej miarodajne. Przy limicie zakładka „Zmiany” nie zapisuje migawki.
    Pod spodem wybierz **okres** („Z jakiego okresu”): cała historia, ostatnie 7 / 14 dni, ostatni miesiąc, 3 miesiące, pół roku, rok, poprzedni miesiąc, ten / poprzedni kwartał, ten / poprzedni rok albo **własny zakres dat**. Okres jest wspólny dla wszystkich kont, żeby porównanie było uczciwe. Liczą się reklamy **emitowane choć jeden dzień w okresie** (także uruchomione wcześniej); limit reklam liczy się już tylko z nich. Zasięg i wydatki z API dotyczą całej emisji reklamy, nie samego okresu — bot pokazuje to w banerze z ikoną kalendarza, w PDF, Excelu („Zakres danych”) i pliku dla AI. Przy wybranym okresie zakładka „Zmiany” nie zapisuje migawki.
+   **Tendencje i porównania** (pole pod okresem) — jak liczyć zmiany w czasie, gdy wybrany jest okres:
+   - **porównaj z poprzednim analogicznym okresem** (domyślnie) — bot pobiera dodatkowo okres tuż przed wybranym (np. 3 miesiące przed ostatnimi 3 miesiącami; dla „poprzedni miesiąc/kwartał/rok” — poprzedni kalendarzowy; dla „ten rok” — ten sam fragment roku wcześniej). Tendencja = okres vs poprzedni, a w Przeglądzie pojawia się tabela „Porównanie okresów” (nowe i emitowane reklamy, koncepty, szac. wyświetlenia, koszt, zasięg, oferty, rabat, wideo — z % zmiany), w Porównaniu marek: „Zmiana względem poprzedniego okresu” dla każdej marki;
+   - **porównaj na tle całej historii** — pobiera całą dostępną historię do końca okresu (najwolniej): pełne wykresy 12 miesięcy plus to samo porównanie okres do okresu;
+   - **tylko wybrany okres** — nic więcej nie pobiera. Porównania wymagające danych sprzed okresu są oznaczone **„b.d.” (brak danych)**, a nie liczone jako zero; tendencja to druga połowa okresu vs pierwsza (dla okresów od 28 dni), a wykresy miesięczne obejmują tylko miesiące z danymi (niepełny miesiąc oznaczony *). W kalendarzu dni bez danych mają przerywaną ramkę.
+   Wartości „w okresie” (wyświetlenia, koszt, zasięg) to część zasięgu reklamy przypadająca na dni okresu. Jeśli porównywany okres jest starszy niż ok. 12 miesięcy, bot ostrzega: Meta trzyma reklamy komercyjne ok. roku od zakończenia emisji, więc starszy okres może wyjść zaniżony.
 7. Tam też język reklam, próg **evergreen** (ile dni emisji traktujemy jako „sprawdzoną” reklamę, domyślnie 30) oraz założenia kosztu (benchmarki, CPM, częstotliwość).
 8. Kliknij **Analizuj**. Pod przyciskiem pojawi się panel postępu: każda marka z aktualnym krokiem (szukanie strony, pobieranie reklam, formaty, reklamy społeczne), liczbą pobranych reklam, czasem i paskiem postępu.
 
 Jeśli bot trafił na złą stronę (np. fanpage zamiast oficjalnej), w zakładce „Przegląd” tej marki są przyciski z innymi znalezionymi stronami — kliknij właściwą.
+
+---
+
+### Zapis i wczytanie analizy
+Po analizie przycisk **„Zapisz analizę”** zapisuje pobrane dane i ustawienia do pliku `.json`. **„Wczytaj analizę”** otwiera go później — bez tokenu i bez pobierania (dobre do prezentacji i jako archiwum). Wczytana analiza ma baner „stan danych na …”, a wszystkie wskaźniki liczone są na dzień pobrania. Kliknięcie „Analizuj” wraca do aktualnych danych.
+
+### Kalibracja na realnym wydatku
+W „Ustawieniach zaawansowanych” → „Kalibracja na realnym wydatku”: wybierz markę, której prawdziwy wydatek znasz (np. klienta agencji z Menedżera Reklam), wpisz kwotę i okno (ostatnie 30 dni albo wybrany okres) i kliknij „Skalibruj CPM”. Bot wylicza efektywny CPM = wydatek ÷ (szacowane wyświetlenia ÷ 1000) i ustawia CPM ±15% wokół niego dla wszystkich marek. Ręczna zmiana CPM albo wybór benchmarku wyłącza kalibrację.
 
 ---
 
@@ -182,7 +195,7 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 | **Aktywna reklama** | Bez daty zakończenia emisji albo z datą od dziś wzwyż |
 | **Evergreen** | Reklama emitowana co najmniej X dni (ustawiasz sam, domyślnie 30) |
 | **Zasięg** | `eu_total_reach` — szacunek Meta: ile kont w UE zobaczyło reklamę |
-| **Szacowany koszt** | Zasięg dzienny aktywnych reklam × częstotliwość × CPM (z benchmarku) |
+| **Szacowany koszt** | Zasięg dzienny aktywnych reklam × częstotliwość × CPM (z benchmarku albo kalibracji). Widełki = krańce założeń, „najbardziej prawdopodobnie” = mediana modelu — w Przeglądzie i w zakładce „Prawdopodobny budżet” to ta sama liczba. Aktywne reklamy bez danych o zasięgu (Meta podaje go tylko dla emisji w UE) są doszacowane proporcjonalnie, a pokrycie jest podane pod szacunkiem |
 | **Szacowane wyświetlenia** | Zasięg × częstotliwość. Meta nie podaje wyświetleń reklam komercyjnych, tylko zasięg — to szacunek. Pokazywane dziennie, miesięcznie, za ostatnie 30 dni i łącznie dla wszystkich reklam |
 | **Wyłączane ≤7 dni** | % zakończonych reklam, które działały maks. 7 dni — miara intensywności testów |
 | **Aktywne naraz** | Średnia dzienna liczba równolegle działających reklam z ostatnich 90 dni |
