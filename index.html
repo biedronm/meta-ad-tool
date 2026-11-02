@@ -704,6 +704,34 @@ body.is-loading #status{display:none}
 .png-frame .pf-foot{display:flex;justify-content:space-between;gap:16px;margin-top:20px;padding-top:10px;border-top:1px solid var(--line);font:400 10.5px var(--mono);color:var(--faint)}
 .png-frame .two,.png-frame .three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
 @media print{#stratCard,.blkpng{display:none!important}}
+
+/* ---------------------------------------------------------------- porównanie okresów */
+.nd{color:var(--faint);font-weight:400}
+.dl{display:inline-block;font:500 11px var(--mono);padding:1px 6px;border-radius:4px;background:var(--track);color:var(--muted);white-space:nowrap}
+.dl.up{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.dl.down{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.pcmp{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pcmp .pc-h,.pcmp .pc-r{display:grid;grid-template-columns:minmax(150px,1.6fr) 1fr 1fr 90px;gap:12px;align-items:center;padding:9px 14px}
+.pcmp.single .pc-h,.pcmp.single .pc-r{grid-template-columns:minmax(150px,1.6fr) 1fr}
+.pcmp .pc-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pcmp .pc-h small{display:block;font:400 10.5px var(--mono);letter-spacing:0;text-transform:none;color:var(--faint);margin-top:2px}
+.pcmp .pc-r{border-top:1px solid var(--line);font-size:13px}
+.pcmp .pc-r b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.pcmp .pc-r .pv{font:400 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.pcb{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pcb-h,.pcb-r{display:grid;grid-template-columns:minmax(120px,1.2fr) repeat(4,1fr);gap:12px;align-items:center;padding:9px 14px}
+.pcb-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pcb-r{border-top:1px solid var(--line);font-size:13px}
+.pcb-r .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcb-r > span:not(.nm){display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.pcb-r b{font:500 13.5px var(--mono);font-variant-numeric:tabular-nums}
+.pcb-r small{font:400 11px var(--mono);color:var(--faint)}
+@media (max-width:640px){.pcmp .pc-h,.pcmp .pc-r{grid-template-columns:1fr 1fr 1fr;}.pcmp .pc-h span:first-child{display:none}.pcmp .pc-r > span:first-child{grid-column:1/-1;font-weight:500}.pcmp .pc-h span:last-child,.pcmp .pc-r .dl{grid-column:auto}
+  .pcb-h{display:none}.pcb-r{grid-template-columns:1fr 1fr}.pcb-r .nm{grid-column:1/-1;font-weight:500}}
+.rp .pcmp .pc-r,.rp .pcb-r{font-size:8.5pt;padding:5px 10px}.rp .pcmp .pc-h,.rp .pcb-h{font-size:7pt;padding:5px 10px}.rp .pcmp .pc-r b{font-size:9pt}
+
+/* ---------------------------------------------------------------- kalibracja */
+.calib{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 </style>
 </head>
 <body>
@@ -929,6 +957,13 @@ body.is-loading #status{display:none}
               <input type="date" id="pFrom" style="width:auto"> – <input type="date" id="pTo" style="width:auto">
             </span>
             <span class="hint" id="periodHint" style="margin:0"></span></div>
+          <div class="limhead" id="perModeRow" style="margin-top:10px"><label for="perMode" style="margin:0">Tendencje i porównania</label>
+            <select id="perMode" style="width:auto">
+              <option value="prev">porównaj z poprzednim analogicznym okresem</option>
+              <option value="all">porównaj na tle całej historii (pobiera wszystko)</option>
+              <option value="only">tylko wybrany okres (bez porównań)</option>
+            </select>
+            <span class="hint" id="perModeHint" style="margin:0"></span></div>
           <div class="hint">Okres dotyczy wszystkich kont (żeby porównanie było uczciwe). Bot bierze reklamy, które <b>były emitowane choć jeden dzień w tym okresie</b> — także te uruchomione wcześniej. Limit liczby reklam liczy się już tylko z reklam z tego okresu. Uwaga: zasięg z API to zasięg całej emisji reklamy, nie tylko z wybranego okresu.</div>
         </div>
         </div>
@@ -946,6 +981,16 @@ body.is-loading #status{display:none}
           <div><label for="ver">Wersja Graph API</label><input id="ver" value="v25.0"><div class="hint">Przy błędzie wersji wpisz np. v24.0</div></div>
         </div>
         <div class="hint" id="cpmHint"></div>
+      <div class="calib" id="calib">
+        <div class="section-lbl">Kalibracja na realnym wydatku</div>
+        <div class="hint" style="margin-top:4px">Znasz prawdziwy wydatek jednej z analizowanych marek (np. klienta agencji z Menedżera Reklam)? Wpisz go — bot wyliczy z niego efektywny CPM dla tej branży i rynku i zastosuje go do wszystkich marek zamiast benchmarku.</div>
+        <div class="grid" style="margin-top:10px">
+          <div><label for="calBrand">Marka o znanym wydatku</label><select id="calBrand"><option value="">— najpierw uruchom analizę —</option></select></div>
+          <div><label for="calSpend">Realny wydatek (zł)</label><input id="calSpend" type="number" min="1" step="100" placeholder="np. 25000"></div>
+          <div><label for="calBasis">Za jaki czas</label><select id="calBasis"><option value="month">ostatnie 30 dni</option><option value="period">wybrany okres analizy</option></select></div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="ghost mini" id="calGo">Skalibruj CPM</button><button class="ghost mini" id="calClear">Wyczyść kalibrację</button><span class="hint" id="calHint" style="margin:0"></span></div>
+      </div>
         <div class="check"><input type="checkbox" id="withDemo" checked><span>Pobieraj demografię, targetowanie i płatników (wolniej przy dużych markach)</span></div>
         <div class="check"><input type="checkbox" id="withMedia" checked><span>Pobieraj typ mediów — wideo / grafika (3 dodatkowe zapytania na markę)</span></div>
         <div class="check"><input type="checkbox" id="withPol" checked><span>Sprawdzaj reklamy społeczne i polityczne (z prawdziwymi wydatkami)</span></div>
@@ -960,6 +1005,9 @@ body.is-loading #status{display:none}
       <button id="pdf" class="ghost hidden">Raport PDF</button>
       <button id="strat" class="ghost hidden">Pakiet do strategii (PNG + dane)</button>
       <button id="ai" class="ghost hidden">Eksport dla AI (.md)</button>
+      <button id="saveAn" class="ghost hidden" title="Zapisz pobrane dane i ustawienia do pliku — wczytasz je później bez tokenu i bez pobierania">Zapisz analizę</button>
+      <button id="loadAn" class="ghost" title="Wczytaj wcześniej zapisaną analizę (.json) — działa bez tokenu">Wczytaj analizę</button>
+      <input type="file" id="anFile" accept=".json" class="hidden">
       <button id="clear" class="ghost hidden">Wyczyść wyniki</button>
     </div>
     <div id="status"></div>
@@ -1046,7 +1094,9 @@ const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const DAY = 86400000;
 const toDay = s => s ? Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) : null;
-const todayUTC = (() => { const d = new Date(); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const REAL_TODAY = (() => { const d = new Date(); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); })();
+let todayUTC = REAL_TODAY;   // w trybie archiwum (wczytana analiza) = dzień pobrania danych
+let ASOF = null;            // {date, file} gdy wyniki pochodzą z wczytanego pliku
 const iso = t => t == null ? "" : new Date(t).toISOString().slice(0,10);
 const mean = a => a.reduce((s,x) => s+x, 0) / a.length;
 const median = a => { const s = [...a].sort((x,y)=>x-y), m = s.length>>1; return s.length % 2 ? s[m] : (s[m-1]+s[m])/2; };
@@ -1214,13 +1264,16 @@ const SEASON = [["none", "bez korekty", 1], ["q4", "Q4 / Black Friday / Święta
   sel.parentElement.after(wrap);
   try { const b = JSON.parse(store.get("metaAdsBotBench") || "{}"); if (b.k && BENCHMARKS.some(x => x[0] === b.k)) sel.value = b.k; if (b.s) seasonSel.value = b.s; } catch(e){}
   const save = () => store.set("metaAdsBotBench", JSON.stringify({k: sel.value, s: seasonSel.value}));
-  sel.addEventListener("change", () => { save(); applyBenchmark(); });
+  sel.addEventListener("change", () => { CALIB = null; save(); applyBenchmark(); });
   seasonSel.addEventListener("change", () => { save(); applyBenchmark(); });
   ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => {
+    if (CALIB){ CALIB = null; $("calHint").textContent = "Kalibracja wyłączona — zmieniono założenia ręcznie."; }
     if (sel.value !== "custom") $("benchHint").innerHTML = `Wartości zmienione ręcznie na bazie benchmarku „${esc(BENCHMARKS.find(x => x[0] === sel.value)[1])}”. Wybierz benchmark ponownie, żeby je przywrócić.`;
   }));
 })();
+let CALIB = null;   // {brand, spend, basis, cpm, imps}
 function benchLabel(){
+  if (CALIB) return `kalibracja: ${CALIB.brand} — realny wydatek ${fmt(CALIB.spend)} zł (${CALIB.basis === "period" ? "w okresie" : "30 dni"}), efektywny CPM ~${String(Math.round(CALIB.cpm * 10) / 10).replace(".", ",")} zł`;
   const b = BENCHMARKS.find(x => x[0] === $("bench").value) || BENCHMARKS[0];
   const se = SEASON.find(x => x[0] === ($("season") ? $("season").value : "none"));
   return b[0] === "custom" ? "własne założenia" : `benchmark: ${b[1]}${se && se[0] !== "none" ? `, sezon: ${se[1]}` : ""}`;
@@ -1239,6 +1292,74 @@ function applyBenchmark(){
   $("cpmHint").textContent = "Benchmarki są orientacyjne (średnie stawki Meta dla rynku i branży). Jeśli znasz realne CPM z kont w tej branży — wpisz je.";
   if (results.length) rerender();
 }
+
+// ================================================================ kalibracja CPM na realnym wydatku
+function refreshCalib(){
+  const sel = $("calBrand"); if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = results.length ? results.map(r => `<option value="${r.uid}">${esc(r.pageName)}${r.isMain ? " ★" : ""}</option>`).join("") : `<option value="">— najpierw uruchom analizę —</option>`;
+  if (results.some(r => String(r.uid) === cur)) sel.value = cur;
+  const hasPer = results.some(r => r.s && r.s.okres);
+  $("calBasis").querySelector('option[value="period"]').disabled = !hasPer;
+  if (!hasPer) $("calBasis").value = "month";
+}
+function calibrate(){
+  const r = results.find(x => String(x.uid) === $("calBrand").value), spend = +$("calSpend").value, basis = $("calBasis").value;
+  if (!r) return $("calHint").textContent = "Najpierw uruchom analizę i wybierz markę.";
+  if (!(spend > 0)) return $("calHint").textContent = "Wpisz realny wydatek w zł.";
+  // wyświetlenia tej marki w tym samym oknie co wydatek (bez CPM), przy środku założonej częstotliwości
+  let imps;
+  if (basis === "period" && r.s.okres) imps = r.s.okres.wysw;
+  else {
+    const w = {a: todayUTC - 29 * DAY, b: todayUTC};
+    imps = periodStats(r.rowsAll, w, opts()).wysw;
+  }
+  if (!(imps > 0)) return $("calHint").textContent = "Ta marka nie ma danych o zasięgu w tym oknie — nie da się skalibrować.";
+  const cpm = spend / (imps / 1000);
+  if (cpm < 0.5 || cpm > 500) return $("calHint").textContent = `Wyszedł nierealny CPM (${cpm.toFixed(1).replace(".", ",")} zł) — sprawdź kwotę i okno czasu (np. czy marka emituje głównie poza UE).`;
+  const half = v => Math.max(0.5, Math.round(v * 2) / 2);
+  $("cpmMin").value = half(cpm * 0.85); $("cpmMax").value = half(cpm * 1.15);
+  $("bench").value = "custom";
+  CALIB = {brand: r.pageName, spend, basis, cpm, imps};
+  $("benchHint").textContent = "Założenia z kalibracji — zmiana ręczna albo wybór benchmarku wyłącza kalibrację.";
+  $("calHint").innerHTML = `Efektywny CPM ~<b>${cpm.toFixed(1).replace(".", ",")} zł</b> (${fmtK(imps)} szac. wyświetleń przy częstotliwości ${String(Math.round(assump(opts()).fMid * 100) / 100).replace(".", ",")}). Ustawiono CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł dla wszystkich marek.`;
+  rerender(); if (typeof advSummary === "function") advSummary();
+}
+$("calGo").onclick = calibrate;
+$("calClear").onclick = () => { CALIB = null; $("bench").dispatchEvent(new Event("change")); $("calHint").textContent = "Przywrócono benchmark."; };
+
+// ================================================================ zapis i wczytanie analizy (tryb archiwum)
+const AN_KEEP = ["isMain","brand","pageName","pageId","region","lang","langCode","cands","demoMissing","mediaLoaded","pol","polLoaded","rowsAll","limit","limited","period","perMode","prevPer","fetchWin","changes"];
+function saveAnalysis(){
+  const main = results.find(r => r.isMain) || results[0];
+  const data = {app: "meta-ads-bot", v: 1, asOf: iso(todayUTC), savedAt: new Date().toISOString(),
+    settings: {cpmMin: $("cpmMin").value, cpmMax: $("cpmMax").value, freqMin: $("freqMin").value, freqMax: $("freqMax").value, bench: $("bench").value, evDays: $("evDays").value, calib: CALIB},
+    results: results.map(r => Object.fromEntries(AN_KEEP.map(k => [k, r[k]])))};
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type: "application/json"}));
+  a.download = `analiza_${slug(main.pageName)}_${iso(todayUTC)}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  setStatus(`Zapisano analizę (${results.length} ${plural(results.length)}, stan na ${iso(todayUTC)}). Wczytasz ją przyciskiem „Wczytaj analizę” — bez tokenu i bez pobierania.`);
+}
+async function loadAnalysis(e){
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if (d.app !== "meta-ads-bot" || !Array.isArray(d.results) || !d.results.length) throw new Error("to nie jest plik analizy Meta Ads Bota");
+    todayUTC = isoMs(d.asOf); ASOF = {date: d.asOf, file: file.name};
+    const st = d.settings || {};
+    for (const k of ["cpmMin", "cpmMax", "freqMin", "freqMax", "evDays"]) if (st[k] != null) $(k).value = st[k];
+    if (st.bench && [...$("bench").options].some(o => o.value === st.bench)) $("bench").value = st.bench;
+    CALIB = st.calib || null;
+    if ($("fEv")) $("fEv").value = $("evDays").value;
+    results = d.results.map(r => { const x = {...r, uid: ++uidSeq}; reanalyze(x); return x; });
+    view.top = results.length > 1 ? "cmp" : results[0].uid;
+    renderAll(); $("resultsCard").scrollIntoView({behavior: "smooth", block: "start"});
+    setStatus(`Wczytano analizę z pliku „${file.name}” — stan danych na ${d.asOf}. Wskaźniki liczone na ten dzień; „Analizuj” pobierze aktualne dane.`);
+  } catch(err){ setStatus("Nie udało się wczytać analizy: " + err.message, true); }
+  e.target.value = "";
+}
+const asofWarn = () => ASOF ? `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Analiza wczytana z pliku — <b>stan danych na ${esc(ASOF.date)}</b>. To archiwum, nie aktualne dane z Meta.</div>` : "";
 
 // ================================================================ API
 class FatalApiError extends Error {}
@@ -1443,9 +1564,50 @@ const conceptKey = r => (r.body || r.title || "").toLowerCase().replace(/[^\p{L}
 const INDEX_PARTS = [["skala","Skala (aktywne reklamy)",.25],["zasieg","Zasięg dzienny",.25],["swiezosc","Świeżość kreacji",.15],["testowanie","Testowanie (koncepty 90 dni)",.15],["regularnosc","Regularność (miesiące z emisją)",.10],["roznorodnosc","Różnorodność (platformy, formaty)",.10]];
 const indexLabel = v => v >= 81 ? "bardzo wysoka" : v >= 61 ? "wysoka" : v >= 31 ? "średnia" : "niska";
 
-function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
+// założenia kosztu w jednej, wspólnej postaci — identycznej jak w modelu prawdopodobieństwa
+// (środek = średnia geometryczna krańców, czyli mediana modelu; częstotliwość nie mniejsza niż 1)
+function assump(o){
+  const cMin = Math.max(0.01, Math.min(o.cpmMin, o.cpmMax)), cMax = Math.max(cMin, o.cpmMax, o.cpmMin);
+  const fMin = Math.max(1, Math.min(o.freqMin, o.freqMax)), fMax = Math.max(fMin, o.freqMax, o.freqMin);
+  return {cMin, cMax, fMin, fMax, cMid: Math.sqrt(cMin * cMax), fMid: Math.sqrt(fMin * fMax)};
+}
+// statystyki jednego okna czasu: reklamy emitowane w oknie, nowe, zasięg/wyświetlenia/koszt przypadające na okno (zasięg rozłożony równo na dni emisji)
+function periodStats(rows, w, o){
+  const inP = rows.filter(r => rowIn(r, w)), started = inP.filter(r => r.start >= w.a);
+  let reach = 0, withR = 0;
+  for (const r of inP){
+    if (r.rpd == null) continue; withR++;
+    const ov = Math.round((Math.min(r.end, w.b) - Math.max(r.start, w.a)) / DAY) + 1;
+    if (ov > 0) reach += r.rpd * ov;
+  }
+  const cover = inP.length ? withR / inP.length : 1;
+  if (cover > 0 && cover < 1) reach /= cover;   // reklamy bez danych o zasięgu doszacowane proporcjonalnie (jak w modelu budżetu)
+  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(o);
+  const disc = inP.map(r => discountsIn(r.fullText)).filter(d => d.length).map(d => Math.max(...d));
+  const mediaKnown = inP.some(r => r.media);
+  return {
+    a: w.a, b: w.b, days: Math.round((w.b - w.a) / DAY) + 1,
+    emitowane: inP.length, nowe: started.length, withR,
+    koncepty: new Set(started.map(conceptKey).filter(Boolean)).size,
+    reach: Math.round(reach),
+    cover: Math.round(cover * 100),
+    wysw: Math.round(reach * fMid), wyswMin: Math.round(reach * fMin), wyswMax: Math.round(reach * fMax),
+    koszt: Math.round(reach * fMid / 1000 * cMid), kosztMin: Math.round(reach * fMin / 1000 * cMin), kosztMax: Math.round(reach * fMax / 1000 * cMax),
+    ofertaProc: inP.length ? pct(inP.filter(r => OFFERS.slice(0, 5).some(([, re]) => re.test(r.fullText))).length, inP.length) : null,
+    rabatAvg: disc.length ? Math.round(mean(disc)) : null,
+    wideoProc: mediaKnown && inP.length ? pct(inP.filter(r => r.media === "VIDEO").length, inP.length) : null
+  };
+}
+function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false, ctx = {}){
   const brandToks = new Set((String(brandName).toLowerCase().match(/[\p{L}\p{N}]+/gu) || []));
   const today = todayUTC;
+  // historia do porównań w czasie: wszystkie pobrane reklamy (bez filtra okresu emisji i „tylko aktywne”), ale z filtrem platformy/formatu
+  let hist = ctx.hist || rowsAll;
+  if (f.platform) hist = hist.filter(r => r.platforms.includes(f.platform));
+  if (f.media) hist = hist.filter(r => (r.media || "OTHER") === f.media);
+  const covMin = ctx.covMin == null ? null : ctx.covMin;            // od kiedy mamy pełne dane (null = cała biblioteka)
+  const ref = ctx.focus ? Math.min(today, ctx.focus.b) : today;     // „teraz” dla okien 30/90 dni = koniec okresu
+  const covered = from => covMin == null || from >= covMin;
   let rows = rowsAll;
   if (f.days) rows = rows.filter(r => r.end >= today - (f.days - 1) * DAY);
   if (f.platform) rows = rows.filter(r => r.platforms.includes(f.platform));
@@ -1456,34 +1618,53 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
   const reaches = rows.filter(r => r.reach != null).map(r => r.reach);
   const actReaches = act.filter(r => r.reach != null).map(r => r.reach);
 
-  // --- miesiące: nowe, emitowane, zasięg
-  const months = [], d0 = new Date(today);
+  // --- miesiące: nowe, emitowane, zasięg — tylko miesiące, dla których mamy dane (pierwszy może być niepełny)
+  const months = [], d0 = new Date(ref);
   for (let i = 11; i >= 0; i--){
     const ms = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() - i, 1), dt = new Date(ms);
     const me = Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 1) - DAY;
-    months.push({key: `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,"0")}`, ms, me, nowe: 0, emitowane: 0, reach: 0});
+    if (covMin != null && me < covMin) continue;
+    months.push({key: `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,"0")}`, ms, me, nowe: 0, emitowane: 0, reach: 0, partial: covMin != null && ms < covMin});
   }
-  for (const r of rows) for (const m of months){
+  for (const r of hist) for (const m of months){
     if (r.start >= m.ms && r.start <= m.me) m.nowe++;
     const ov = Math.round((Math.min(r.end, m.me) - Math.max(r.start, m.ms)) / DAY) + 1;
     if (ov > 0){ m.emitowane++; m.reach += (r.rpd || 0) * ov; }
   }
-  const newIn = (from, to) => rows.filter(r => r.start > today - to*DAY && r.start <= today - from*DAY).length;
+  // nowe reklamy w oknach względem końca okresu; okno sprzed początku danych = brak danych (null), a nie zero
+  const newIn = (from, to) => covered(ref - (to - 1) * DAY) ? hist.filter(r => r.start > ref - to*DAY && r.start <= ref - from*DAY).length : null;
   const n30 = newIn(0,30), p30 = newIn(30,60), n90 = newIn(0,90), p90 = newIn(90,180);
-  let trend, dir = "flat";
-  if (!n90 && !p90) trend = "brak nowych reklam (stagnacja)";
-  else if (!p90){ trend = "rośnie (start lub wznowienie aktywności)"; dir = "up"; }
-  else {
-    const ch = (n90 - p90) / p90 * 100;
-    if (ch >= 20){ trend = `rośnie (+${ch.toFixed(0)}% nowych reklam)`; dir = "up"; }
-    else if (ch <= -20){ trend = `spada (${ch.toFixed(0)}% nowych reklam)`; dir = "down"; }
-    else trend = `stabilna (${ch >= 0 ? "+" : ""}${ch.toFixed(0)}% nowych reklam)`;
+  // statystyki okresu i okresu porównawczego
+  const okres = ctx.focus ? periodStats(hist, ctx.focus, o) : null;
+  const okresPrev = ctx.prev ? periodStats(hist, ctx.prev, o) : null;
+  let trend, dir = "flat", trendBase = "90d";
+  const judge = (cur, prev, tail) => {
+    if (!cur && !prev){ trend = "brak nowych reklam (stagnacja)"; return; }
+    if (!prev){ trend = tail === " vs poprzedni okres" ? "rośnie (w poprzednim okresie brak nowych reklam)" : `rośnie (start lub wznowienie aktywności${tail})`; dir = "up"; return; }
+    const ch = (cur - prev) / prev * 100;
+    if (ch >= 20){ trend = `rośnie (+${ch.toFixed(0)}% nowych reklam${tail})`; dir = "up"; }
+    else if (ch <= -20){ trend = `spada (${ch.toFixed(0)}% nowych reklam${tail})`; dir = "down"; }
+    else trend = `stabilna (${ch >= 0 ? "+" : ""}${ch.toFixed(0)}% nowych reklam${tail})`;
+  };
+  if (okres && okresPrev){ trendBase = "prev"; judge(okres.nowe, okresPrev.nowe, " vs poprzedni okres"); }
+  else if (n90 != null && p90 != null) judge(n90, p90, "");
+  else if (ctx.focus && okres.days >= 28){
+    // tylko wybrany okres: porównujemy drugą połowę okresu z pierwszą (obie mamy w danych)
+    trendBase = "half";
+    const mid = ctx.focus.a + Math.floor(okres.days / 2) * DAY;
+    const h1 = hist.filter(r => r.start >= ctx.focus.a && r.start < mid).length, h2 = hist.filter(r => r.start >= mid && r.start <= ctx.focus.b).length;
+    judge(h2, h1, ", 2. połowa okresu vs 1.");
   }
+  else { trend = "brak danych do porównania (za krótki okres)"; dir = "na"; trendBase = "none"; }
 
   // --- koszt
   const dailyReach = act.reduce((s,r) => s + (r.rpd || 0), 0);
-  const fMid = (o.freqMin + o.freqMax)/2, cMid = (o.cpmMin + o.cpmMax)/2;
-  const dayMin = dailyReach * o.freqMin / 1000 * o.cpmMin, dayMax = dailyReach * o.freqMax / 1000 * o.cpmMax, dayMid = dailyReach * fMid / 1000 * cMid;
+  // pokrycie danymi o zasięgu: aktywne reklamy bez zasięgu (np. emitowane poza UE) doszacowujemy proporcjonalnie — tak samo jak model budżetu
+  const actWithR = act.filter(r => r.rpd != null).length, cover = act.length ? actWithR / act.length : 1;
+  const dailyEst = cover > 0 && cover < 1 ? dailyReach / cover : dailyReach;
+  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(o);
+  const dayMin = dailyEst * fMin / 1000 * cMin, dayMax = dailyEst * fMax / 1000 * cMax, dayMid = dailyEst * fMid / 1000 * cMid;
+  const coverAll = n ? reaches.length / n : 1, reachSumEst = reaches.length ? reaches.reduce((a, b) => a + b, 0) / coverAll : null;
   const w0 = today - 29*DAY;
   let reach30 = 0;
   for (const r of rows){
@@ -1619,7 +1800,8 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
 
   // --- kalendarz
   const launches = {}, dow = [0,0,0,0,0,0,0];
-  for (const r of rows){ if (r.start > today - 371 * DAY){ launches[r.start] = (launches[r.start] || 0) + 1; } dow[r.dow]++; }
+  for (const r of hist) if (r.start > ref - 371 * DAY && r.start <= ref) launches[r.start] = (launches[r.start] || 0) + 1;
+  for (const r of rows) dow[r.dow]++;
 
   // --- efektywność zasięgu
   const withRpd = rows.filter(r => r.rpd != null);
@@ -1661,7 +1843,8 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
       sredniZasiegAktywnych: actReaches.length ? Math.round(mean(actReaches)) : null,
       lacznyZasiegAktywnych: actReaches.length ? actReaches.reduce((a,b)=>a+b,0) : null,
       sredniCzasEmisji: n ? Math.round(mean(rows.map(r => r.days))) : null,
-      n30, p30, n90, p90,
+      n30, p30, n90, p90, trendBase, covMin, ref,
+      okres, okresPrev,
       evergreeny: ev.length, evergreenyAktywne: ev.filter(r => r.active).length, evergreenyProc: pct(ev.length, n),
       zOferta: withOffer, zOfertaProc: pct(withOffer, n),
       dziennyZasieg: Math.round(dailyReach),
@@ -1669,16 +1852,17 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false){
       miesMin: Math.round(dayMin*30), miesMax: Math.round(dayMax*30), miesSr: Math.round(dayMid*30),
       ost30: Math.round(reach30 * fMid / 1000 * cMid),
       // szacowane wyświetlenia = zasięg × częstotliwość (Meta nie podaje wyświetleń reklam komercyjnych)
-      wyswDzienMin: Math.round(dailyReach * o.freqMin), wyswDzienMax: Math.round(dailyReach * o.freqMax), wyswDzienSr: Math.round(dailyReach * fMid),
-      wyswMiesMin: Math.round(dailyReach * o.freqMin * 30), wyswMiesMax: Math.round(dailyReach * o.freqMax * 30), wyswMiesSr: Math.round(dailyReach * fMid * 30),
+      wyswDzienMin: Math.round(dailyEst * fMin), wyswDzienMax: Math.round(dailyEst * fMax), wyswDzienSr: Math.round(dailyEst * fMid),
+      wyswMiesMin: Math.round(dailyEst * fMin * 30), wyswMiesMax: Math.round(dailyEst * fMax * 30), wyswMiesSr: Math.round(dailyEst * fMid * 30),
+      pokrycie: {aktywne: act.length, zZasiegiem: actWithR, proc: Math.round(cover * 100), wszystkie: n, wszystkieZZasiegiem: reaches.length},
       wysw30: Math.round(reach30 * fMid),
-      freqMin: o.freqMin, freqMax: o.freqMax,
-      wyswLacznie: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * fMid) : null,
-      wyswLacznieMin: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * o.freqMin) : null,
-      wyswLacznieMax: reaches.length ? Math.round(reaches.reduce((a, b) => a + b, 0) * o.freqMax) : null,
+      freqMin: fMin, freqMax: fMax,
+      wyswLacznie: reachSumEst != null ? Math.round(reachSumEst * fMid) : null,
+      wyswLacznieMin: reachSumEst != null ? Math.round(reachSumEst * fMin) : null,
+      wyswLacznieMax: reachSumEst != null ? Math.round(reachSumEst * fMax) : null,
       wideo: mediaLoaded ? pct(media.VIDEO || 0, n) : null,
       indeks: index,
-      zalozenia: `CPM ${o.cpmMin}–${o.cpmMax} PLN, częstotliwość ${o.freqMin}–${o.freqMax}${o.label ? ` (${o.label})` : ""}`
+      zalozenia: `CPM ${String(o.cpmMin).replace(".", ",")}–${String(o.cpmMax).replace(".", ",")} PLN, częstotliwość ${String(o.freqMin).replace(".", ",")}–${String(o.freqMax).replace(".", ",")}${o.label ? ` (${o.label})` : ""}`
     }
   };
 }
@@ -1801,7 +1985,7 @@ function gauge(score, {size = 170, label = ""} = {}){
   </svg>`;
 }
 
-function heatCalendar(launches, ref, {weeks = 53} = {}){
+function heatCalendar(launches, ref, {weeks = 53, from = null} = {}){
   const cell = 11, gap = 2, L = 22, T = 18;
   const refDow = (new Date(ref).getUTCDay() + 6) % 7;
   const start = ref - (refDow + (weeks - 1) * 7) * DAY;
@@ -1814,6 +1998,7 @@ function heatCalendar(launches, ref, {weeks = 53} = {}){
       const t = start + (w * 7 + d) * DAY;
       if (t > ref) continue;
       const v = launches[t] || 0, l = lvl(v);
+      if (from != null && t < from){ cells += `<rect x="${L + w * (cell + gap)}" y="${T + d * (cell + gap)}" width="${cell}" height="${cell}" rx="2" fill="none" stroke="var(--line)" stroke-width=".6" stroke-dasharray="2 2"><title>${iso(t)}: brak danych (przed pobranym okresem)</title></rect>`; continue; }
       cells += `<rect x="${L + w * (cell + gap)}" y="${T + d * (cell + gap)}" width="${cell}" height="${cell}" rx="2" fill="${l < 0 ? "var(--bg)" : fills[l]}" ${l < 0 ? 'stroke="var(--line)" stroke-width=".6"' : ""}><title>${iso(t)}: ${v} nowych reklam</title></rect>`;
     }
     const m = new Date(start + w * 7 * DAY + 6 * DAY).getUTCMonth();
@@ -1847,6 +2032,7 @@ function scatter(points, {W = 640, H = 220} = {}){
 function stackArea100(keys, series){
   const W = 640, H = 220, L = 36, R = 26, T = 10, B = 26;
   const tot = keys.map((_, i) => series.reduce((s, x) => s + (x.values[i] || 0), 0));
+  if (keys.length < 2) return `<div class="sub nodata">Za krótki okres na wykres miesiąc po miesiącu — zobacz „Porównanie okresów” albo wybierz dłuższy okres.</div>`;
   if (!tot.some(v => v > 0)) return NODATA;
   const step = (W - L - R) / (keys.length - 1), X = i => L + i * step, Y = v => T + (H - T - B) * (1 - v);
   const cum = keys.map(() => 0);
@@ -1907,6 +2093,7 @@ function genderBar(g){
 function lineChart(list){
   const W = 640, H = 230, L = 36, R = 26, T = 12, B = 28;
   const keys = list[0].months.map(m => m.key);
+  if (keys.length < 2) return `<div class="sub nodata">Za krótki okres na wykres miesiąc po miesiącu — zobacz „Porównanie okresów” albo wybierz dłuższy okres.</div>`;
   const maxV = Math.max(1, ...list.flatMap(r => r.months.map(m => m.emitowane)));
   const step = (W - L - R) / (keys.length - 1);
   const y = v => T + (H - T - B) * (1 - v / maxV);
@@ -1976,7 +2163,7 @@ function brandHead(res, idx){
       <div>
         <h2><span class="dot" style="background:${color(idx)}"></span>${esc(res.pageName)}${res.isMain ? '<span class="tag">Twoja marka</span>' : '<span class="tag">konkurent</span>'}</h2>
         <div class="sub">Zapytanie: „${esc(res.brand)}” · page_id ${esc(res.pageId)} · emisja: ${esc(regionLabel(res.region))}${res.lang ? ` · język: ${esc(res.lang)}` : ""} · ${iso(todayUTC)}${fl ? ` · filtr: ${esc(fl)}` : ""}</div>
-        ${periodWarn([res])}
+        ${asofWarn()}${periodWarn([res])}
         ${res.limited ? `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Próba: ${fmt(res.limited.n)} reklam (limit ${fmt(res.limited.limit)}; ${fmt(res.limited.active)} aktywnych). Marka ma więcej reklam — liczby dotyczą próby, nie całej biblioteki.</div>` : ""}
       </div>
       <span class="pill ${res.dir}" data-k="p">Tendencja: ${esc(res.trend)}</span>
@@ -1984,45 +2171,86 @@ function brandHead(res, idx){
 }
 function secKpis(res){
   const s = res.s, f = filters(), fl = filterLabel();
+  const past = res.period && res.period.max < iso(todayUTC);
   return `<div class="kpis">
-      <div class="kpi" data-k="d"><div class="v">${fmt(s.aktywne)}</div><div class="l">aktywne reklamy</div></div>
-      <div class="kpi" data-k="d"><div class="v">${fmt(s.lacznie)}</div><div class="l">reklamy ${fl ? "w wybranym zakresie" : "w bibliotece"}</div></div>
+      <div class="kpi" data-k="d"><div class="v">${fmt(s.aktywne)}</div><div class="l">${past ? "aktywne dziś (z reklam okresu)" : "aktywne reklamy"}</div></div>
+      <div class="kpi" data-k="d"><div class="v">${fmt(s.lacznie)}</div><div class="l">${res.period ? "reklamy emitowane w okresie" : fl ? "reklamy w wybranym zakresie" : "reklamy w bibliotece"}</div></div>
       <div class="kpi" data-k="c"><div class="v">${fmtK(s.sredniZasieg)}</div><div class="l">średni zasięg reklamy (mediana ${fmtK(s.medianaZasiegu)})</div></div>
-      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.wyswMiesSr)}</div><div class="l">szac. wyświetlenia / mies.</div></div>
-      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.miesSr)} zł</div><div class="l">szacowany koszt / mies.</div></div>
+      ${s.okres ? `<div class="kpi" data-k="p"><div class="v">~${fmtK(s.okres.wysw)}</div><div class="l">szac. wyświetlenia w okresie</div></div>
+      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.okres.koszt)} zł</div><div class="l">szac. koszt w okresie (${s.okres.days} dni)</div></div>`
+      : `<div class="kpi" data-k="p"><div class="v">~${fmtK(s.wyswMiesSr)}</div><div class="l">szac. wyświetlenia / mies.</div></div>
+      <div class="kpi" data-k="p"><div class="v">~${fmtK(s.miesSr)} zł</div><div class="l">szacowany koszt / mies.</div></div>`}
       <div class="kpi" data-k="c"><div class="v">${fmt(s.evergreeny)}</div><div class="l">evergreeny (≥${f.evDays} dni)</div></div>
     </div>`;
+}
+const nd = v => v == null ? '<span class="nd" title="brak danych sprzed początku pobranego okresu">b.d.</span>' : fmt(v);
+function trendNote(res){
+  const s = res.s;
+  if (!res.period) return "";
+  const end = s.ref < todayUTC ? ` Okna 30/90 dni liczone do końca okresu (${iso(s.ref)}).` : "";
+  if (res.perMode === "only") return `Tryb „tylko wybrany okres”: dane zaczynają się ${iso(s.covMin)}, więc porównań sprzed tej daty nie ma („b.d.”) — to brak danych, a nie zero reklam.${s.trendBase === "half" ? " Tendencja: druga połowa okresu vs pierwsza." : ""}${end}`;
+  if (res.perMode === "prev") return `Pobrano też okres porównawczy ${esc(res.prevPer.label)}; tendencja = wybrany okres vs poprzedni.${s.covMin != null ? ` Dane od ${iso(s.covMin)}.` : ""}${end}`;
+  return `Pobrano całą dostępną historię do końca okresu; tendencja = wybrany okres vs poprzedni analogiczny (${esc(res.prevPer.label)}).${end}`;
 }
 function secTrend(res){
   const s = res.s, months = res.months;
   const maxE = Math.max(1, ...months.map(m => Math.max(m.emitowane, m.nowe)));
-  return `<div class="trendline"><span>Nowe reklamy — 30 dni: <b>${s.n30}</b> (wcześniej ${s.p30})</span><span>90 dni: <b>${s.n90}</b> (wcześniej ${s.p90})</span></div>
+  const lbl = s.ref < todayUTC ? " (do końca okresu)" : "";
+  const sp = s.okres && s.okresPrev ? `<span>Okres: <b>${fmt(s.okres.nowe)}</b> nowych (poprzedni ${fmt(s.okresPrev.nowe)})</span>` : "";
+  return `<div class="trendline">${sp}<span>Nowe reklamy — 30 dni${lbl}: <b>${nd(s.n30)}</b> (wcześniej ${nd(s.p30)})</span><span>90 dni: <b>${nd(s.n90)}</b> (wcześniej ${nd(s.p90)})</span></div>
     <div class="chart">
       ${months.map(m => `<div class="col" title="${m.key}: emitowane ${m.emitowane}, nowe ${m.nowe}">
         <div class="n">${m.emitowane || ""}</div>
         <div class="bars"><div class="bar a" style="height:${m.emitowane/maxE*100}%"></div><div class="bar b" style="height:${m.nowe/maxE*100}%"></div></div></div>`).join("")}
     </div>
-    <div class="xl">${months.map(m => `<span>${m.key.slice(5)}.${m.key.slice(2,4)}</span>`).join("")}</div>
-    <div class="legend"><span><i style="background:var(--bar1)"></i>emitowane w miesiącu</span><span><i style="background:var(--bar2)"></i>nowe w miesiącu</span></div>`;
+    <div class="xl">${months.map(m => `<span>${m.key.slice(5)}.${m.key.slice(2,4)}${m.partial ? "*" : ""}</span>`).join("")}</div>
+    <div class="legend"><span><i style="background:var(--bar1)"></i>emitowane w miesiącu</span><span><i style="background:var(--bar2)"></i>nowe w miesiącu</span>${months.some(m => m.partial) ? "<span>* miesiąc niepełny (dane od " + iso(s.covMin) + ")</span>" : ""}</div>
+    ${res.period ? `<div class="note">${trendNote(res)}</div>` : ""}`;
+}
+// porównanie okresów (albo statystyki samego okresu)
+function secPeriod(res){
+  const s = res.s, a = s.okres, b = s.okresPrev;
+  if (!a) return "";
+  const pctCh = (x, y) => x == null || y == null ? null : !y ? (x ? null : 0) : Math.round((x - y) / y * 100);
+  const chip = (x, y, kind) => {
+    if (x == null || y == null) return '<span class="dl na">—</span>';
+    if (kind === "pp"){ const d = x - y; return `<span class="dl ${d > 0 ? "up" : d < 0 ? "down" : ""}">${d > 0 ? "+" : ""}${d} pp</span>`; }
+    const c = pctCh(x, y); if (c == null) return '<span class="dl up">nowe</span>';
+    return `<span class="dl ${c > 0 ? "up" : c < 0 ? "down" : ""}">${c > 0 ? "+" : ""}${c}%</span>`;
+  };
+  const M = [
+    ["Nowe reklamy", "nowe", v => fmt(v), "c"], ["Emitowane reklamy", "emitowane", v => fmt(v), "c"], ["Nowe koncepty kreatywne", "koncepty", v => fmt(v), "c"],
+    ["Szac. wyświetlenia", "wysw", v => "~" + fmtK(v), "p"], ["Szac. koszt", "koszt", v => "~" + fmtK(v) + " zł", "p"], ["Zasięg w okresie (suma po reklamach)", "reach", v => fmtK(v), "c"],
+    ["Reklamy z ofertą", "ofertaProc", v => v == null ? "—" : v + "%", "p", "pp"], ["Średni rabat", "rabatAvg", v => v == null ? "—" : "−" + v + "%", "p", "pp"], ["Udział wideo", "wideoProc", v => v == null ? "—" : v + "%", "c", "pp"]
+  ];
+  const head = `<div class="pc-h"><span></span><span>Wybrany okres<small>${iso(a.a)} – ${iso(a.b)}</small></span>${b ? `<span>Poprzedni<small>${iso(b.a)} – ${iso(b.b)}</small></span><span>Zmiana</span>` : ""}</div>`;
+  const rows = M.filter(([, k]) => a[k] != null || (b && b[k] != null)).map(([l, k, f, kd, kind]) => `<div class="pc-r" data-k="${kd}"><span>${l}</span><b>${f(a[k])}</b>${b ? `<span class="pv">${f(b[k])}</span>${chip(a[k], b[k], kind)}` : ""}</div>`).join("");
+  const note = `Liczone dla reklam emitowanych w danym oknie; zasięg, wyświetlenia i koszt — część przypadająca na dni okna (zasięg reklamy rozłożony równo na dni emisji), założenia jak w szacunku kosztu.${b && res.limited ? " Uwaga: przy limicie reklam porównanie okresów jest orientacyjne (próba)." : ""}`;
+  return `<div class="pcmp ${b ? "" : "single"}">${head}${rows}</div><div class="note">${note}</div>`;
 }
 function secImpr(res){
   const s = res.s, fl = filterLabel();
   return `<div class="grid costgrid">
       <div class="kpi"><div class="cost">${fmtKR(s.wyswDzienMin, s.wyswDzienMax)}</div><div class="l">dziennie (środek ~${fmtK(s.wyswDzienSr)})</div></div>
       <div class="kpi"><div class="cost">${fmtKR(s.wyswMiesMin, s.wyswMiesMax)}</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (środek ~${fmtK(s.wyswMiesSr)})</div></div>
-      <div class="kpi"><div class="cost">~${fmtK(s.wysw30)}</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>
-      <div class="kpi"><div class="cost">${s.wyswLacznie == null ? "—" : "~" + fmtK(s.wyswLacznie)}</div><div class="l">łącznie dotychczas, wszystkie reklamy ${fl ? "w wybranym zakresie" : "w bibliotece"} (${s.wyswLacznieMin == null ? "brak zasięgu" : fmtKR(s.wyswLacznieMin, s.wyswLacznieMax)})</div></div>
+      ${s.okres ? `<div class="kpi"><div class="cost">~${fmtK(s.okres.wysw)}</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmtK(s.okresPrev.wysw)}` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmtK(s.wysw30)}</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
+      <div class="kpi"><div class="cost">${s.wyswLacznie == null ? "—" : "~" + fmtK(s.wyswLacznie)}</div><div class="l">łącznie dotychczas, ${res.period ? "reklamy emitowane w okresie (cała ich emisja)" : "wszystkie reklamy " + (fl ? "w wybranym zakresie" : "w bibliotece")} (${s.wyswLacznieMin == null ? "brak zasięgu" : fmtKR(s.wyswLacznieMin, s.wyswLacznieMax)})</div></div>
     </div>
-    <div class="note">Estymacja, nie dane Meta: Meta podaje dla reklam komercyjnych tylko zasięg (unikalne osoby), więc wyświetlenia = zasięg × częstotliwość ${String(s.freqMin).replace(".", ",")}–${String(s.freqMax).replace(".", ",")}. Dziennie i miesięcznie to prognoza przy obecnym tempie aktywnych reklam; „ostatnie 30 dni” i „łącznie dotychczas” to to, co już wyemitowano. Suma łączna dodaje zasięgi wszystkich reklam — ta sama osoba widząca kilka reklam jest liczona kilka razy, tak jak w wyświetleniach.</div>`;
+    <div class="note">Estymacja, nie dane Meta: Meta podaje dla reklam komercyjnych tylko zasięg (unikalne osoby), więc wyświetlenia = zasięg × częstotliwość ${String(s.freqMin).replace(".", ",")}–${String(s.freqMax).replace(".", ",")}. Dziennie i miesięcznie to prognoza przy obecnym tempie aktywnych reklam; „ostatnie 30 dni” i „łącznie dotychczas” to to, co już wyemitowano. Suma łączna dodaje zasięgi wszystkich reklam — ta sama osoba widząca kilka reklam jest liczona kilka razy, tak jak w wyświetleniach. ${coverNote(s)}</div>`;
+}
+// pokrycie danymi o zasięgu — Meta podaje zasięg tylko dla emisji w UE
+function coverNote(s){
+  const p = s.pokrycie; if (!p || !p.aktywne) return "";
+  return p.proc >= 100 ? `Zasięg z Meta ma wszystkie ${fmt(p.aktywne)} aktywne reklamy.` : `Zasięg z Meta ma ${fmt(p.zZasiegiem)} z ${fmt(p.aktywne)} aktywnych reklam (${p.proc}%) — Meta podaje go tylko dla emisji w UE; brakujące doszacowano proporcjonalnie${p.proc < 60 ? ". <b>Niskie pokrycie — szacunek mniej pewny.</b>" : "."}`;
 }
 function secCost(res){
   const s = res.s;
   return `<div class="grid costgrid">
-      <div class="kpi"><div class="cost">${fmt(s.dzienMin)}–${fmt(s.dzienMax)} zł</div><div class="l">dziennie (środek ~${fmt(s.dzienSr)} zł)</div></div>
-      <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie (środek ~${fmt(s.miesSr)} zł)</div></div>
-      <div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>
+      <div class="kpi"><div class="cost">${fmt(s.dzienMin)}–${fmt(s.dzienMax)} zł</div><div class="l">dziennie — prognoza (najbardziej prawdopodobnie ~${fmt(s.dzienSr)} zł)</div></div>
+      <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (najbardziej prawdopodobnie ~${fmt(s.miesSr)} zł)</div></div>
+      ${s.okres ? `<div class="kpi"><div class="cost">~${fmt(s.okres.koszt)} zł</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmt(s.okresPrev.koszt)} zł` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
     </div>
-    <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}.</div>`;
+    <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}. Widełki = krańce założeń; „najbardziej prawdopodobnie” = mediana modelu z zakładki „Prawdopodobny budżet” (te same liczby). ${coverNote(s)}</div>`;
 }
 function indexBlock(res, {compact = false} = {}){
   const p = res.idx.parts;
@@ -2031,7 +2259,7 @@ function indexBlock(res, {compact = false} = {}){
 }
 function brandBullets(r){
   const out = [], s = r.s, t = r.testing, pr = r.prices, cp = r.camp;
-  out.push(`Tendencja: <b>${esc(r.trend)}</b>; ${s.n30} nowych reklam w 30 dni.`);
+  out.push(`Tendencja: <b>${esc(r.trend)}</b>; ${s.okres ? `${fmt(s.okres.nowe)} nowych reklam w wybranym okresie${s.okresPrev ? ` (poprzedni: ${fmt(s.okresPrev.nowe)})` : ""}` : `${fmt(s.n30)} nowych reklam w 30 dni`}.`);
   if (t.killRate != null) out.push(`${t.killRate}% zakończonych reklam wyłączono w ciągu 7 dni${t.killRate >= 40 ? " — intensywnie testują i szybko odcinają słabe kreacje" : t.killRate <= 10 ? " — reklamy działają długo, mało testów" : ""}.`);
   if (cp.top[0]) out.push(`Najczęstszy koncept: „${esc(cp.top[0].text.slice(0, 80))}${cp.top[0].text.length > 80 ? "…" : ""}” (${cp.top[0].n} reklam).`);
   if (pr.discAds) out.push(`Rabaty w ${pr.discPct}% reklam, średnio −${pr.discAvg}% (maks. −${pr.discMax}%).`);
@@ -2052,7 +2280,8 @@ P.overview = (r, idx, pdf) => {
       ${blk("[p]Indeks aktywności reklamowej (0–100)", indexBlock(r) + `<div class="note">Łączy skalę, zasięg, świeżość, testowanie, regularność i różnorodność. Porównuj marki między sobą.</div>`)}
       ${blk("[x]Najważniejsze w skrócie", brandBullets(r))}
     </div>
-    ${blk("[c]Tendencja (12 miesięcy)", secTrend(r))}
+    ${r.s.okres ? blk(r.s.okresPrev ? "[c]Porównanie okresów" : "[c]Wybrany okres", secPeriod(r)) : ""}
+    ${blk(r.period ? "[c]Tendencja (miesiące z danymi)" : "[c]Tendencja (12 miesięcy)", secTrend(r))}
     ${blk("[p]Szacowane wyświetlenia", secImpr(r))}
     ${blk("[p]Szacowany aktualny koszt", secCost(r))}
     ${blk("[d]Największe aktywne reklamy (wg zasięgu)", top.length ? top.map(x => adLine(x)).join("") : `<div class="sub nodata">Brak aktywnych reklam.</div>`)}
@@ -2146,10 +2375,10 @@ P.audience = (r) => {
 P.calendar = (r) => {
   const dowMax = r.cal.dow.indexOf(Math.max(...r.cal.dow));
   const tot = r.cal.dow.reduce((a,b) => a+b, 0);
-  const kd = keyDatesAround(todayUTC - 365 * DAY, todayUTC);
+  const kd = keyDatesAround(r.s.ref - 365 * DAY, r.s.ref).filter(k => r.s.covMin == null || k.t - 30 * DAY >= r.s.covMin);
   const near = kd.map(k => { const w = r.camp.waves.filter(x => x.t >= k.t - 30 * DAY && x.t <= k.t); const nAds = r.rows.filter(x => x.start >= k.t - 30 * DAY && x.start <= k.t).length; return {k, w, nAds, lead: w.length ? Math.round((k.t - Math.min(...w.map(x => x.t))) / DAY) : null}; }).filter(x => x.nAds > 0);
   return `${tot ? see(`Najwięcej reklam startuje w <b>${WEEKDAYS_FULL[dowMax]}</b> (${pct(r.cal.dow[dowMax], tot)}% startów).${near.length ? ` Wokół ważnych dat: ${near.slice(-3).map(x => `${x.k.name} — ${x.nAds} reklam${x.lead != null ? `, start ~${x.lead} dni wcześniej` : ""}`).join("; ")}.` : ""}`) : ""}
-    ${blk("[d]Kalendarz startów reklam (ostatni rok)", heatCalendar(r.cal.launches, todayUTC))}
+    ${blk(r.s.ref < todayUTC ? "[d]Kalendarz startów reklam (rok do końca okresu)" : "[d]Kalendarz startów reklam (ostatni rok)", heatCalendar(r.cal.launches, r.s.ref, {from: r.s.covMin}) + (r.s.covMin != null ? `<div class="note">Kratki przerywane = dni przed ${iso(r.s.covMin)}, dla których nie pobrano danych (to nie jest brak reklam).</div>` : ""))}
     <div class="two">
       ${blk("[c]Dzień tygodnia startu", colChart(r.cal.dow.map((v, i) => [WEEKDAYS[i], v]), {color: "var(--c6)", highlight: dowMax, h: 120}))}
       ${blk("[c]Nowe reklamy miesiąc po miesiącu", colChart(r.months.map(m => [`${m.key.slice(5)}.${m.key.slice(2,4)}`, m.nowe]), {color: "var(--bar1)", h: 120}))}
@@ -2175,6 +2404,7 @@ P.social = (r) => {
   const p = r.pol;
   if (!p || !p.n) return see("Ta strona nie emitowała reklam społecznych, wyborczych ani politycznych na wybranym obszarze. Dla takich reklam Meta publikuje prawdziwe wydatki i wyświetlenia (w przedziałach).");
   return `${see(`${p.n} reklam społecznych/politycznych (${p.active} aktywnych). Tu Meta podaje <b>prawdziwe dane</b>: wydatki ${fmt(p.spLo)}–${fmt(p.spHi)} ${esc(p.currency)}, wyświetlenia ${fmtK(p.imLo)}–${fmtK(p.imHi)}.`)}
+    ${p.truncated ? `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Pobrano pierwsze ${fmt(p.n)} reklam społecznych/politycznych (limit bota) — strona ma ich więcej, więc sumy wydatków i wyświetleń są zaniżone.</div>` : ""}
     ${p.otherCur || p.openUpper ? `<div class="note">${p.otherCur ? `${p.otherCur} reklam w innej walucie niż ${esc(p.currency)} pominięto w sumie wydatków. ` : ""}${p.openUpper ? "Część reklam ma otwarty górny przedział wydatków (Meta podaje tylko dolną granicę) — górna suma jest zaniżona." : ""}</div>` : ""}
     ${miniKpis("d", [[fmt(p.n), "reklam"], [`${fmtK(p.spLo)}–${fmtK(p.spHi)}`, `wydatki (${esc(p.currency)})`], [`${fmtK(p.imLo)}–${fmtK(p.imHi)}`, "wyświetlenia"], [fmt(p.active), "aktywnych"]])}
     <div class="two">
@@ -2281,7 +2511,7 @@ function probResults(r, st, pdf){
   const m = probModel(r, st);
   if (!(m.base > 0)) return see("Brak aktywnych reklam z danymi o zasięgu w wybranym okresie — nie da się oszacować budżetu.");
   const L99 = m.levels[0], L80 = m.levels[3], L50 = m.levels[4];
-  return `${see(`Przy przyjętych założeniach model daje <b>99% szans</b>, że ${esc(r.pageName)} wydaje ${periodLabel(st.period)} <b>${fmt(roundNice(L99.lo))}–${fmt(roundNice(L99.hi))} zł</b>, <b>80% szans</b> na ${fmt(roundNice(L80.lo))}–${fmt(roundNice(L80.hi))} zł i <b>50% szans</b> na ${fmt(roundNice(L50.lo))}–${fmt(roundNice(L50.hi))} zł. Najbardziej prawdopodobna wartość: <b>~${fmt(roundNice(m.median))} zł</b>.${st.period === "month" && Math.abs(m.median - r.s.miesSr) / Math.max(1, r.s.miesSr) > 0.03 ? ` <span class="sub">„Środek” z Przeglądu (~${fmt(r.s.miesSr)} zł) to prostsza średnia z krańców widełek — mediana modelu jest ${m.median < r.s.miesSr ? "niższa" : "wyższa"}, bo uwzględnia, że duże wartości są mniej prawdopodobne niż sugeruje zwykła średnia.</span>` : ""}`)}
+  return `${see(`Przy przyjętych założeniach model daje <b>99% szans</b>, że ${esc(r.pageName)} wydaje ${periodLabel(st.period)} <b>${fmt(roundNice(L99.lo))}–${fmt(roundNice(L99.hi))} zł</b>, <b>80% szans</b> na ${fmt(roundNice(L80.lo))}–${fmt(roundNice(L80.hi))} zł i <b>50% szans</b> na ${fmt(roundNice(L50.lo))}–${fmt(roundNice(L50.hi))} zł. Najbardziej prawdopodobna wartość: <b>~${fmt(roundNice(m.median))} zł</b>.${st.period === "month" && Math.abs(m.median - r.s.miesSr) / Math.max(1, r.s.miesSr) > 0.03 ? ` <span class="sub">Przegląd pokazuje ~${fmt(r.s.miesSr)} zł, bo liczy na założeniach globalnych — tutaj działają założenia zmienione w tej zakładce.</span>` : ""}`)}
     ${blk("[p]Przedziały prawdopodobieństwa", probLadder(m) + `<div class="note">Im wyższe prawdopodobieństwo, tym szerszy przedział. Pomarańczowa kreska = mediana (50% szans, że wydatek jest niższy, 50% — że wyższy).</div>`)}
     ${blk("[p]Rozkład możliwych wydatków", probChart(m))}
     <div class="two">
@@ -2369,7 +2599,8 @@ function insights(list){
   const lA = lead(r => r.s.aktywne), lC = lead(r => r.s.miesSr), lN = lead(r => r.s.n30), lE = lead(r => r.s.evergreeny), lO = lead(r => r.s.zOfertaProc), lI = lead(r => r.idx.index);
   out.push(`Najwyższy indeks aktywności: <b>${esc(lI.pageName)}</b> (${lI.idx.index}/100).`);
   out.push(`Najwięcej aktywnych reklam: ${esc(lA.pageName)} (${fmt(lA.s.aktywne)}); najwyższy szacowany budżet: ${esc(lC.pageName)} (~${fmtK(lC.s.miesSr)} zł/mies.).`);
-  out.push(`Najwięcej nowych kreacji w 30 dni: ${esc(lN.pageName)} (${fmt(lN.s.n30)}).`);
+  if (list[0].s.okres){ const lP = lead(r => r.s.okres.nowe); out.push(`Najwięcej nowych reklam w wybranym okresie: ${esc(lP.pageName)} (${fmt(lP.s.okres.nowe)}).`); }
+  else if (lN.s.n30 != null) out.push(`Najwięcej nowych kreacji w 30 dni: ${esc(lN.pageName)} (${fmt(lN.s.n30)}).`);
   if (lE.s.evergreeny) out.push(`Najwięcej evergreenów: ${esc(lE.pageName)} (${lE.s.evergreeny}).`);
   if (lO.s.zOfertaProc) out.push(`Najmocniej gra ofertą: ${esc(lO.pageName)} — ${lO.s.zOfertaProc}% reklam.`);
   const tests = list.filter(r => r.testing.killRate != null);
@@ -2378,7 +2609,9 @@ function insights(list){
     const totalCost = list.reduce((s,r) => s + r.s.miesSr, 0);
     out.push(`Twoja marka: ${posOf(r => r.s.aktywne)}. miejsce na ${list.length} pod względem aktywnych reklam, ${posOf(r => r.s.miesSr)}. pod względem budżetu; udział w wydatkach ~${totalCost ? Math.round(main.s.miesSr / totalCost * 100) : 0}%.`);
     const growing = list.filter(r => !r.isMain && r.dir === "up").map(r => esc(r.pageName));
-    if (growing.length) out.push(`Konkurenci zwiększający aktywność (90 dni): ${growing.join(", ")}.`);
+    const basis = main.s.trendBase === "prev" ? "okres do okresu" : main.s.trendBase === "half" ? "w ramach okresu" : "90 dni";
+    if (growing.length) out.push(`Konkurenci zwiększający aktywność (${basis}): ${growing.join(", ")}.`);
+    if (main.s.okres && main.s.okresPrev && main.s.okresPrev.koszt){ const c = Math.round((main.s.okres.koszt - main.s.okresPrev.koszt) / main.s.okresPrev.koszt * 100); out.push(`Twoja marka okres do okresu: szac. koszt ${c >= 0 ? "+" : ""}${c}%, nowe reklamy ${fmt(main.s.okresPrev.nowe)} → ${fmt(main.s.okres.nowe)}.`); }
   }
   return `<ul class="lines">${out.map(x => `<li>${x}</li>`).join("")}</ul>`;
 }
@@ -2415,7 +2648,7 @@ function recommendations(list){
   const avg = g => { const v = comps.map(g).filter(x => x != null); return v.length ? mean(v) : null; };
   const t = main.testing, s = main.s;
   // świeżość / zmęczenie kreacji
-  if (s.aktywne && t.ageActive != null && t.ageActive > 45 && s.n30 < Math.max(2, s.aktywne * 0.2))
+  if (s.aktywne && t.ageActive != null && t.ageActive > 45 && s.n30 != null && s.n30 < Math.max(2, s.aktywne * 0.2))
     add(1, "Kreacje", "Odśwież kreacje — aktywne reklamy są stare", `Średni wiek aktywnych reklam to ${t.ageActive} dni, a w 30 dni dodano tylko ${s.n30} nowych.`, "Przygotuj 3–5 nowych wariantów dla głównych konceptów i podmieniaj co 2–4 tygodnie, zanim spadnie CTR.");
   // testowanie
   const kr = avg(r => r.testing.killRate);
@@ -2465,6 +2698,11 @@ function recommendations(list){
   // zmiany u konkurencji
   for (const r of comps) if (r.changes && !r.changes.first && r.changes.newAds.length >= Math.max(10, r.changes.prev.aktywne * 0.3))
     add(1, "Monitoring", `${r.pageName} przyspiesza`, `Od ${r.changes.prevDate}: +${r.changes.newAds.length} nowych reklam, aktywnych ${r.changes.prev.aktywne} → ${r.changes.now.aktywne}.`, "Sprawdź nowe reklamy konkurenta (zakładka „Zmiany”) — może to start dużej kampanii lub promocji.");
+  // przyspieszenie konkurenta okres do okresu
+  for (const r of comps){ const a = r.s.okres, b = r.s.okresPrev;
+    if (a && b && a.nowe >= 10 && a.nowe >= b.nowe * 1.5 && (!b.koszt || a.koszt >= b.koszt * 1.2))
+      add(1, "Monitoring", `${r.pageName} przyspiesza okres do okresu`, `Nowe reklamy ${fmt(b.nowe)} → ${fmt(a.nowe)}, szac. koszt ~${fmtK(b.koszt)} → ~${fmtK(a.koszt)} zł (${iso(b.a)}–${iso(b.b)} vs ${iso(a.a)}–${iso(a.b)}).`, "Sprawdź nowe reklamy tego konkurenta — może to start dużej kampanii lub promocji; rozważ reakcję w tym samym oknie.");
+  }
   if (!R.length) add(3, "Ogólne", "Brak wyraźnych sygnałów do zmiany", "Wskaźniki marki są zbliżone do konkurencji.", "Kontynuuj obecną strategię i powtórz analizę za 2–4 tygodnie, żeby wychwycić zmiany.");
   return R.sort((a,b) => a.prio - b.prio);
 }
@@ -2480,7 +2718,7 @@ function scoreCard(r, i){
     <div class="rp-sc-g">
       <div><b>${fmt(s.aktywne)}</b><span>aktywne reklamy</span></div>
       <div><b>~${fmtK(s.miesSr)} zł</b><span>szac. koszt / mies.</span></div>
-      <div><b>${fmt(s.n30)}</b><span>nowe w 30 dni</span></div>
+      ${s.okres ? `<div><b>${fmt(s.okres.nowe)}${s.okresPrev ? ` <small class="${s.okres.nowe >= s.okresPrev.nowe ? "up" : "down"}">${s.okresPrev.nowe ? (s.okres.nowe >= s.okresPrev.nowe ? "+" : "") + Math.round((s.okres.nowe - s.okresPrev.nowe) / s.okresPrev.nowe * 100) + "%" : ""}</small>` : ""}</b><span>nowe w okresie</span></div>` : `<div><b>${nd(s.n30)}</b><span>nowe w 30 dni</span></div>`}
       <div><b>${r.testing.killRate == null ? "—" : r.testing.killRate + "%"}</b><span>wyłączanych ≤7 dni</span></div>
       <div><b>~${fmtK(s.wyswMiesSr)}</b><span>szac. wyświetlenia / mies.</span></div>
       <div><b>${s.zOfertaProc}%</b><span>reklam z ofertą</span></div>
@@ -2496,16 +2734,34 @@ const C = {};
 C.recs = list => `${blk("[c]Najważniejsze wnioski", insights(list))}
   ${blk("[x]Rekomendacje — co z tego wynika", recCards(recommendations(list)) + `<div class="note">Rekomendacje są generowane automatycznie na podstawie reguł i danych z Biblioteki Reklam — traktuj je jako punkt wyjścia do decyzji.</div>`)}
   ${blk("[c]Marki w skrócie", `<div class="rp-scgrid">${list.map(scoreCard).join("")}</div>`)}`;
+// porównanie okres do okresu dla wszystkich marek
+function periodCmpBrands(list){
+  const ch = (x, y) => !y ? (x ? '<span class="dl up">nowe</span>' : '<span class="dl na">—</span>') : (() => { const c = Math.round((x - y) / y * 100); return `<span class="dl ${c > 0 ? "up" : c < 0 ? "down" : ""}">${c > 0 ? "+" : ""}${c}%</span>`; })();
+  const cell = (x, y, f) => `<span><b>${f(x)}</b><small>poprz. ${f(y)}</small>${ch(x, y)}</span>`;
+  const a = list[0].s.okres, b = list[0].s.okresPrev;
+  return `<div class="pcb"><div class="pcb-h"><span>Marka</span><span>Nowe reklamy</span><span>Emitowane</span><span>Szac. wyświetlenia</span><span>Szac. koszt</span></div>
+    ${list.map((r, i) => { const x = r.s.okres, y = r.s.okresPrev; return `<div class="pcb-r"><span class="nm"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span>${cell(x.nowe, y.nowe, fmt)}${cell(x.emitowane, y.emitowane, fmt)}${cell(x.wysw, y.wysw, v => "~" + fmtK(v))}${cell(x.koszt, y.koszt, v => "~" + fmtK(v) + " zł")}</div>`; }).join("")}</div>
+    <div class="note">Wybrany okres ${iso(a.a)} – ${iso(a.b)} vs poprzedni ${iso(b.a)} – ${iso(b.b)}. Wyświetlenia i koszt: część zasięgu przypadająca na dni okna × założenia kosztu.</div>`;
+}
 C.sov = list => {
   const keys = list[0].months.map(m => m.key);
   const main = list.find(r => r.isMain);
   const tot = list.reduce((s, r) => s + r.s.miesSr, 0);
-  return `${main ? see(`Twój szacowany udział w wydatkach: <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b>, w aktywnych reklamach: <b>${pct(main.s.aktywne, list.reduce((s, r) => s + r.s.aktywne, 0))}%</b>.`) : ""}
+  const totP = list[0].s.okres ? list.reduce((s, r) => s + r.s.okres.koszt, 0) : 0;
+  return `${main ? see(list[0].s.okres
+    ? `W wybranym okresie Twój szacowany udział w wydatkach to <b>${totP ? Math.round(main.s.okres.koszt / totP * 100) : 0}%</b>, w nowych reklamach <b>${pct(main.s.okres.nowe, list.reduce((s, r) => s + r.s.okres.nowe, 0))}%</b>. Prognoza „na dziś” (tylko reklamy aktywne dziś): <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b> wydatków — różnica pokazuje, czy marka przyspiesza, czy zwalnia.`
+    : `Twój szacowany udział w wydatkach: <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b>, w aktywnych reklamach: <b>${pct(main.s.aktywne, list.reduce((s, r) => s + r.s.aktywne, 0))}%</b>.`) : ""}
     <div class="three">
-      ${blk("[p]Szacowane wydatki / mies.", shareBlock(list, r => r.s.miesSr, "zł"))}
-      ${blk("[c]Aktywne reklamy", shareBlock(list, r => r.s.aktywne, "reklam"))}
+      ${blk(list[0].s.okres ? "[p]Prognoza wydatków / mies. (aktywne dziś)" : "[p]Szacowane wydatki / mies.", shareBlock(list, r => r.s.miesSr, "zł"))}
+      ${blk(list[0].s.okres ? "[c]Aktywne dziś" : "[c]Aktywne reklamy", shareBlock(list, r => r.s.aktywne, "reklam"))}
       ${blk("[c]Dzienny zasięg", shareBlock(list, r => r.s.dziennyZasieg, "osób"))}
     </div>
+    ${list[0].s.okres ? `<div class="three">
+      ${blk("[p]Szac. koszt w wybranym okresie", shareBlock(list, r => r.s.okres.koszt, "zł"))}
+      ${blk("[c]Nowe reklamy w okresie", shareBlock(list, r => r.s.okres.nowe, "reklam"))}
+      ${blk("[p]Szac. wyświetlenia w okresie", shareBlock(list, r => r.s.okres.wysw, "wyśw."))}
+    </div>` : ""}
+    ${list[0].s.okresPrev ? blk("[c]Zmiana względem poprzedniego okresu", periodCmpBrands(list)) : ""}
     ${blk("[p]Szacowany budżet z przedziałami prawdopodobieństwa", probCompare(list))}
     ${blk("[c]Udział w zasięgu miesiąc po miesiącu", stackArea100(keys, list.map((r, i) => ({name: r.pageName, color: color(i), values: r.months.map(m => m.reach)}))) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div><div class="note">Udział każdej marki w łącznym zasięgu (zasięg reklamy rozłożony równomiernie na dni emisji).</div>`)}
     ${blk("[c]Emitowane reklamy miesiąc po miesiącu", lineChart(list) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div>`)}`;
@@ -2573,7 +2829,7 @@ C.ranks = list => `${blk("[p]Indeks aktywności reklamowej", `<div class="gauges
     ${rankBlock(list, "Aktywne reklamy", r => r.s.aktywne)}
     ${rankBlock(list, "Szacowany koszt / mies.", r => r.s.miesSr, " zł")}
     ${rankBlock(list, "Szac. wyświetlenia / mies.", r => r.s.wyswMiesSr)}
-    ${rankBlock(list, "Nowe reklamy (30 dni)", r => r.s.n30)}
+    ${list[0].s.okres ? rankBlock(list, "Nowe reklamy w okresie", r => r.s.okres.nowe) : rankBlock(list, "Nowe reklamy (30 dni)", r => r.s.n30)}
     ${rankBlock(list, "Evergreeny", r => r.s.evergreeny)}
     ${rankBlock(list, "Średni zasięg reklamy", r => r.s.sredniZasieg)}
     ${rankBlock(list, "Wyłączane ≤7 dni (%)", r => r.testing.killRate, "%")}
@@ -2593,13 +2849,27 @@ let uidSeq = 0;
 const view = {top: "cmp", cmpTab: "recs", brandTab: "overview"};
 try { const v = JSON.parse(store.get("metaAdsBotView") || "{}"); if (v.cmpTab) view.cmpTab = v.cmpTab; if (v.brandTab) view.brandTab = v.brandTab; } catch(e){}
 
-function reanalyze(r){ Object.assign(r, analyze(r.rowsAll, opts(), filters(), r.pageName, r.mediaLoaded)); }
+// kontekst czasu: okres analizy (focus), okres porównawczy (prev) i od kiedy mamy pełne dane (covMin)
+function periodCtx(r){
+  if (!r.period) return {hist: r.rowsAll, covMin: null, focus: null, prev: null};
+  const focus = {a: isoMs(r.period.min), b: isoMs(r.period.max)};
+  const prev = r.prevPer ? {a: isoMs(r.prevPer.min), b: isoMs(r.prevPer.max)} : null;
+  const covMin = r.perMode === "all" ? null : r.perMode === "prev" && prev ? prev.a : focus.a;
+  return {hist: r.rowsAll, covMin, focus, prev, mode: r.perMode};
+}
+const rowIn = (x, w) => x.start <= w.b && x.end >= w.a;
+function reanalyze(r){
+  const ctx = periodCtx(r);
+  const rows = ctx.focus ? r.rowsAll.filter(x => rowIn(x, ctx.focus)) : r.rowsAll;
+  Object.assign(r, analyze(rows, opts(), filters(), r.pageName, r.mediaLoaded, ctx));
+}
 function rerender(){ for (const r of results) reanalyze(r); renderAll(); }
 
 function renderAll(){
   const card = $("resultsCard");
   const any = results.length > 0;
-  ["xlsx","clear","pdf","ai","strat"].forEach(id => $(id).classList.toggle("hidden", !any));
+  ["xlsx","clear","pdf","ai","strat","saveAn"].forEach(id => $(id).classList.toggle("hidden", !any));
+  refreshCalib();
   $("filtersCard").classList.toggle("hidden", !any);
   $("fMediaWrap").classList.toggle("hidden", !results.some(r => r.mediaLoaded));
   if (!any){ card.classList.add("hidden"); card.innerHTML = ""; $("pdfCard").classList.add("hidden"); $("aiCard").classList.add("hidden"); $("stratCard").classList.add("hidden"); return; }
@@ -2618,7 +2888,7 @@ function renderAll(){
       ${results.length > 1 ? `<button class="t1 ${isCmp ? "on" : ""}" data-top="cmp"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M8 17v-6M13 17V7M18 17v-4"/></svg>Porównanie</button>` : ""}
       ${results.map((x, i) => `<button class="t1 ${x.uid === view.top ? "on" : ""}" data-top="${x.uid}"><span class="dot" style="background:${color(i)}"></span>${esc(x.pageName)}${x.isMain ? " ★" : ""}<span class="t1i">${x.idx.index}</span></button>`).join("")}
     </div>
-    ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div>${periodWarn(results)}${limitWarn(results)}</div>` : ""}
+    ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div>${asofWarn()}${periodWarn(results)}${limitWarn(results)}</div>` : ""}
     <div class="tabs2" role="tablist">${tabs.map(([k, l]) => `<button class="t2 ${k === active ? "on" : ""}" data-tab="${k}">${l}${isCmp ? "" : badge(k, r)}</button>`).join("")}</div>
     <div id="resLegend">${marksLegend()}</div>
     <div class="panel">${isCmp ? cmpPanel(active, results) : brandPanel(active, r, idx)}</div>`;
@@ -2643,13 +2913,16 @@ async function analyzeOne(job, region, label){
     pageId = cands[0].id; pageName = cands[0].name;
   }
   const withDemo = $("withDemo").checked;
-  const per = job.period || null;
+  const per = job.period || null, perMode = per ? (job.perMode || "prev") : null;
+  const prevPer = per && perMode !== "only" ? prevPeriod(per) : null;
+  // okno pobierania: sam okres, okres + poprzedni analogiczny albo cała historia do końca okresu
+  const fetchWin = per ? {min: perMode === "all" ? null : perMode === "prev" ? prevPer.min : per.min, max: per.max} : null;
   const params = {...baseParams(region), search_page_ids: JSON.stringify([pageId])};
   if (per){
     // do API wysyłamy tylko górną granicę (bezpieczna niezależnie od interpretacji Meta);
     // dolną sprawdzamy sami po datach emisji, żeby nie zgubić reklam uruchomionych przed okresem, a emitowanych w nim
     if (per.max < iso(todayUTC)) params.ad_delivery_date_max = per.max;
-    params.__keep = a => inPeriod(a, per);
+    params.__keep = a => inPeriod(a, fetchWin);
   }
   let demoMissing = false, fieldsIdx = 0;
   const tries = withDemo ? [[FIELDS_DEMO + ",beneficiary_payers", 100], [FIELDS_DEMO, 100], [FIELDS_BASIC, 250]] : [[FIELDS_BASIC, 250]];
@@ -2692,15 +2965,16 @@ async function analyzeOne(job, region, label){
     try {
       const pads = await fetchAll({ad_type: "POLITICAL_AND_ISSUE_ADS", ad_active_status: "ALL", ad_reached_countries: JSON.stringify(region), search_page_ids: JSON.stringify([pageId]),
         fields: "id,ad_delivery_start_time,ad_delivery_stop_time,spend,impressions,currency,bylines,demographic_distribution,delivery_by_region,ad_creative_bodies", limit: 200,
-        ...(per ? {__keep: a => inPeriod(a, per), ...(per.max < iso(todayUTC) ? {ad_delivery_date_max: per.max} : {})} : {})}, 1000, `${label}: sprawdzam reklamy społeczne i polityczne`);
+        ...(per ? {__keep: a => inPeriod(a, per), ...(per.max < iso(todayUTC) ? {ad_delivery_date_max: per.max} : {})} : {})}, 5000, `${label}: sprawdzam reklamy społeczne i polityczne`);
       pol = analyzePolitical(pads); polLoaded = true;
+      if (pol) pol.truncated = !!pads.truncated;
     } catch(e){ if (e instanceof FatalApiError) throw e; }
   }
   const langOpt = $("lang").selectedOptions[0];
   const res = {uid: ++uidSeq, isMain: job.isMain, brand: job.brand || pageName, pageName: pageName || pageId, pageId, region,
     lang: langOpt.value ? langOpt.text : "", langCode: langOpt.value, cands, demoMissing, mediaLoaded, pol, polLoaded, rowsAll,
     limit: lim, limited: lim && truncated ? {limit: lim, n: rowsAll.length, active: rowsAll.filter(x => x.active).length} : null,
-    period: per};
+    period: per, perMode, prevPer, fetchWin};
   reanalyze(res);
   if (res.limited) res.changes = {first: true, limitedSkip: true};
   else if (per) res.changes = {first: true, periodSkip: true};
@@ -2724,6 +2998,7 @@ const plural = n => n === 1 ? "markę" : (n%10>=2 && n%10<=4 && (n%100<12 || n%1
 
 async function run(){
   if (!token()) return setStatus("Wklej token dostępu.", true);
+  if (ASOF){ ASOF = null; todayUTC = REAL_TODAY; }   // nowa analiza = aktualne dane
   const region = currentRegion();
   if (!region.length) return setStatus("Wybierz obszar emisji (kraj albo „Cały świat”).", true);
   const brand = $("brand").value.trim();
@@ -2736,7 +3011,8 @@ async function run(){
   if (!jobs.length) return setStatus("Wpisz markę albo konkurentów.", true);
   const per = periodRange();
   if (per === undefined) return setStatus("Własny zakres dat: podaj obie daty („od” nie później niż „do”, „do” nie w przyszłości).", true);
-  jobs.forEach(j => j.period = per);
+  const perMode = per ? perModeVal() : null;
+  jobs.forEach(j => { j.period = per; j.perMode = perMode; });
   if ($("remember").checked) store.set("metaAdsBotToken", token()); else store.del("metaAdsBotToken");
 
   $("go").disabled = true;
@@ -2975,7 +3251,7 @@ function buildReport(o){
       <ul class="lines rp-method">
         <li><b>Źródło danych:</b> oficjalne Meta Ad Library API, reklamy dostarczone na obszarze: ${esc(regionLabel(main.region))}${main.lang ? `, język: ${esc(main.lang)}` : ""}. Stan na ${iso(todayUTC)}.</li>
         <li><b>Zakres:</b> Meta udostępnia reklamy komercyjne, które dotarły do UE (DSA), przez ok. rok od zakończenia emisji. Reklamy emitowane wyłącznie poza UE nie są widoczne.</li>
-        ${main.period ? `<li><b>Okres analizy:</b> ${esc(main.period.label)} — uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Zasięg i wydatki dotyczą całej emisji tych reklam, nie tylko wybranego okresu.</li>` : ""}
+        ${main.period ? `<li><b>Okres analizy:</b> ${esc(main.period.label)} — uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Tryb: ${PER_MODE_NAMES[main.perMode] || ""}${main.prevPer ? ` (okres porównawczy ${esc(main.prevPer.label)})` : ""}. Wartości „w okresie” to część zasięgu przypadająca na dni okresu; w trybie „tylko wybrany okres” porównania sprzed okresu są oznaczone jako brak danych.</li>` : ""}
         <li><b>Aktywna reklama:</b> bez daty zakończenia emisji albo z datą zakończenia od dziś wzwyż.</li>
         <li><b>Zasięg:</b> eu_total_reach — szacowana przez Meta liczba kont w UE, do których dotarła reklama. Demografia: rozbicie zasięgu wg wieku, płci i kraju. Targetowanie i płatnik: dane deklarowane przez reklamodawcę (DSA).</li>
         <li><b>Szacowany koszt:</b> estymacja, nie dane Meta — dzienny zasięg aktywnych reklam × częstotliwość × CPM. ${esc(main.s.zalozenia)}. Do porównań między markami.</li>
@@ -2999,6 +3275,8 @@ function buildReport(o){
 }
 
 // ================================================================ eksport Excel (same wartości)
+const PERIOD_METRICS = [["Nowe reklamy", "nowe", ""], ["Emitowane reklamy", "emitowane", ""], ["Nowe koncepty", "koncepty", ""], ["Szac. wyświetlenia", "wysw", ""], ["Szac. koszt (zł)", "koszt", ""], ["Zasięg w okresie", "reach", ""], ["Reklamy z ofertą (%)", "ofertaProc", "pp"], ["Średni rabat (%)", "rabatAvg", "pp"], ["Udział wideo (%)", "wideoProc", "pp"]];
+const periodDelta = (x, y, kind) => x == null || y == null ? null : kind === "pp" ? x - y : y ? Math.round((x - y) / y * 100) : null;
 function exportXlsx(asData = false){
   const f = filters(), fl = filterLabel() || "brak";
   const main = results.find(r => r.isMain);
@@ -3076,6 +3354,11 @@ function exportXlsx(asData = false){
   }
   const name = `raport_meta_${iso(todayUTC)}`;
   S["Fakty do strategii"] = [STRAT_HEAD, ...strategyFacts(results)];
+  if (results.some(r => r.s.okres)){
+    const pc = S["Porównanie okresów"] = [["Strona", "Wskaźnik", "Wybrany okres", "Od", "Do", "Poprzedni okres", "Od", "Do", "Zmiana", "Jednostka zmiany", "Tryb"]];
+    for (const r of results){ const a = r.s.okres, b = r.s.okresPrev; if (!a) continue;
+      for (const [l, k, kind] of PERIOD_METRICS) pc.push([r.pageName, l, a[k], iso(a.a), iso(a.b), b ? b[k] : null, b ? iso(b.a) : "", b ? iso(b.b) : "", b ? periodDelta(a[k], b[k], kind) : null, b ? (kind === "pp" ? "pp" : "%") : "", PER_MODE_NAMES[r.perMode] || ""]); }
+  }
   if (!window.XLSX){
     if (asData) return {name, ext: "csv", data: "\ufeff" + sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n")};
     const csv = sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n");
@@ -3127,7 +3410,15 @@ function strategyFacts(list){
     const s = r.s, d = r.demo, add = (area, name, val, unit, kind, note = "") => rows.push([r.pageName, r.isMain ? "analizowana marka" : "konkurent", area, name, val == null || val === "" ? "brak danych" : val, unit, KIND[kind], note]);
     add("Skala", "Aktywne reklamy", s.aktywne, "szt.", "d");
     add("Skala", "Reklamy w analizowanym zbiorze", s.lacznie, "szt.", "d", r.period ? "okres: " + r.period.label : "");
-    add("Skala", "Nowe reklamy w 30 dni", s.n30, "szt.", "c", `poprzednie 30 dni: ${s.p30}`);
+    if (s.okres){
+      const a = s.okres, b = s.okresPrev;
+      add("Okres", "Nowe reklamy w wybranym okresie", a.nowe, "szt.", "c", `${iso(a.a)} – ${iso(a.b)}${b ? `; poprzedni okres ${iso(b.a)} – ${iso(b.b)}: ${b.nowe}` : ""}`);
+      add("Okres", "Emitowane reklamy w wybranym okresie", a.emitowane, "szt.", "c", b ? `poprzedni okres: ${b.emitowane}` : "");
+      add("Okres", "Szac. wyświetlenia w wybranym okresie", a.wysw, "wyświetleń", "p", `${fmt(a.wyswMin)}–${fmt(a.wyswMax)}${b ? `; poprzedni okres: ${fmt(b.wysw)}` : ""}`);
+      add("Okres", "Szac. koszt w wybranym okresie", a.koszt, "zł", "p", `${fmt(a.kosztMin)}–${fmt(a.kosztMax)} zł${b ? `; poprzedni okres: ${fmt(b.koszt)} zł` : ""}`);
+      if (b) add("Okres", "Zmiana szac. kosztu okres do okresu", periodDelta(a.koszt, b.koszt), "%", "p");
+    }
+    add("Skala", "Nowe reklamy w 30 dni", s.n30, "szt.", "c", s.n30 == null ? "brak danych sprzed pobranego okresu" : `poprzednie 30 dni: ${s.p30 == null ? "brak danych" : s.p30}`);
     add("Skala", "Tendencja liczby nowych reklam (90 dni)", r.trend, "", "c");
     add("Skala", "Udział w aktywnych reklamach (zestaw)", totAct ? pct(s.aktywne, totAct) : null, "%", "c");
     add("Zasięg", "Średni zasięg reklamy (UE)", s.sredniZasieg, "osób", "c", `mediana ${fmt(s.medianaZasiegu)}`);
@@ -3426,7 +3717,7 @@ function saveSet(){
   const name = prompt("Nazwa zestawu (np. „Natura — drogerie”):", $("sets").value || $("brand").value.trim());
   if (!name) return;
   const sets = loadSets();
-  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, limDef: $("limDef").value, limits: {...limMap}, period: {v: $("period").value, from: $("pFrom").value, to: $("pTo").value}, savedAt: iso(todayUTC)};
+  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, limDef: $("limDef").value, limits: {...limMap}, period: {v: $("period").value, from: $("pFrom").value, to: $("pTo").value, mode: perModeVal()}, savedAt: iso(todayUTC)};
   if (!store.set(SETS_KEY, JSON.stringify(sets))) return setStatus("Przeglądarka nie pozwala zapisywać danych — użyj „Eksport”, żeby zachować zestaw w pliku.", true);
   refreshSets(name.trim());
   setStatus(`Zapisano zestaw „${name.trim()}”.`);
@@ -3647,13 +3938,21 @@ function buildAiMd(o){
     `- Założenia kosztu: ${main.s.zalozenia}`,
     `- Szacowane wyświetlenia = zasięg × częstotliwość (Meta nie podaje wyświetleń reklam komercyjnych, tylko zasięg) — to szacunek, nie dane Meta`,
     main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`,
-    main.period ? `- **Okres analizy:** ${main.period.label}, wspólny dla wszystkich marek. Uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Zasięg i wydatki z API dotyczą całej emisji reklamy, nie tylko okresu — nie przeliczaj ich na „wynik okresu” bez zastrzeżenia. Trendy miesięczne mogą obejmować miesiące sprzed okresu (start długich reklam).` : `- Okres analizy: cała dostępna historia biblioteki`,
+    main.period ? `- **Okres analizy:** ${main.period.label}, wspólny dla wszystkich marek. Uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Tryb: ${PER_MODE_NAMES[main.perMode] || ""}${main.prevPer ? ` (okres porównawczy ${main.prevPer.label})` : ""}. Wartości „w okresie” (wyświetlenia, koszt, zasięg) to część zasięgu reklamy przypadająca na dni okresu. ${main.perMode === "only" ? "Danych sprzed okresu NIE pobrano — brak porównań nie oznacza zera reklam." : "Tendencja = wybrany okres vs poprzedni analogiczny."}${staleData(main) ? " UWAGA: " + STALE_TXT : ""}` : `- Okres analizy: cała dostępna historia biblioteki`,
     sel.some(r => r.limited) ? `- **UWAGA — próba danych:** ${sel.filter(r => r.limited).map(r => `${r.pageName}: przeanalizowano ${r.limited.n} reklam (limit ${r.limited.limit}, najpierw aktywne), marka ma ich więcej`).join("; ")}. Liczby bezwzględne (reklamy, zasięg, koszt, udział w głosie) są dla tych marek zaniżone — opieraj porównania na wskaźnikach procentowych i zaznacz to w analizie.` : `- Pobrano wszystkie dostępne reklamy każdej marki (bez limitu)`
   ].join("\n"));
 
   h(`### Podsumowanie marek ${TAG.c}`);
   L.push(mdTable(["Marka", "Rola", "Aktywne reklamy", "Reklamy w zbiorze", "Nowe 30 dni (poprz. 30)", "Nowe 90 dni (poprz. 90)", "Trend", "Śr. czas emisji (dni)", `Evergreeny ≥${f.evDays} dni`, "Śr. zasięg reklamy"],
     sel.map(r => [r.pageName, r.isMain ? "analizowana marka" : "konkurent", r.s.aktywne, r.s.lacznie, `${r.s.n30} (${r.s.p30})`, `${r.s.n90} (${r.s.p90})`, r.trend, r.s.sredniCzasEmisji, r.s.evergreeny, mdN(r.s.sredniZasieg)])));
+  if (sel.some(r => r.s.okres)){
+    const hasPrev = sel.some(r => r.s.okresPrev);
+    L.push(`\n${hasPrev ? "Porównanie okresów" : "Wybrany okres"} ${TAG.c} (${PER_MODE_NAMES[sel[0].perMode] || ""}; wyświetlenia i koszt ${TAG.p} — część zasięgu przypadająca na dni okna):\n`);
+    L.push(mdTable(["Marka", "Wskaźnik", `Okres ${iso(sel[0].s.okres.a)} – ${iso(sel[0].s.okres.b)}`, ...(hasPrev ? [`Poprzedni ${iso(sel[0].s.okresPrev.a)} – ${iso(sel[0].s.okresPrev.b)}`, "Zmiana"] : [])],
+      sel.flatMap(r => PERIOD_METRICS.filter(([, k]) => r.s.okres[k] != null).map(([l, k, kind]) => { const a = r.s.okres[k], b = r.s.okresPrev ? r.s.okresPrev[k] : null, d = periodDelta(a, b, kind);
+        return [r.pageName, l, fmt(a), ...(hasPrev ? [b == null ? "—" : fmt(b), d == null ? "—" : `${d > 0 ? "+" : ""}${d}${kind === "pp" ? " pp" : "%"}`] : [])]; }))));
+    if (sel[0].perMode === "only") L.push(`- Tryb „tylko wybrany okres”: brak danych sprzed ${iso(sel[0].s.covMin)}. Pola „b.d.”/puste oznaczają brak danych, NIE zero reklam — nie wyciągaj wniosków o wzroście na tej podstawie.`);
+  }
   L.push(`\nIndeks aktywności 0–100 ${TAG.p} (wagi: ${INDEX_PARTS.map(([, l, w]) => `${l.toLowerCase()} ${Math.round(w * 100)}%`).join(", ")}):\n`);
   L.push(mdTable(["Marka", "Indeks", ...INDEX_PARTS.map(x => x[1])], sel.map(r => [r.pageName, r.idx.index, ...INDEX_PARTS.map(([k]) => Math.round(r.idx.parts[k]))])));
 
@@ -3839,8 +4138,8 @@ function advSummary(){
   parts.push(ld ? `limit ${fmt(ld)} reklam` : "bez limitu reklam");
   if (nInd) parts.push(`${nInd} ${nInd === 1 ? "limit indywidualny" : "limity indywidualne"}`);
   const per = typeof periodRange === "function" ? periodRange() : null;
-  parts.push(per ? per.name : per === undefined ? "okres: błędne daty" : "cała historia");
-  parts.push(`CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł`);
+  parts.push(per ? per.name + " · " + (perModeVal() === "only" ? "bez porównań" : perModeVal() === "all" ? "tło: cała historia" : "vs poprzedni okres") : per === undefined ? "okres: błędne daty" : "cała historia");
+  parts.push(`${CALIB ? "kalibracja · " : ""}CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł`);
   parts.push(concLimit() > 1 ? `${concLimit()} marki naraz` : "po kolei");
   el.innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
 }
@@ -3885,13 +4184,37 @@ function inPeriod(a, per){
   if (!per) return true;
   const s = String(a.ad_delivery_start_time || "").slice(0, 10), e = String(a.ad_delivery_stop_time || "").slice(0, 10);
   if (s && s > per.max) return false;
-  if (e && e < per.min) return false;
+  if (e && per.min && e < per.min) return false;
   return true;
 }
+const isoMs = d => Date.parse(d + "T00:00:00Z");
+// analogiczny okres przed wybranym: miesiąc/kwartał/rok kalendarzowy wcześniej, „ten rok” rok do roku, pozostałe — tyle samo dni bezpośrednio wcześniej
+function prevPeriod(per){
+  if (!per) return null;
+  const a = isoMs(per.min), b = isoMs(per.max), d = new Date(a), Y = d.getUTCFullYear(), M = d.getUTCMonth();
+  let r;
+  switch (per.key){
+    case "pm": r = [Date.UTC(Y, M - 1, 1), Date.UTC(Y, M, 1) - DAY]; break;
+    case "pq": r = [Date.UTC(Y, M - 3, 1), Date.UTC(Y, M, 1) - DAY]; break;
+    case "py": r = [Date.UTC(Y - 1, 0, 1), Date.UTC(Y, 0, 1) - DAY]; break;
+    case "tq": r = [Date.UTC(Y, M - 3, 1), Date.UTC(Y, M - 3, 1) + (b - a)]; break;
+    case "ty": { const e = new Date(b); r = [Date.UTC(Y - 1, 0, 1), Date.UTC(Y - 1, e.getUTCMonth(), e.getUTCDate())]; break; }
+    default: r = [a - per.days * DAY, a - DAY];
+  }
+  const min = iso(r[0]), max = iso(r[1]), days = Math.round((r[1] - r[0]) / DAY) + 1;
+  return {min, max, days, label: `${min} – ${max}, ${days} dni`};
+}
+const perModeVal = () => $("perMode").value || "prev";
+const PER_MODE_NAMES = {prev: "porównanie z poprzednim okresem", all: "porównanie na tle całej historii", only: "tylko wybrany okres"};
+// Meta trzyma reklamy komercyjne w bibliotece ok. rok od zakończenia emisji — starsze okna mogą być niepełne
+const oldestUsed = r => r.period ? (r.perMode === "all" ? null : r.prevPer && r.perMode === "prev" ? r.prevPer.min : r.period.min) : null;
+const staleData = r => { const m = r.period ? (r.prevPer ? r.prevPer.min : r.period.min) : null; return !!m && m < iso(todayUTC - 365 * DAY); };
+const STALE_TXT = "Część porównywanego okresu jest starsza niż ok. 12 miesięcy. Meta przechowuje reklamy komercyjne ok. roku od zakończenia emisji, więc starsze reklamy mogą już nie być widoczne — wcześniejszy okres może wyjść zaniżony, a wzrost zawyżony.";
 function periodWarn(list){
   const p = list.find(r => r.period);
   if (!p) return "";
-  return `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Okres: <b>${esc(p.period.label)}</b> — liczone są tylko reklamy emitowane w tym czasie (także uruchomione wcześniej). Zasięg i wydatki z API dotyczą całej emisji reklamy, nie tylko tego okresu.</div>`;
+  const stale = staleData(p) ? `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>${STALE_TXT}</div>` : "";
+  return `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Okres: <b>${esc(p.period.label)}</b> — liczone są reklamy emitowane w tym czasie (także uruchomione wcześniej). ${p.perMode === "only" ? "Tryb: tylko wybrany okres — porównań sprzed okresu nie ma (oznaczone „b.d.”)." : p.perMode === "all" ? `Tryb: na tle całej historii; porównanie z ${esc(p.prevPer.label)}.` : `Tryb: porównanie z poprzednim okresem ${esc(p.prevPer.label)}.`} Liczby „w okresie” to część zasięgu przypadająca na dni okresu; prognoza miesięczna dotyczy reklam aktywnych dziś.</div>${stale}`;
 }
 function syncPeriodUi(){
   const v = $("period").value;
@@ -3899,7 +4222,10 @@ function syncPeriodUi(){
   $("periodCustom").style.display = v === "custom" ? "inline-flex" : "none";
   const p = periodRange();
   $("periodHint").textContent = v === "all" ? "" : p ? `${p.min} – ${p.max} (${p.days} dni)` : "— podaj poprawny zakres dat";
-  store.set(PERIOD_KEY, JSON.stringify({v, from: $("pFrom").value, to: $("pTo").value}));
+  $("perModeRow").style.display = v === "all" ? "none" : "";
+  const pp = p ? prevPeriod(p) : null, m = perModeVal();
+  $("perModeHint").textContent = !p ? "" : m === "prev" ? `porównanie z: ${pp.min} – ${pp.max} (pobierany dodatkowo)` : m === "all" ? `tło: cała dostępna historia; porównanie z ${pp.min} – ${pp.max}` : "tendencje tylko wewnątrz okresu — bez danych sprzed niego";
+  store.set(PERIOD_KEY, JSON.stringify({v, from: $("pFrom").value, to: $("pTo").value, mode: m}));
   if (typeof advSummary === "function") advSummary();
 }
 function setPeriod(s){
@@ -3907,12 +4233,13 @@ function setPeriod(s){
   if ([...$("period").options].some(o => o.value === s.v)) $("period").value = s.v;
   if (s.from != null) $("pFrom").value = s.from;
   if (s.to != null) $("pTo").value = s.to;
+  if (s.mode && [...$("perMode").options].some(o => o.value === s.mode)) $("perMode").value = s.mode;
   syncPeriodUi();
 }
 (function initPeriod(){
   $("pTo").max = $("pFrom").max = iso(todayUTC);
   try { setPeriod(JSON.parse(store.get(PERIOD_KEY) || "null")); } catch(e){}
-  ["period", "pFrom", "pTo"].forEach(id => $(id).addEventListener("change", syncPeriodUi));
+  ["period", "pFrom", "pTo", "perMode"].forEach(id => $(id).addEventListener("change", syncPeriodUi));
   syncPeriodUi();
 })();
 // ================================================================ podpięcia
@@ -3921,7 +4248,10 @@ $("xlsx").onclick = () => exportXlsx();
 $("strat").onclick = openStratPanel;
 $("pdf").onclick = openPdfPanel;
 $("ai").onclick = openAiPanel;
-$("clear").onclick = () => { results = []; renderAll(); setStatus(""); };
+$("clear").onclick = () => { results = []; ASOF = null; todayUTC = REAL_TODAY; renderAll(); setStatus(""); };
+$("saveAn").onclick = saveAnalysis;
+$("loadAn").onclick = () => $("anFile").click();
+$("anFile").addEventListener("change", loadAnalysis);
 $("discGo").onclick = discover;
 $("discAdd").onclick = addDiscovered;
 $("phrase").addEventListener("keydown", e => { if (e.key === "Enter") discover(); });
