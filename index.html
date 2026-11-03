@@ -1690,15 +1690,21 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false, ctx = {}){
     else if (ch <= -20){ trend = `spada (${ch.toFixed(0)}% nowych reklam${tail})`; dir = "down"; }
     else trend = `stabilna (${ch >= 0 ? "+" : ""}${ch.toFixed(0)}% nowych reklam${tail})`;
   };
-  if (okres && okresPrev){ trendBase = "prev"; judge(okres.nowe, okresPrev.nowe, " vs poprzedni okres"); }
-  else if (n90 != null && p90 != null) judge(n90, p90, "");
-  else if (ctx.focus && okres.days >= 28){
+  // Meta trzyma reklamy komercyjne ok. roku od końca emisji — okno zaczynające się wcześniej jest w bibliotece niepełne,
+  // więc NIE używamy go do tendencji (inaczej wychodzą sztuczne wzrosty typu +1500%)
+  const RET = todayUTC - 365 * DAY, fresh = from => from >= RET;
+  const prevStale = !!(okresPrev && !fresh(ctx.prev.a));
+  const p90Fresh = fresh(ref - 179 * DAY);
+  if (okres && okresPrev && !prevStale){ trendBase = "prev"; judge(okres.nowe, okresPrev.nowe, " vs poprzedni okres"); }
+  else if (n90 != null && p90 != null && p90Fresh){ trendBase = prevStale ? "90d-fallback" : "90d"; judge(n90, p90, prevStale ? ", ostatnie 90 dni vs poprzednie 90" : ""); }
+  else if (ctx.focus && okres.days >= 28 && fresh(ctx.focus.a)){
     // tylko wybrany okres: porównujemy drugą połowę okresu z pierwszą (obie mamy w danych)
     trendBase = "half";
     const mid = ctx.focus.a + Math.floor(okres.days / 2) * DAY;
     const h1 = hist.filter(r => r.start >= ctx.focus.a && r.start < mid).length, h2 = hist.filter(r => r.start >= mid && r.start <= ctx.focus.b).length;
     judge(h2, h1, ", 2. połowa okresu vs 1.");
   }
+  else if ((okresPrev && prevStale) || (n90 != null && p90 != null && !p90Fresh) || (ctx.focus && !fresh(ctx.focus.a))){ trend = "brak wiarygodnego porównania (dane sprzed 12 mies. są w bibliotece niepełne)"; dir = "na"; trendBase = "stale"; }
   else { trend = "brak danych do porównania (za krótki okres)"; dir = "na"; trendBase = "none"; }
 
   // --- koszt
@@ -1895,7 +1901,7 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false, ctx = {}){
       sredniZasiegAktywnych: actReaches.length ? Math.round(mean(actReaches)) : null,
       lacznyZasiegAktywnych: actReaches.length ? actReaches.reduce((a,b)=>a+b,0) : null,
       sredniCzasEmisji: n ? Math.round(mean(rows.map(r => r.days))) : null,
-      n30, p30, n90, p90, trendBase, covMin, ref,
+      n30, p30, n90, p90, trendBase, covMin, ref, prevStale,
       okres, okresPrev,
       evergreeny: ev.length, evergreenyAktywne: ev.filter(r => r.active).length, evergreenyProc: pct(ev.length, n),
       zOferta: withOffer, zOfertaProc: pct(withOffer, n),
@@ -2240,6 +2246,8 @@ const nd = v => v == null ? '<span class="nd" title="brak danych sprzed początk
 function trendNote(res){
   const s = res.s;
   if (!res.period) return "";
+  if (s.trendBase === "90d-fallback") return `Poprzedni analogiczny okres (${esc(res.prevPer.label)}) jest starszy niż ok. 12 miesięcy, a Meta przechowuje reklamy komercyjne ok. roku od zakończenia emisji — jego dane są niepełne. Dlatego tendencja = <b>ostatnie 90 dni vs poprzednie 90 dni</b> (oba okna w pełni dostępne).`;
+  if (s.trendBase === "stale") return "Okna potrzebne do porównania są starsze niż ok. 12 miesięcy — w bibliotece Meta są niepełne, więc tendencji nie wyliczamy.";
   const end = s.ref < todayUTC ? ` Okna 30/90 dni liczone do końca okresu (${iso(s.ref)}).` : "";
   if (res.perMode === "only") return `Tryb „tylko wybrany okres”: dane zaczynają się ${iso(s.covMin)}, więc porównań sprzed tej daty nie ma („b.d.”) — to brak danych, a nie zero reklam.${s.trendBase === "half" ? " Tendencja: druga połowa okresu vs pierwsza." : ""}${end}`;
   if (res.perMode === "prev") return `Pobrano też okres porównawczy ${esc(res.prevPer.label)}; tendencja = wybrany okres vs poprzedni.${s.covMin != null ? ` Dane od ${iso(s.covMin)}.` : ""}${end}`;
@@ -2249,7 +2257,7 @@ function secTrend(res){
   const s = res.s, months = res.months;
   const maxE = Math.max(1, ...months.map(m => Math.max(m.emitowane, m.nowe)));
   const lbl = s.ref < todayUTC ? " (do końca okresu)" : "";
-  const sp = s.okres && s.okresPrev ? `<span>Okres: <b>${fmt(s.okres.nowe)}</b> nowych (poprzedni ${fmt(s.okresPrev.nowe)})</span>` : "";
+  const sp = s.okres && s.okresPrev ? `<span>Okres: <b>${fmt(s.okres.nowe)}</b> nowych (poprzedni ${fmt(s.okresPrev.nowe)}${s.prevStale ? ", niepełny" : ""})</span>` : "";
   return `<div class="trendline">${sp}<span>Nowe reklamy — 30 dni${lbl}: <b>${nd(s.n30)}</b> (wcześniej ${nd(s.p30)})</span><span>90 dni: <b>${nd(s.n90)}</b> (wcześniej ${nd(s.p90)})</span></div>
     <div class="chart">
       ${months.map(m => `<div class="col" title="${m.key}: emitowane ${m.emitowane}, nowe ${m.nowe}">
@@ -2265,7 +2273,9 @@ function secPeriod(res){
   const s = res.s, a = s.okres, b = s.okresPrev;
   if (!a) return "";
   const pctCh = (x, y) => x == null || y == null ? null : !y ? (x ? null : 0) : Math.round((x - y) / y * 100);
+  const stale = s.prevStale;
   const chip = (x, y, kind) => {
+    if (stale) return '<span class="dl na" title="poprzedni okres niepełny (starszy niż 12 mies.)">—</span>';
     if (x == null || y == null) return '<span class="dl na">—</span>';
     if (kind === "pp"){ const d = x - y; return `<span class="dl ${d > 0 ? "up" : d < 0 ? "down" : ""}">${d > 0 ? "+" : ""}${d} pp</span>`; }
     const c = pctCh(x, y); if (c == null) return '<span class="dl up">nowe</span>';
@@ -2276,9 +2286,9 @@ function secPeriod(res){
     ["Szac. wyświetlenia", "wysw", v => "~" + fmtK(v), "p"], ["Szac. koszt", "koszt", v => "~" + fmtK(v) + " zł", "p"], ["Zasięg w okresie (suma po reklamach)", "reach", v => fmtK(v), "c"],
     ["Reklamy z ofertą", "ofertaProc", v => v == null ? "—" : v + "%", "p", "pp"], ["Średni rabat", "rabatAvg", v => v == null ? "—" : "−" + v + "%", "p", "pp"], ["Udział wideo", "wideoProc", v => v == null ? "—" : v + "%", "c", "pp"]
   ];
-  const head = `<div class="pc-h"><span></span><span>Wybrany okres<small>${iso(a.a)} – ${iso(a.b)}</small></span>${b ? `<span>Poprzedni<small>${iso(b.a)} – ${iso(b.b)}</small></span><span>Zmiana</span>` : ""}</div>`;
+  const head = `<div class="pc-h"><span></span><span>Wybrany okres<small>${iso(a.a)} – ${iso(a.b)}</small></span>${b ? `<span>Poprzedni${stale ? " (niepełny)" : ""}<small>${iso(b.a)} – ${iso(b.b)}</small></span><span>Zmiana</span>` : ""}</div>`;
   const rows = M.filter(([, k]) => a[k] != null || (b && b[k] != null)).map(([l, k, f, kd, kind]) => `<div class="pc-r" data-k="${kd}"><span>${l}</span><b>${f(a[k])}</b>${b ? `<span class="pv">${f(b[k])}</span>${chip(a[k], b[k], kind)}` : ""}</div>`).join("");
-  const note = `Liczone dla reklam emitowanych w danym oknie; zasięg, wyświetlenia i koszt — część przypadająca na dni okna (zasięg reklamy rozłożony równo na dni emisji), założenia jak w szacunku kosztu.${b && res.limited ? " Uwaga: przy limicie reklam porównanie okresów jest orientacyjne (próba)." : ""}`;
+  const note = `${stale ? `<b>Uwaga:</b> poprzedni okres jest starszy niż ok. 12 miesięcy — Meta usuwa z biblioteki reklamy komercyjne ok. roku po zakończeniu emisji, więc jego liczby są zaniżone. Procentowej zmiany nie pokazujemy, żeby nie sugerować fałszywego wzrostu. ` : ""}Liczone dla reklam emitowanych w danym oknie; zasięg, wyświetlenia i koszt — część przypadająca na dni okna (zasięg reklamy rozłożony równo na dni emisji), założenia jak w szacunku kosztu.${b && res.limited ? " Uwaga: przy limicie reklam porównanie okresów jest orientacyjne (próba)." : ""}`;
   return `<div class="pcmp ${b ? "" : "single"}">${head}${rows}</div><div class="note">${note}</div>`;
 }
 function secImpr(res){
@@ -2286,7 +2296,7 @@ function secImpr(res){
   return `<div class="grid costgrid">
       <div class="kpi"><div class="cost">${fmtKR(s.wyswDzienMin, s.wyswDzienMax)}</div><div class="l">dziennie (środek ~${fmtK(s.wyswDzienSr)})</div></div>
       <div class="kpi"><div class="cost">${fmtKR(s.wyswMiesMin, s.wyswMiesMax)}</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (środek ~${fmtK(s.wyswMiesSr)})</div></div>
-      ${s.okres ? `<div class="kpi"><div class="cost">~${fmtK(s.okres.wysw)}</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmtK(s.okresPrev.wysw)}` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmtK(s.wysw30)}</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
+      ${s.okres ? `<div class="kpi"><div class="cost">~${fmtK(s.okres.wysw)}</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmtK(s.okresPrev.wysw)}${s.prevStale ? " (niepełny)" : ""}` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmtK(s.wysw30)}</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
       <div class="kpi"><div class="cost">${s.wyswLacznie == null ? "—" : "~" + fmtK(s.wyswLacznie)}</div><div class="l">łącznie dotychczas, ${res.period ? "reklamy emitowane w okresie (cała ich emisja)" : "wszystkie reklamy " + (fl ? "w wybranym zakresie" : "w bibliotece")} (${s.wyswLacznieMin == null ? "brak zasięgu" : fmtKR(s.wyswLacznieMin, s.wyswLacznieMax)})</div></div>
     </div>
     <div class="note">Estymacja, nie dane Meta: Meta podaje dla reklam komercyjnych tylko zasięg (unikalne osoby), więc wyświetlenia = zasięg × częstotliwość ${String(s.freqMin).replace(".", ",")}–${String(s.freqMax).replace(".", ",")}. Dziennie i miesięcznie to prognoza przy obecnym tempie aktywnych reklam; „ostatnie 30 dni” i „łącznie dotychczas” to to, co już wyemitowano. Suma łączna dodaje zasięgi wszystkich reklam — ta sama osoba widząca kilka reklam jest liczona kilka razy, tak jak w wyświetleniach. ${coverNote(s)}</div>`;
@@ -2310,7 +2320,7 @@ function secCost(res){
   return `<div class="grid costgrid">
       <div class="kpi"><div class="cost">${fmt(s.dzienMin)}–${fmt(s.dzienMax)} zł</div><div class="l">dziennie — prognoza (najbardziej prawdopodobnie ~${fmt(s.dzienSr)} zł)</div></div>
       <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (najbardziej prawdopodobnie ~${fmt(s.miesSr)} zł)</div></div>
-      ${s.okres ? `<div class="kpi"><div class="cost">~${fmt(s.okres.koszt)} zł</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmt(s.okresPrev.koszt)} zł` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
+      ${s.okres ? `<div class="kpi"><div class="cost">~${fmt(s.okres.koszt)} zł</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmt(s.okresPrev.koszt)} zł${s.prevStale ? " (niepełny)" : ""}` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
     </div>
     <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}. Widełki = krańce założeń; „najbardziej prawdopodobnie” = mediana modelu z zakładki „Prawdopodobny budżet” (te same liczby). ${coverNote(s)}</div>
     <h3 style="margin:16px 0 8px">Skąd ten CPM</h3>${cpmSource(s)}`;
@@ -2676,8 +2686,9 @@ function insights(list){
     out.push(`Twoja marka: ${posOf(r => r.s.aktywne)}. miejsce na ${list.length} pod względem aktywnych reklam, ${posOf(r => r.s.miesSr)}. pod względem budżetu; udział w wydatkach ~${totalCost ? Math.round(main.s.miesSr / totalCost * 100) : 0}%.`);
     const growing = list.filter(r => !r.isMain && r.dir === "up").map(r => esc(r.pageName));
     const basis = main.s.trendBase === "prev" ? "okres do okresu" : main.s.trendBase === "half" ? "w ramach okresu" : "90 dni";
+    // konkurenci z tendencją opartą na niepełnych danych nie trafiają do wniosku
     if (growing.length) out.push(`Konkurenci zwiększający aktywność (${basis}): ${growing.join(", ")}.`);
-    if (main.s.okres && main.s.okresPrev && main.s.okresPrev.koszt){ const c = Math.round((main.s.okres.koszt - main.s.okresPrev.koszt) / main.s.okresPrev.koszt * 100); out.push(`Twoja marka okres do okresu: szac. koszt ${c >= 0 ? "+" : ""}${c}%, nowe reklamy ${fmt(main.s.okresPrev.nowe)} → ${fmt(main.s.okres.nowe)}.`); }
+    if (main.s.okres && main.s.okresPrev && main.s.okresPrev.koszt && !main.s.prevStale){ const c = Math.round((main.s.okres.koszt - main.s.okresPrev.koszt) / main.s.okresPrev.koszt * 100); out.push(`Twoja marka okres do okresu: szac. koszt ${c >= 0 ? "+" : ""}${c}%, nowe reklamy ${fmt(main.s.okresPrev.nowe)} → ${fmt(main.s.okres.nowe)}.`); }
   }
   return `<ul class="lines">${out.map(x => `<li>${x}</li>`).join("")}</ul>`;
 }
@@ -2766,7 +2777,7 @@ function recommendations(list){
     add(1, "Monitoring", `${r.pageName} przyspiesza`, `Od ${r.changes.prevDate}: +${r.changes.newAds.length} nowych reklam, aktywnych ${r.changes.prev.aktywne} → ${r.changes.now.aktywne}.`, "Sprawdź nowe reklamy konkurenta (zakładka „Zmiany”) — może to start dużej kampanii lub promocji.");
   // przyspieszenie konkurenta okres do okresu
   for (const r of comps){ const a = r.s.okres, b = r.s.okresPrev;
-    if (a && b && a.nowe >= 10 && a.nowe >= b.nowe * 1.5 && (!b.koszt || a.koszt >= b.koszt * 1.2))
+    if (a && b && !r.s.prevStale && a.nowe >= 10 && a.nowe >= b.nowe * 1.5 && (!b.koszt || a.koszt >= b.koszt * 1.2))
       add(1, "Monitoring", `${r.pageName} przyspiesza okres do okresu`, `Nowe reklamy ${fmt(b.nowe)} → ${fmt(a.nowe)}, szac. koszt ~${fmtK(b.koszt)} → ~${fmtK(a.koszt)} zł (${iso(b.a)}–${iso(b.b)} vs ${iso(a.a)}–${iso(a.b)}).`, "Sprawdź nowe reklamy tego konkurenta — może to start dużej kampanii lub promocji; rozważ reakcję w tym samym oknie.");
   }
   if (!R.length) add(3, "Ogólne", "Brak wyraźnych sygnałów do zmiany", "Wskaźniki marki są zbliżone do konkurencji.", "Kontynuuj obecną strategię i powtórz analizę za 2–4 tygodnie, żeby wychwycić zmiany.");
@@ -2784,7 +2795,7 @@ function scoreCard(r, i){
     <div class="rp-sc-g">
       <div><b>${fmt(s.aktywne)}</b><span>aktywne reklamy</span></div>
       <div><b>~${fmtK(s.miesSr)} zł</b><span>szac. koszt / mies.</span></div>
-      ${s.okres ? `<div><b>${fmt(s.okres.nowe)}${s.okresPrev ? ` <small class="${s.okres.nowe >= s.okresPrev.nowe ? "up" : "down"}">${s.okresPrev.nowe ? (s.okres.nowe >= s.okresPrev.nowe ? "+" : "") + Math.round((s.okres.nowe - s.okresPrev.nowe) / s.okresPrev.nowe * 100) + "%" : ""}</small>` : ""}</b><span>nowe w okresie</span></div>` : `<div><b>${nd(s.n30)}</b><span>nowe w 30 dni</span></div>`}
+      ${s.okres ? `<div><b>${fmt(s.okres.nowe)}${s.okresPrev && !s.prevStale ? ` <small class="${s.okres.nowe >= s.okresPrev.nowe ? "up" : "down"}">${s.okresPrev.nowe ? (s.okres.nowe >= s.okresPrev.nowe ? "+" : "") + Math.round((s.okres.nowe - s.okresPrev.nowe) / s.okresPrev.nowe * 100) + "%" : ""}</small>` : ""}</b><span>nowe w okresie</span></div>` : `<div><b>${nd(s.n30)}</b><span>nowe w 30 dni</span></div>`}
       <div><b>${r.testing.killRate == null ? "—" : r.testing.killRate + "%"}</b><span>wyłączanych ≤7 dni</span></div>
       <div><b>~${fmtK(s.wyswMiesSr)}</b><span>szac. wyświetlenia / mies.</span></div>
       <div><b>${s.zOfertaProc}%</b><span>reklam z ofertą</span></div>
@@ -2802,12 +2813,13 @@ C.recs = list => `${blk("[c]Najważniejsze wnioski", insights(list))}
   ${blk("[c]Marki w skrócie", `<div class="rp-scgrid">${list.map(scoreCard).join("")}</div>`)}`;
 // porównanie okres do okresu dla wszystkich marek
 function periodCmpBrands(list){
-  const ch = (x, y) => !y ? (x ? '<span class="dl up">nowe</span>' : '<span class="dl na">—</span>') : (() => { const c = Math.round((x - y) / y * 100); return `<span class="dl ${c > 0 ? "up" : c < 0 ? "down" : ""}">${c > 0 ? "+" : ""}${c}%</span>`; })();
+  const stale = list.some(r => r.s.prevStale);
+  const ch = (x, y) => stale ? '<span class="dl na" title="poprzedni okres niepełny">—</span>' : !y ? (x ? '<span class="dl up">nowe</span>' : '<span class="dl na">—</span>') : (() => { const c = Math.round((x - y) / y * 100); return `<span class="dl ${c > 0 ? "up" : c < 0 ? "down" : ""}">${c > 0 ? "+" : ""}${c}%</span>`; })();
   const cell = (x, y, f) => `<span><b>${f(x)}</b><small>poprz. ${f(y)}</small>${ch(x, y)}</span>`;
   const a = list[0].s.okres, b = list[0].s.okresPrev;
   return `<div class="pcb"><div class="pcb-h"><span>Marka</span><span>Nowe reklamy</span><span>Emitowane</span><span>Szac. wyświetlenia</span><span>Szac. koszt</span></div>
     ${list.map((r, i) => { const x = r.s.okres, y = r.s.okresPrev; return `<div class="pcb-r"><span class="nm"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}</span>${cell(x.nowe, y.nowe, fmt)}${cell(x.emitowane, y.emitowane, fmt)}${cell(x.wysw, y.wysw, v => "~" + fmtK(v))}${cell(x.koszt, y.koszt, v => "~" + fmtK(v) + " zł")}</div>`; }).join("")}</div>
-    <div class="note">Wybrany okres ${iso(a.a)} – ${iso(a.b)} vs poprzedni ${iso(b.a)} – ${iso(b.b)}. Wyświetlenia i koszt: część zasięgu przypadająca na dni okna × założenia kosztu.</div>`;
+    <div class="note">${stale ? `<b>Uwaga:</b> poprzedni okres jest starszy niż ok. 12 miesięcy — Meta usuwa z biblioteki reklamy komercyjne ok. roku po zakończeniu emisji, więc jego liczby są zaniżone. Procentowej zmiany nie pokazujemy, żeby nie sugerować fałszywego wzrostu. ` : ""}Wybrany okres ${iso(a.a)} – ${iso(a.b)} vs poprzedni ${iso(b.a)} – ${iso(b.b)}. Wyświetlenia i koszt: część zasięgu przypadająca na dni okna × założenia kosztu.</div>`;
 }
 C.sov = list => {
   const keys = list[0].months.map(m => m.key);
@@ -3425,9 +3437,9 @@ function exportXlsx(asData = false){
     for (const m of u.mix) asmS.push([r.pageName, FMT_SHORT[m.fmt] || m.fmt, m.share, Math.round(m.cMin * 100) / 100, Math.round(m.cMax * 100) / 100, {format: "CPM formatu marki", marka: "CPM marki", globalne: "globalny"}[m.src], u.freqMin, u.freqMax, u.own && u.own.freq ? "marka" : "globalna"]);
     asmS.push([r.pageName, "EFEKTYWNIE (ważone zasięgiem)", 100, Math.round(u.cpmMin * 100) / 100, Math.round(u.cpmMax * 100) / 100, "", u.freqMin, u.freqMax, ""]); }
   if (results.some(r => r.s.okres)){
-    const pc = S["Porównanie okresów"] = [["Strona", "Wskaźnik", "Wybrany okres", "Od", "Do", "Poprzedni okres", "Od", "Do", "Zmiana", "Jednostka zmiany", "Tryb"]];
+    const pc = S["Porównanie okresów"] = [["Strona", "Wskaźnik", "Wybrany okres", "Od", "Do", "Poprzedni okres", "Od", "Do", "Zmiana", "Jednostka zmiany", "Tryb", "Uwaga"]];
     for (const r of results){ const a = r.s.okres, b = r.s.okresPrev; if (!a) continue;
-      for (const [l, k, kind] of PERIOD_METRICS) pc.push([r.pageName, l, a[k], iso(a.a), iso(a.b), b ? b[k] : null, b ? iso(b.a) : "", b ? iso(b.b) : "", b ? periodDelta(a[k], b[k], kind) : null, b ? (kind === "pp" ? "pp" : "%") : "", PER_MODE_NAMES[r.perMode] || ""]); }
+      for (const [l, k, kind] of PERIOD_METRICS) pc.push([r.pageName, l, a[k], iso(a.a), iso(a.b), b ? b[k] : null, b ? iso(b.a) : "", b ? iso(b.b) : "", b && !r.s.prevStale ? periodDelta(a[k], b[k], kind) : null, b ? (kind === "pp" ? "pp" : "%") : "", PER_MODE_NAMES[r.perMode] || "", r.s.prevStale ? "poprzedni okres starszy niż 12 mies. — dane niepełne, zmiany nie liczymy" : ""]); }
   }
   if (!window.XLSX){
     if (asData) return {name, ext: "csv", data: "\ufeff" + sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\n")};
@@ -3486,7 +3498,7 @@ function strategyFacts(list){
       add("Okres", "Emitowane reklamy w wybranym okresie", a.emitowane, "szt.", "c", b ? `poprzedni okres: ${b.emitowane}` : "");
       add("Okres", "Szac. wyświetlenia w wybranym okresie", a.wysw, "wyświetleń", "p", `${fmt(a.wyswMin)}–${fmt(a.wyswMax)}${b ? `; poprzedni okres: ${fmt(b.wysw)}` : ""}`);
       add("Okres", "Szac. koszt w wybranym okresie", a.koszt, "zł", "p", `${fmt(a.kosztMin)}–${fmt(a.kosztMax)} zł${b ? `; poprzedni okres: ${fmt(b.koszt)} zł` : ""}`);
-      if (b) add("Okres", "Zmiana szac. kosztu okres do okresu", periodDelta(a.koszt, b.koszt), "%", "p");
+      if (b) add("Okres", "Zmiana szac. kosztu okres do okresu", s.prevStale ? null : periodDelta(a.koszt, b.koszt), "%", "p", s.prevStale ? "nie liczymy — poprzedni okres starszy niż 12 mies. (dane w bibliotece niepełne)" : "");
     }
     add("Skala", "Nowe reklamy w 30 dni", s.n30, "szt.", "c", s.n30 == null ? "brak danych sprzed pobranego okresu" : `poprzednie 30 dni: ${s.p30 == null ? "brak danych" : s.p30}`);
     add("Skala", "Tendencja liczby nowych reklam (90 dni)", r.trend, "", "c");
@@ -4020,8 +4032,9 @@ function buildAiMd(o){
     const hasPrev = sel.some(r => r.s.okresPrev);
     L.push(`\n${hasPrev ? "Porównanie okresów" : "Wybrany okres"} ${TAG.c} (${PER_MODE_NAMES[sel[0].perMode] || ""}; wyświetlenia i koszt ${TAG.p} — część zasięgu przypadająca na dni okna):\n`);
     L.push(mdTable(["Marka", "Wskaźnik", `Okres ${iso(sel[0].s.okres.a)} – ${iso(sel[0].s.okres.b)}`, ...(hasPrev ? [`Poprzedni ${iso(sel[0].s.okresPrev.a)} – ${iso(sel[0].s.okresPrev.b)}`, "Zmiana"] : [])],
-      sel.flatMap(r => PERIOD_METRICS.filter(([, k]) => r.s.okres[k] != null).map(([l, k, kind]) => { const a = r.s.okres[k], b = r.s.okresPrev ? r.s.okresPrev[k] : null, d = periodDelta(a, b, kind);
+      sel.flatMap(r => PERIOD_METRICS.filter(([, k]) => r.s.okres[k] != null).map(([l, k, kind]) => { const a = r.s.okres[k], b = r.s.okresPrev ? r.s.okresPrev[k] : null, d = r.s.prevStale ? null : periodDelta(a, b, kind);
         return [r.pageName, l, fmt(a), ...(hasPrev ? [b == null ? "—" : fmt(b), d == null ? "—" : `${d > 0 ? "+" : ""}${d}${kind === "pp" ? " pp" : "%"}`] : [])]; }))));
+    if (sel.some(r => r.s.prevStale)) L.push(`- UWAGA: poprzedni okres jest starszy niż ok. 12 miesięcy; Meta usuwa reklamy komercyjne z biblioteki ok. roku po zakończeniu emisji, więc wartości poprzedniego okresu są ZANIŻONE. Nie interpretuj różnic jako wzrostu. Tendencja w danych = ostatnie 90 dni vs poprzednie 90.`);
     if (sel[0].perMode === "only") L.push(`- Tryb „tylko wybrany okres”: brak danych sprzed ${iso(sel[0].s.covMin)}. Pola „b.d.”/puste oznaczają brak danych, NIE zero reklam — nie wyciągaj wniosków o wzroście na tej podstawie.`);
   }
   L.push(`\nIndeks aktywności 0–100 ${TAG.p} (wagi: ${INDEX_PARTS.map(([, l, w]) => `${l.toLowerCase()} ${Math.round(w * 100)}%`).join(", ")}):\n`);
@@ -4398,7 +4411,8 @@ function syncPeriodUi(){
   $("periodHint").textContent = v === "all" ? "" : p ? `${p.min} – ${p.max} (${p.days} dni)` : "— podaj poprawny zakres dat";
   $("perModeRow").style.display = v === "all" ? "none" : "";
   const pp = p ? prevPeriod(p) : null, m = perModeVal();
-  $("perModeHint").textContent = !p ? "" : m === "prev" ? `porównanie z: ${pp.min} – ${pp.max} (pobierany dodatkowo)` : m === "all" ? `tło: cała dostępna historia; porównanie z ${pp.min} – ${pp.max}` : "tendencje tylko wewnątrz okresu — bez danych sprzed niego";
+  const ppStale = pp && pp.min < iso(todayUTC - 365 * DAY);
+  $("perModeHint").textContent = !p ? "" : ppStale && m !== "only" ? `uwaga: poprzedni okres (${pp.min} – ${pp.max}) jest starszy niż ok. 12 mies. — Meta trzyma reklamy ok. roku, więc bot nie pokaże zmiany %, a tendencję policzy jako 90 vs 90 dni` : m === "prev" ? `porównanie z: ${pp.min} – ${pp.max} (pobierany dodatkowo)` : m === "all" ? `tło: cała dostępna historia; porównanie z ${pp.min} – ${pp.max}` : "tendencje tylko wewnątrz okresu — bez danych sprzed niego";
   store.set(PERIOD_KEY, JSON.stringify({v, from: $("pFrom").value, to: $("pTo").value, mode: m}));
   if (typeof advSummary === "function") advSummary();
 }
