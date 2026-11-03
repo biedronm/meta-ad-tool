@@ -69,6 +69,15 @@ Jeśli bot trafił na złą stronę (np. fanpage zamiast oficjalnej), w zakładc
 ### Zapis i wczytanie analizy
 Po analizie przycisk **„Zapisz analizę”** zapisuje pobrane dane i ustawienia do pliku `.json`. **„Wczytaj analizę”** otwiera go później — bez tokenu i bez pobierania (dobre do prezentacji i jako archiwum). Wczytana analiza ma baner „stan danych na …”, a wszystkie wskaźniki liczone są na dzień pobrania. Kliknięcie „Analizuj” wraca do aktualnych danych.
 
+### Założenia kosztu dla poszczególnych marek (CPM, częstotliwość, CPM wg formatu)
+„Ustawienia zaawansowane” → „Założenia dla poszczególnych marek”. Lista ma **jeden wiersz na każdą markę** z formularza — Twoją markę i każdego konkurenta (licznik nad listą pokazuje np. „Pola dla 6 marek: Twoja marka + 5 konkurentów”). Wiersze dopisują się i znikają same, gdy zmieniasz listę konkurentów, dodajesz ich z „Odkryj konkurentów po frazie” albo wczytujesz zestaw; ta sama marka wpisana dwa razy to jeden wiersz, a wpisane wartości są przypisane do marki (nie do pozycji na liście), więc zmiana kolejności konkurentów ich nie przestawia. Dla każdej marki możesz wpisać:
+- **CPM marki** (min–max) i **częstotliwość marki** (min–max),
+- **CPM wg formatu kreacji** (przycisk „CPM wg formatu”): wideo, grafika, grafika z tekstem (mem), inne (karuzela, katalog, tekst).
+
+Jak bot dobiera CPM dla każdej reklamy: **1.** CPM formatu tej marki → **2.** CPM marki → **3.** założenia globalne (benchmark albo kalibracja). Puste pole dziedziczy wartość z poziomu wyżej — widać ją jako podpowiedź w polu. Pole uzupełnione częściowo albo błędnie (np. min > max, częstotliwość < 1) jest pomijane i oznaczone na czerwono — bot niczego nie zgaduje.
+
+Koszt marki liczony jest dla każdej reklamy z jej stawką; w wynikach widać to jako **efektywny CPM** (średnia stawek ważona udziałem formatów w zasięgu). W Przeglądzie pod szacunkiem kosztu i w zakładce „Prawdopodobny budżet” jest tabela **„Skąd ten CPM”**: format, udział w zasięgu, użyta stawka i jej źródło. Marka z własnymi założeniami ma w nagłówku znacznik „własne założenia kosztu”. CPM wg formatu działa tylko, gdy włączone jest „Pobieraj typ mediów” — inaczej bot wyraźnie pisze, że go nie użył. Założenia marek zapisują się w przeglądarce, w zestawach i w zapisanej analizie; trafiają też do Excela (arkusz „Założenia kosztu”), PDF i pliku dla AI.
+
 ### Kalibracja na realnym wydatku
 W „Ustawieniach zaawansowanych” → „Kalibracja na realnym wydatku”: wybierz markę, której prawdziwy wydatek znasz (np. klienta agencji z Menedżera Reklam), wpisz kwotę i okno (ostatnie 30 dni albo wybrany okres) i kliknij „Skalibruj CPM”. Bot wylicza efektywny CPM = wydatek ÷ (szacowane wyświetlenia ÷ 1000) i ustawia CPM ±15% wokół niego dla wszystkich marek. Ręczna zmiana CPM albo wybór benchmarku wyłącza kalibrację.
 
