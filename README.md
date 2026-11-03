@@ -19,6 +19,7 @@ Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (F
 9. [Ograniczenia danych — przeczytaj przed wysłaniem raportu klientowi](#9-ograniczenia-danych--przeczytaj-przed-wysłaniem-raportu-klientowi)
 10. [Rozwiązywanie problemów](#10-rozwiązywanie-problemów)
 11. [Prywatność i bezpieczeństwo](#11-prywatność-i-bezpieczeństwo)
+12. [Najczęstsze pytania (FAQ)](#12-najczęstsze-pytania-faq)
 
 ---
 
@@ -250,6 +251,101 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 
 ## 11. Prywatność i bezpieczeństwo
 
-- Plik działa w całości w Twojej przeglądarce. Dane idą tylko między przeglądarką a Meta (graph.facebook.com). Biblioteka do Excela ładuje się z cdnjs, czcionka z Google Fonts.
+- Plik działa w całości w Twojej przeglądarce. Dane idą tylko między przeglądarką a Meta (graph.facebook.com). Biblioteka do Excela ładuje się z cdnjs, czcionki z Google Fonts, a przy pakiecie do strategii — biblioteki do PNG (jsdelivr) i ZIP (cdnjs).
 - Token zapisuje się tylko lokalnie i tylko wtedy, gdy zaznaczysz „Zapamiętaj token”. **Nie wysyłaj tokena nikomu** — działa jak hasło.
 - Zestawy, migawki, ustawienia i logo do PDF są w pamięci przeglądarki (localStorage) na tym komputerze.
+
+---
+
+## 12. Najczęstsze pytania (FAQ)
+
+Odpowiedzi na pytania, które zwykle padają przy prezentacji narzędzia — zarządowi, zespołowi albo klientowi.
+
+### O danych
+
+**Skąd narzędzie bierze dane? Czy to oficjalne źródło?**
+Z oficjalnego **Meta Ad Library API** — tego samego źródła, które zasila publiczną Bibliotekę Reklam Meta. Dostęp wymaga tokenu konta z potwierdzoną tożsamością (wymóg Meta). Nie ma tu scrapowania stron ani nieoficjalnych narzędzi — bot pobiera te same dane, które każdy może zobaczyć w Bibliotece Reklam, tylko automatycznie i dla wielu marek naraz.
+
+**Jakie dane podaje Meta, a jakich nie?**
+Podaje: listę reklam, daty emisji, teksty, platformy, a dla reklam emitowanych w UE także **zasięg** (liczbę unikalnych osób), rozkład wieku i płci oraz płatnika. **Nie podaje** dla reklam komercyjnych: wydatków, wyświetleń, kliknięć ani konwersji. Wydatki i wyświetlenia są publiczne tylko dla reklam społecznych i politycznych — bot pokazuje je w osobnej zakładce.
+
+**Dlaczego zasięg dotyczy tylko UE?**
+Bo Meta publikuje zasięg reklam komercyjnych w ramach unijnego aktu o usługach cyfrowych (DSA). Dla reklam emitowanych wyłącznie poza UE zasięgu nie ma. Bot pokazuje, ile aktywnych reklam ma dane o zasięgu („pokrycie”), a brakujące doszacowuje proporcjonalnie — i mówi to wprost pod każdym szacunkiem.
+
+**Czy bot widzi reklamy, które już się skończyły?**
+Tak, ale tylko przez ok. **rok od zakończenia emisji** — potem Meta usuwa reklamy komercyjne z biblioteki. Dlatego okresy starsze niż ok. 12 miesięcy są niepełne, a bot nie liczy dla nich zmian procentowych (zobacz pytanie o porównania).
+
+**Czy widać kreacje (grafiki, wideo)?**
+Bot pokazuje teksty, nagłówki, format (wideo/grafika) i link do każdej reklamy w Bibliotece Reklam. Samych obrazków API nie udostępnia — podgląd otwiera się w Bibliotece po kliknięciu linku.
+
+**Czy widać wyniki konkurencji — CTR, sprzedaż, ROAS?**
+Nie. Tych danych Meta nie udostępnia nikomu poza właścicielem konta. Narzędzie pokazuje, **co i jak intensywnie** konkurencja reklamuje, a nie jak skuteczne są te reklamy. Pośrednią wskazówką są evergreeny — reklamy działające bardzo długo zwykle się opłacają, bo inaczej zostałyby wyłączone.
+
+### O szacunkach kosztu i wyświetleń
+
+**Czy to są prawdziwe wydatki konkurencji?**
+Nie — to **szacunek**, wyraźnie oznaczony jako szacunek na ekranie, w PDF i w Excelu. Meta nie podaje wydatków reklam komercyjnych, więc bot wylicza je z danych, które są publiczne (zasięg), i z założeń rynkowych (CPM, częstotliwość).
+
+**Jak dokładnie liczony jest koszt?**
+W trzech krokach:
+1. **Zasięg dzienny:** zasięg każdej aktywnej reklamy z Meta dzielony przez liczbę dni jej emisji i zsumowany dla wszystkich aktywnych reklam marki.
+2. **Wyświetlenia:** zasięg × częstotliwość (ile razy przeciętna osoba widzi reklamę).
+3. **Koszt:** wyświetlenia ÷ 1000 × CPM (koszt tysiąca wyświetleń).
+
+Wynik to **widełki** (od najniższych do najwyższych założeń) i wartość **najbardziej prawdopodobna** (mediana modelu). Zakładka „Prawdopodobny budżet” pokazuje dodatkowo przedziały z prawdopodobieństwem, np. „80% szans, że marka wydaje 180–520 tys. zł miesięcznie”.
+
+**Skąd bierzecie CPM i częstotliwość?**
+Domyślnie z **benchmarków rynkowych** dla kraju i branży (z korektą sezonową, np. Q4). Można je zastąpić:
+- **kalibracją** — wpisujesz realny wydatek jednej marki (np. naszego klienta z Menedżera Reklam), a bot wylicza z niego efektywny CPM dla tej branży i rynku;
+- **założeniami dla konkretnej marki** — własny CPM i częstotliwość, a nawet osobny CPM dla wideo, grafik i innych formatów.
+
+Wszystkie założenia są zapisane przy wynikach (tabela „Skąd ten CPM”), więc zawsze wiadomo, na czym oparto liczbę.
+
+**Jak bardzo można ufać tym liczbom?**
+Jako **rzędowi wielkości i do porównań między markami** — bardzo dobrze, bo wszystkie marki liczone są tą samą metodą. Jako dokładnej kwoty — ostrożnie: bez kalibracji błąd może sięgać kilkudziesięciu procent. Najbardziej podnosi trafność kalibracja na realnym wydatku klienta agencji. Bot nigdy nie podaje jednej „pewnej” liczby bez widełek.
+
+**Skąd wyświetlenia, skoro Meta ich nie podaje?**
+To szacunek: zasięg z Meta × przyjęta częstotliwość. Te same założenia co w koszcie, więc obie liczby są spójne (koszt = wyświetlenia × CPM).
+
+### O analizie i wnioskach
+
+**Czy wnioski i rekomendacje pisze sztuczna inteligencja?**
+Nie. Narzędzie działa **bez AI**. Wnioski powstają z jawnych reguł, np. „jeśli konkurencja wyłącza w ciągu tygodnia o co najmniej 15 punktów procentowych więcej reklam niż my → rekomendacja: testuj więcej wariantów”. Dzięki temu każdy wniosek da się uzasadnić konkretną liczbą, a wyniki są powtarzalne. Dla pogłębionej interpretacji jest osobny eksport — plik z danymi i gotowym promptem do wklejenia w Claude czy ChatGPT.
+
+**Jak odróżnić twarde dane od interpretacji?**
+Funkcją **Lupa detektywa**. Oznacza każdy element wyniku jako: czyste dane z Meta, obliczenia, szacunki/poszlaki albo dedukcję (wnioski). Oznaczenia widać na ekranie i w PDF.
+
+**Jak liczona jest tendencja („rośnie / spada”)?**
+Porównujemy liczbę **nowych reklam** w dwóch okresach tej samej długości: domyślnie ostatnie 90 dni z poprzednimi 90 dniami (albo wybrany okres z poprzednim analogicznym). Zmiana o co najmniej 20% to „rośnie”/„spada”, mniejsza — „stabilna”.
+
+**Dlaczego nie ma porównania „ten rok vs zeszły rok”?**
+Bo zeszłoroczne reklamy są w bibliotece w dużej części już usunięte (Meta trzyma je ok. roku). Porównanie dawałoby sztuczne wzrosty rzędu kilkuset procent. W takiej sytuacji bot nie pokazuje procentu zmiany i liczy tendencję jako 90 vs 90 dni — oba okresy są w pełni dostępne.
+
+**Co to jest indeks aktywności 0–100?**
+Wskaźnik autorski, który łączy w jedną liczbę: skalę (liczbę aktywnych reklam), zasięg, świeżość kreacji, intensywność testów, regularność emisji i różnorodność platform/formatów. Służy do **porównywania marek między sobą**, nie jest miarą skuteczności. Wagi składowych są opisane w raporcie.
+
+**Co oznacza „próba” albo żółta ramka przy marce?**
+Że analiza nie objęła wszystkich danych — np. ustawiono limit liczby reklam, wybrano okres albo dane są starsze niż rok. Ramka mówi, czego dotyczy ograniczenie i które liczby mogą być zaniżone.
+
+### O pracy z narzędziem
+
+**Ile trwa analiza?**
+Zwykle od kilkunastu sekund do kilku minut — zależy od liczby marek i liczby ich reklam. Marki pobierane są równolegle (domyślnie 3 naraz). Dla bardzo dużych marek można ustawić limit reklam.
+
+**Czy możemy użyć wyników w raporcie dla klienta?**
+Tak — do tego służą raport PDF (z metodologią i zastrzeżeniami), Excel z samymi wartościami i pakiet do strategii z wykresami PNG. Przy kwotach zawsze podawaj przedział i dopisek „szacunek na podstawie Biblioteki Reklam Meta”. Rekomendacje bota traktuj jako punkt wyjścia do własnej analizy, nie gotową strategię.
+
+**Czym to się różni od zwykłego przeglądania Biblioteki Reklam?**
+Biblioteka pokazuje reklamy jedna po drugiej. Narzędzie liczy je za nas: ile reklam działa, jak długo żyją, jakie oferty i rabaty komunikują, do kogo docierają, ile mniej więcej to kosztuje — i zestawia kilka marek obok siebie. Ręcznie dla jednej marki to zwykle godzina lub więcej pracy, tutaj — kilka minut dla kilku marek.
+
+**Czy można analizować rynki poza Polską?**
+Tak — wybiera się dowolne kraje, całą UE albo cały świat. Pamiętaj tylko, że zasięg (a więc i szacunek kosztu) Meta podaje wyłącznie dla emisji w UE.
+
+**Jak sprawdzić, że narzędzie liczy poprawnie?**
+Najprościej: porównaj liczbę aktywnych reklam 2–3 marek z Biblioteką Reklam na stronie Meta (ten sam kraj) — powinna się zgadzać. Szacunek kosztu sprawdzisz kalibracją na kliencie, którego realny wydatek znamy. Samo narzędzie przechodzi zestaw testów: ręcznie przeliczony zestaw danych wzorcowych, zgodność liczb między ekranem, PDF, Excelem i plikiem dla AI oraz model prawdopodobieństwa sprawdzony niezależną symulacją.
+
+**Czy to coś kosztuje i czy dane są bezpieczne?**
+Narzędzie i API Meta są bezpłatne. Wszystko działa lokalnie w przeglądarce — dane idą tylko między przeglądarką a Meta, nic nie trafia na nasz ani cudzy serwer. Token działa jak hasło: zapisuje się tylko lokalnie i tylko na życzenie.
+
+**Czy da się pokazać analizę bez internetu albo bez tokenu?**
+Tak — „Zapisz analizę” zapisuje pobrane dane do pliku, a „Wczytaj analizę” otwiera je później bez tokenu i bez pobierania (np. na prezentacji). Wczytana analiza jest oznaczona datą stanu danych.
