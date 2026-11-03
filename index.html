@@ -732,6 +732,30 @@ body.is-loading #status{display:none}
 
 /* ---------------------------------------------------------------- kalibracja */
 .calib{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+
+/* ---------------------------------------------------------------- założenia marek */
+.tag.own{background:color-mix(in srgb,var(--c5) 14%,transparent);color:var(--c5)}
+.asm{margin-top:12px;display:grid;gap:8px}
+.asm-cnt{font-size:12px;color:var(--muted)}
+.asm-h,.asm-r{display:grid;grid-template-columns:minmax(120px,1.4fr) repeat(4,minmax(70px,.7fr)) 150px;gap:8px;align-items:center}
+.asm-h{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 11px}
+.asm-b{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg-2)}
+.asm-r .nm{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asm-r input,.asm-fr input{padding:6px 8px;font-size:12.5px}
+.asm-f{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.asm-b.open .asm-f{display:block}
+.asm-b.open .asm-t{border-color:var(--accent);color:var(--accent)}
+.asm-fr{display:grid;grid-template-columns:minmax(120px,1.4fr) minmax(70px,.7fr) minmax(70px,.7fr) minmax(70px,.7fr) minmax(70px,.7fr) 150px;gap:8px;align-items:center;margin-bottom:6px;font-size:12.5px;color:var(--muted)}
+.asm-err{display:flex;flex-direction:column;gap:2px}
+.asm-err span{font-size:12px;color:var(--bad);margin-top:6px}
+.mixt{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mx-h,.mx-r{display:grid;grid-template-columns:1.3fr .8fr 1fr 1.6fr;gap:10px;padding:7px 12px;align-items:center;font-size:12.5px}
+.mx-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mx-r{border-top:1px solid var(--line)}
+.mx-r > span:nth-child(2),.mx-r > span:nth-child(3){font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mx-t{background:var(--bg-2);font-weight:500}
+@media (max-width:640px){.asm-h{display:none}.asm-r{grid-template-columns:1fr 1fr}.asm-r .nm{grid-column:1/-1}.asm-fr{grid-template-columns:1fr 1fr}.asm-fr span{grid-column:1/-1}.mx-h{display:none}.mx-r{grid-template-columns:1fr 1fr}}
+.rp .mx-h,.rp .mx-r{font-size:8pt;padding:4px 8px}
 </style>
 </head>
 <body>
@@ -981,6 +1005,11 @@ body.is-loading #status{display:none}
           <div><label for="ver">Wersja Graph API</label><input id="ver" value="v25.0"><div class="hint">Przy błędzie wersji wpisz np. v24.0</div></div>
         </div>
         <div class="hint" id="cpmHint"></div>
+      <div class="calib" id="asmBox">
+        <div class="section-lbl">Założenia dla poszczególnych marek</div>
+        <div class="hint" style="margin-top:4px">Każda marka może mieć własny CPM i częstotliwość, a CPM można też rozbić na formaty kreacji. Kolejność, w jakiej bot dobiera CPM dla każdej reklamy: <b>1.</b> CPM formatu tej marki → <b>2.</b> CPM marki → <b>3.</b> założenia globalne powyżej (benchmark albo kalibracja). Puste pole = dziedziczy wartość z poziomu wyżej (widać ją jako podpowiedź w polu). Zmiany przeliczają wyniki od razu, bez ponownego pobierania.</div>
+        <div id="asmRows" class="asm"></div>
+      </div>
       <div class="calib" id="calib">
         <div class="section-lbl">Kalibracja na realnym wydatku</div>
         <div class="hint" style="margin-top:4px">Znasz prawdziwy wydatek jednej z analizowanych marek (np. klienta agencji z Menedżera Reklam)? Wpisz go — bot wyliczy z niego efektywny CPM dla tej branży i rynku i zastosuje go do wszystkich marek zamiast benchmarku.</div>
@@ -1312,7 +1341,7 @@ function calibrate(){
   if (basis === "period" && r.s.okres) imps = r.s.okres.wysw;
   else {
     const w = {a: todayUTC - 29 * DAY, b: todayUTC};
-    imps = periodStats(r.rowsAll, w, opts()).wysw;
+    imps = periodStats(r.rowsAll, w, optsFor(r)).wysw;
   }
   if (!(imps > 0)) return $("calHint").textContent = "Ta marka nie ma danych o zasięgu w tym oknie — nie da się skalibrować.";
   const cpm = spend / (imps / 1000);
@@ -1322,17 +1351,18 @@ function calibrate(){
   $("bench").value = "custom";
   CALIB = {brand: r.pageName, spend, basis, cpm, imps};
   $("benchHint").textContent = "Założenia z kalibracji — zmiana ręczna albo wybór benchmarku wyłącza kalibrację.";
-  $("calHint").innerHTML = `Efektywny CPM ~<b>${cpm.toFixed(1).replace(".", ",")} zł</b> (${fmtK(imps)} szac. wyświetleń przy częstotliwości ${String(Math.round(assump(opts()).fMid * 100) / 100).replace(".", ",")}). Ustawiono CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł dla wszystkich marek.`;
+  $("calHint").innerHTML = `Efektywny CPM ~<b>${cpm.toFixed(1).replace(".", ",")} zł</b> (${fmtK(imps)} szac. wyświetleń przy częstotliwości ${String(Math.round(assump(optsFor(r)).fMid * 100) / 100).replace(".", ",")}). Ustawiono globalny CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł${results.some(x => asmCount(x.key)) ? " — marki z własnymi założeniami CPM zachowują swoje wartości" : " dla wszystkich marek"}.${asmCount(r.key) && brandAsm(r.key).cpm ? " <b>Uwaga: kalibrowana marka ma własny CPM — zmień go albo wyczyść, żeby kalibracja jej dotyczyła.</b>" : ""}`;
   rerender(); if (typeof advSummary === "function") advSummary();
 }
 $("calGo").onclick = calibrate;
 $("calClear").onclick = () => { CALIB = null; $("bench").dispatchEvent(new Event("change")); $("calHint").textContent = "Przywrócono benchmark."; };
 
 // ================================================================ zapis i wczytanie analizy (tryb archiwum)
-const AN_KEEP = ["isMain","brand","pageName","pageId","region","lang","langCode","cands","demoMissing","mediaLoaded","pol","polLoaded","rowsAll","limit","limited","period","perMode","prevPer","fetchWin","changes"];
+const AN_KEEP = ["key","isMain","brand","pageName","pageId","region","lang","langCode","cands","demoMissing","mediaLoaded","pol","polLoaded","rowsAll","limit","limited","period","perMode","prevPer","fetchWin","changes"];
 function saveAnalysis(){
   const main = results.find(r => r.isMain) || results[0];
   const data = {app: "meta-ads-bot", v: 1, asOf: iso(todayUTC), savedAt: new Date().toISOString(),
+    asm: Object.fromEntries(results.filter(r => asmMap[r.key]).map(r => [r.key, asmMap[r.key]])),
     settings: {cpmMin: $("cpmMin").value, cpmMax: $("cpmMax").value, freqMin: $("freqMin").value, freqMax: $("freqMax").value, bench: $("bench").value, evDays: $("evDays").value, calib: CALIB},
     results: results.map(r => Object.fromEntries(AN_KEEP.map(k => [k, r[k]])))};
   const a = document.createElement("a");
@@ -1351,8 +1381,10 @@ async function loadAnalysis(e){
     for (const k of ["cpmMin", "cpmMax", "freqMin", "freqMax", "evDays"]) if (st[k] != null) $(k).value = st[k];
     if (st.bench && [...$("bench").options].some(o => o.value === st.bench)) $("bench").value = st.bench;
     CALIB = st.calib || null;
+    if (d.asm){ Object.assign(asmMap, d.asm); store.set(ASM_KEY, JSON.stringify(asmMap)); }
     if ($("fEv")) $("fEv").value = $("evDays").value;
-    results = d.results.map(r => { const x = {...r, uid: ++uidSeq}; reanalyze(x); return x; });
+    results = d.results.map(r => { const x = {...r, uid: ++uidSeq}; if (!x.key) x.key = x.isMain ? "__main__" : limKey(x.brand, x.pageId); reanalyze(x); return x; });
+    renderAsm();
     view.top = results.length > 1 ? "cmp" : results[0].uid;
     renderAll(); $("resultsCard").scrollIntoView({behavior: "smooth", block: "start"});
     setStatus(`Wczytano analizę z pliku „${file.name}” — stan danych na ${d.asOf}. Wskaźniki liczone na ten dzień; „Analizuj” pobierze aktualne dane.`);
@@ -1564,6 +1596,8 @@ const conceptKey = r => (r.body || r.title || "").toLowerCase().replace(/[^\p{L}
 const INDEX_PARTS = [["skala","Skala (aktywne reklamy)",.25],["zasieg","Zasięg dzienny",.25],["swiezosc","Świeżość kreacji",.15],["testowanie","Testowanie (koncepty 90 dni)",.15],["regularnosc","Regularność (miesiące z emisją)",.10],["roznorodnosc","Różnorodność (platformy, formaty)",.10]];
 const indexLabel = v => v >= 81 ? "bardzo wysoka" : v >= 61 ? "wysoka" : v >= 31 ? "średnia" : "niska";
 
+const nr = v => String(Math.round(v * 100) / 100).replace(".", ",");
+const FMT_SHORT = {VIDEO: "wideo", IMAGE: "grafika", MEME: "grafika z tekstem", OTHER: "inne", UNKNOWN: "format nieznany"};
 // założenia kosztu w jednej, wspólnej postaci — identycznej jak w modelu prawdopodobieństwa
 // (środek = średnia geometryczna krańców, czyli mediana modelu; częstotliwość nie mniejsza niż 1)
 function assump(o){
@@ -1571,18 +1605,28 @@ function assump(o){
   const fMin = Math.max(1, Math.min(o.freqMin, o.freqMax)), fMax = Math.max(fMin, o.freqMax, o.freqMin);
   return {cMin, cMax, fMin, fMax, cMid: Math.sqrt(cMin * cMax), fMid: Math.sqrt(fMin * fMax)};
 }
+// CPM konkretnej reklamy — hierarchia: CPM formatu tej marki → CPM marki → założenia globalne
+function cpmOf(row, o){ const f = o.fmt && row.media && o.fmt[row.media]; return f || [o.cpmMin, o.cpmMax]; }
+// efektywny CPM marki: średnia ważona udziałem reklam w zasięgu (koszt jest liniowy względem CPM, więc to dokładnie ten sam wynik co suma po reklamach)
+function effO(o, items){
+  if (!o.fmt) return o;
+  let W = 0, a = 0, b = 0;
+  for (const {row, w} of items){ if (!(w > 0)) continue; const [x, y] = cpmOf(row, o); W += w; a += w * x; b += w * y; }
+  return W ? {...o, cpmMin: a / W, cpmMax: b / W} : o;
+}
 // statystyki jednego okna czasu: reklamy emitowane w oknie, nowe, zasięg/wyświetlenia/koszt przypadające na okno (zasięg rozłożony równo na dni emisji)
 function periodStats(rows, w, o){
   const inP = rows.filter(r => rowIn(r, w)), started = inP.filter(r => r.start >= w.a);
   let reach = 0, withR = 0;
+  const wts = [];
   for (const r of inP){
     if (r.rpd == null) continue; withR++;
     const ov = Math.round((Math.min(r.end, w.b) - Math.max(r.start, w.a)) / DAY) + 1;
-    if (ov > 0) reach += r.rpd * ov;
+    if (ov > 0){ reach += r.rpd * ov; wts.push({row: r, w: r.rpd * ov}); }
   }
   const cover = inP.length ? withR / inP.length : 1;
   if (cover > 0 && cover < 1) reach /= cover;   // reklamy bez danych o zasięgu doszacowane proporcjonalnie (jak w modelu budżetu)
-  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(o);
+  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(effO(o, wts));
   const disc = inP.map(r => discountsIn(r.fullText)).filter(d => d.length).map(d => Math.max(...d));
   const mediaKnown = inP.some(r => r.media);
   return {
@@ -1662,7 +1706,15 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false, ctx = {}){
   // pokrycie danymi o zasięgu: aktywne reklamy bez zasięgu (np. emitowane poza UE) doszacowujemy proporcjonalnie — tak samo jak model budżetu
   const actWithR = act.filter(r => r.rpd != null).length, cover = act.length ? actWithR / act.length : 1;
   const dailyEst = cover > 0 && cover < 1 ? dailyReach / cover : dailyReach;
-  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(o);
+  const oC = effO(o, act.filter(r => r.rpd != null).map(r => ({row: r, w: r.rpd})));
+  const {cMin, cMax, fMin, fMax, cMid, fMid} = assump(oC);
+  // skład CPM: z jakich formatów i z jakiego źródła pochodzi CPM marki (do wyjaśnienia w raporcie)
+  const cpmMix = (() => {
+    const g = {}; let W = 0;
+    for (const r of act){ if (r.rpd == null) continue; const k = r.media || "UNKNOWN"; (g[k] ||= {w: 0}).w += r.rpd; W += r.rpd; }
+    return Object.entries(g).map(([k, v]) => { const own = o.fmt && o.fmt[k]; const [x, y] = own || [o.cpmMin, o.cpmMax];
+      return {fmt: k, share: W ? Math.round(v.w / W * 100) : 0, cMin: x, cMax: y, src: own ? "format" : (o.own && o.own.cpm) ? "marka" : "globalne"}; }).sort((a, b) => b.share - a.share);
+  })();
   const dayMin = dailyEst * fMin / 1000 * cMin, dayMax = dailyEst * fMax / 1000 * cMax, dayMid = dailyEst * fMid / 1000 * cMid;
   const coverAll = n ? reaches.length / n : 1, reachSumEst = reaches.length ? reaches.reduce((a, b) => a + b, 0) / coverAll : null;
   const w0 = today - 29*DAY;
@@ -1857,12 +1909,13 @@ function analyze(rowsAll, o, f, brandName = "", mediaLoaded = false, ctx = {}){
       pokrycie: {aktywne: act.length, zZasiegiem: actWithR, proc: Math.round(cover * 100), wszystkie: n, wszystkieZZasiegiem: reaches.length},
       wysw30: Math.round(reach30 * fMid),
       freqMin: fMin, freqMax: fMax,
+      used: {cpmMin: cMin, cpmMax: cMax, freqMin: fMin, freqMax: fMax, own: o.own || null, mix: cpmMix},
       wyswLacznie: reachSumEst != null ? Math.round(reachSumEst * fMid) : null,
       wyswLacznieMin: reachSumEst != null ? Math.round(reachSumEst * fMin) : null,
       wyswLacznieMax: reachSumEst != null ? Math.round(reachSumEst * fMax) : null,
       wideo: mediaLoaded ? pct(media.VIDEO || 0, n) : null,
       indeks: index,
-      zalozenia: `CPM ${String(o.cpmMin).replace(".", ",")}–${String(o.cpmMax).replace(".", ",")} PLN, częstotliwość ${String(o.freqMin).replace(".", ",")}–${String(o.freqMax).replace(".", ",")}${o.label ? ` (${o.label})` : ""}`
+      zalozenia: `CPM ${nr(o.cpmMin)}–${nr(o.cpmMax)} PLN${o.fmt ? ` (CPM wg formatu: ${Object.entries(o.fmt).map(([k, v]) => `${FMT_SHORT[k]} ${nr(v[0])}–${nr(v[1])}`).join(", ")}; efektywnie, ważone zasięgiem: ${nr(cMin)}–${nr(cMax)} zł)` : ""}, częstotliwość ${nr(o.freqMin)}–${nr(o.freqMax)}${o.label ? ` (${o.label})` : ""}`
     }
   };
 }
@@ -1906,7 +1959,7 @@ function handleSnapshot(res){
   const now = Date.now();
   const prev = [...list].reverse().find(s => now - s.ts > 20 * 3600 * 1000) || null;
   const evD = evDaysVal();
-  const base = analyze(res.rowsAll, opts(), {days: 0, platform: "", media: "", activeOnly: false, evDays: evD}, res.pageName, res.mediaLoaded);
+  const base = analyze(res.rowsAll, optsFor(res), {days: 0, platform: "", media: "", activeOnly: false, evDays: evD}, res.pageName, res.mediaLoaded);
   const snap = {ts: now, date: iso(todayUTC), active: res.rowsAll.filter(r => r.active).map(r => r.id), all: res.rowsAll.map(r => r.id),
     evDays: evD, ev: res.rowsAll.filter(r => r.days >= evD).map(r => r.id), s: {aktywne: base.s.aktywne, lacznie: base.s.lacznie, miesSr: base.s.miesSr, evergreeny: base.s.evergreeny, n30: base.s.n30, dziennyZasieg: base.s.dziennyZasieg}};
   if (list.length && now - list[list.length - 1].ts < 20 * 3600 * 1000) list[list.length - 1] = snap; else list.push(snap);
@@ -2161,7 +2214,7 @@ function brandHead(res, idx){
   const fl = filterLabel();
   return `<div class="title-row">
       <div>
-        <h2><span class="dot" style="background:${color(idx)}"></span>${esc(res.pageName)}${res.isMain ? '<span class="tag">Twoja marka</span>' : '<span class="tag">konkurent</span>'}</h2>
+        <h2><span class="dot" style="background:${color(idx)}"></span>${esc(res.pageName)}${res.isMain ? '<span class="tag">Twoja marka</span>' : '<span class="tag">konkurent</span>'}${res.s && res.s.used && res.s.used.own && (res.s.used.own.cpm || res.s.used.own.freq || res.s.used.own.fmt) ? '<span class="tag own">własne założenia kosztu</span>' : ""}</h2>
         <div class="sub">Zapytanie: „${esc(res.brand)}” · page_id ${esc(res.pageId)} · emisja: ${esc(regionLabel(res.region))}${res.lang ? ` · język: ${esc(res.lang)}` : ""} · ${iso(todayUTC)}${fl ? ` · filtr: ${esc(fl)}` : ""}</div>
         ${asofWarn()}${periodWarn([res])}
         ${res.limited ? `<div class="limwarn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Próba: ${fmt(res.limited.n)} reklam (limit ${fmt(res.limited.limit)}; ${fmt(res.limited.active)} aktywnych). Marka ma więcej reklam — liczby dotyczą próby, nie całej biblioteki.</div>` : ""}
@@ -2243,6 +2296,15 @@ function coverNote(s){
   const p = s.pokrycie; if (!p || !p.aktywne) return "";
   return p.proc >= 100 ? `Zasięg z Meta ma wszystkie ${fmt(p.aktywne)} aktywne reklamy.` : `Zasięg z Meta ma ${fmt(p.zZasiegiem)} z ${fmt(p.aktywne)} aktywnych reklam (${p.proc}%) — Meta podaje go tylko dla emisji w UE; brakujące doszacowano proporcjonalnie${p.proc < 60 ? ". <b>Niskie pokrycie — szacunek mniej pewny.</b>" : "."}`;
 }
+// skąd wziął się CPM marki: formaty, ich udział w zasięgu i źródło stawki
+function cpmSource(s){
+  const u = s.used; if (!u || !u.mix || !u.mix.length) return "";
+  const SRC = {format: "CPM formatu tej marki", marka: "CPM marki", globalne: "globalny (benchmark/kalibracja)"};
+  const rows = u.mix.map(m => `<div class="mx-r"><span>${FMT_SHORT[m.fmt] || m.fmt}</span><span>${m.share}%</span><span>${nr(m.cMin)}–${nr(m.cMax)} zł</span><span class="sub">${SRC[m.src]}</span></div>`).join("");
+  const warn = u.own && u.own.fmtUnused ? `<div class="note"><b>CPM wg formatu ustawiony, ale nieużyty</b> — formaty reklam tej marki nie zostały pobrane (wyłączone „Pobieraj typ mediów”). Użyto CPM marki/globalnego.</div>` : "";
+  return `<div class="mixt"><div class="mx-h"><span>Format</span><span>Udział w zasięgu</span><span>CPM</span><span>Źródło stawki</span></div>${rows}
+    <div class="mx-r mx-t"><span>Efektywnie (ważone zasięgiem)</span><span></span><span>${nr(u.cpmMin)}–${nr(u.cpmMax)} zł</span><span class="sub">częstotliwość ${nr(u.freqMin)}–${nr(u.freqMax)}${u.own && u.own.freq ? " (marki)" : " (globalna)"}</span></div></div>${warn}`;
+}
 function secCost(res){
   const s = res.s;
   return `<div class="grid costgrid">
@@ -2250,7 +2312,8 @@ function secCost(res){
       <div class="kpi"><div class="cost">${fmt(s.miesMin)}–${fmt(s.miesMax)} zł</div><div class="l">miesięcznie — prognoza przy obecnej aktywności (najbardziej prawdopodobnie ~${fmt(s.miesSr)} zł)</div></div>
       ${s.okres ? `<div class="kpi"><div class="cost">~${fmt(s.okres.koszt)} zł</div><div class="l">w wybranym okresie (${s.okres.days} dni)${s.okresPrev ? `; poprzedni ~${fmt(s.okresPrev.koszt)} zł` : ""}</div></div>` : `<div class="kpi"><div class="cost">~${fmt(s.ost30)} zł</div><div class="l">ostatnie 30 dni, wszystkie reklamy</div></div>`}
     </div>
-    <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}. Widełki = krańce założeń; „najbardziej prawdopodobnie” = mediana modelu z zakładki „Prawdopodobny budżet” (te same liczby). ${coverNote(s)}</div>`;
+    <div class="note">Estymacja, nie dane Meta: suma dziennego zasięgu aktywnych reklam (~${fmt(s.dziennyZasieg)}; ta sama osoba może być liczona w kilku reklamach) × częstotliwość × CPM. Założenia: ${esc(s.zalozenia)}. Widełki = krańce założeń; „najbardziej prawdopodobnie” = mediana modelu z zakładki „Prawdopodobny budżet” (te same liczby). ${coverNote(s)}</div>
+    <h3 style="margin:16px 0 8px">Skąd ten CPM</h3>${cpmSource(s)}`;
 }
 function indexBlock(res, {compact = false} = {}){
   const p = res.idx.parts;
@@ -2437,9 +2500,11 @@ function normInv(p){
 }
 const PROB_LEVELS = [99, 95, 90, 80, 50];
 const probState = {};   // lokalne korekty założeń — tylko dla zakładki budżetu, osobno dla każdej marki
-function probDefaults(){ const o = opts(); return {cpmMin: o.cpmMin, cpmMax: o.cpmMax, freqMin: o.freqMin, freqMax: o.freqMax, conf: 80, reachU: 25, period: "month", fill: true}; }
+// domyślnie: efektywne założenia marki (własne CPM/częstotliwość/CPM wg formatu, inaczej globalne)
+function probDefaults(r){ const u = r && r.s && r.s.used, o = u || opts();
+  return {cpmMin: o.cpmMin, cpmMax: o.cpmMax, freqMin: o.freqMin, freqMax: o.freqMax, conf: 80, reachU: 25, period: "month", fill: true}; }
 function probGet(r){
-  const d = probDefaults(), st = probState[r.uid];
+  const d = probDefaults(r), st = probState[r.uid];
   if (!st) return (probState[r.uid] = d);
   if (!st.touched) Object.assign(st, {cpmMin: d.cpmMin, cpmMax: d.cpmMax, freqMin: d.freqMin, freqMax: d.freqMax});
   return st;
@@ -2524,22 +2589,23 @@ function probResults(r, st, pdf){
 }
 P.budget = (r, idx, pdf) => {
   const st = probGet(r);
-  const g = opts(), changed = ["cpmMin", "cpmMax", "freqMin", "freqMax"].some(k => +st[k] !== +g[k]);
+  const g = probDefaults(r), changed = ["cpmMin", "cpmMax", "freqMin", "freqMax"].some(k => +st[k] !== +g[k]);
   const ctl = pdf ? "" : `<div class="probctl blk" data-k="p"><h3>Założenia tylko dla tej zakładki ${changed ? '<span class="tag">zmienione lokalnie</span>' : ""}</h3>
       <div class="pgrid">
-        <div><label>CPM min (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMin" value="${st.cpmMin}"></div>
-        <div><label>CPM max (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMax" value="${st.cpmMax}"></div>
-        <div><label>Częstotliwość min</label><input type="number" step="0.1" min="1" data-pk="freqMin" value="${st.freqMin}"></div>
-        <div><label>Częstotliwość max</label><input type="number" step="0.1" min="1" data-pk="freqMax" value="${st.freqMax}"></div>
+        <div><label>CPM min (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMin" value="${Math.round(st.cpmMin * 100) / 100}"></div>
+        <div><label>CPM max (zł)</label><input type="number" step="0.5" min="0.5" data-pk="cpmMax" value="${Math.round(st.cpmMax * 100) / 100}"></div>
+        <div><label>Częstotliwość min</label><input type="number" step="0.1" min="1" data-pk="freqMin" value="${Math.round(st.freqMin * 100) / 100}"></div>
+        <div><label>Częstotliwość max</label><input type="number" step="0.1" min="1" data-pk="freqMax" value="${Math.round(st.freqMax * 100) / 100}"></div>
         <div><label>Pewność, że zakresy są trafne</label><select data-pk="conf">${[50, 70, 80, 90, 95].map(v => `<option value="${v}" ${+st.conf === v ? "selected" : ""}>${v}%</option>`).join("")}</select></div>
         <div><label>Dokładność zasięgu Meta</label><select data-pk="reachU">${[10, 25, 40, 60].map(v => `<option value="${v}" ${+st.reachU === v ? "selected" : ""}>±${v}%</option>`).join("")}</select></div>
         <div><label>Okres</label><select data-pk="period"><option value="month" ${st.period === "month" ? "selected" : ""}>miesięcznie (obecnie)</option><option value="last30" ${st.period === "last30" ? "selected" : ""}>ostatnie 30 dni</option><option value="day" ${st.period === "day" ? "selected" : ""}>dziennie (obecnie)</option></select></div>
         <div><label>Reklamy bez danych o zasięgu</label><select data-pk="fill"><option value="1" ${st.fill ? "selected" : ""}>doszacuj proporcjonalnie</option><option value="0" ${!st.fill ? "selected" : ""}>pomiń</option></select></div>
       </div>
-      <div class="row" style="margin-top:10px"><button class="ghost mini" id="probReset">Przywróć założenia globalne</button><span class="hint" style="margin:0">Zmiany działają tylko tutaj — nie zmieniają kosztów w innych zakładkach, raportach ani ustawieniach.</span></div>
+      <div class="row" style="margin-top:10px"><button class="ghost mini" id="probReset">Przywróć założenia marki</button><span class="hint" style="margin:0">Zmiany działają tylko tutaj — nie zmieniają kosztów w innych zakładkach, raportach ani ustawieniach.</span></div>
     </div>`;
   return `${pdf ? "" : `<div class="hint" style="margin-top:10px">Zamiast jednej kwoty — przedziały z prawdopodobieństwem. Pokazuje, jak pewny jest szacunek przy danych założeniach.</div>`}
-    ${ctl}<div id="probOut">${probResults(r, st, pdf)}</div>`;
+    ${ctl}<div id="probOut">${probResults(r, st, pdf)}</div>
+    ${blk("[p]Skąd domyślne założenia tej marki", cpmSource(r.s) + `<div class="note">Własne CPM, częstotliwość i CPM wg formatu ustawisz w „Ustawieniach zaawansowanych” → „Założenia dla poszczególnych marek”. Pola powyżej zmieniają wynik tylko w tej zakładce.</div>`)}`;
 };
 function wireProb(r){
   const card = $("resultsCard"), out = $("probOut");
@@ -2554,10 +2620,10 @@ function wireProb(r){
     clearTimeout(t); t = setTimeout(() => {
       if (["cpmMin", "cpmMax", "freqMin", "freqMax"].includes(k) && !(+el.value > 0)) return;
       out.innerHTML = probResults(r, st, false); wireX();
-      const g = opts(), h = card.querySelector(".probctl h3"); if (h) h.innerHTML = `Założenia tylko dla tej zakładki ${["cpmMin", "cpmMax", "freqMin", "freqMax"].some(kk => +st[kk] !== +g[kk]) ? '<span class="tag">zmienione lokalnie</span>' : ""}`;
+      const g = probDefaults(r), h = card.querySelector(".probctl h3"); if (h) h.innerHTML = `Założenia tylko dla tej zakładki ${["cpmMin", "cpmMax", "freqMin", "freqMax"].some(kk => +st[kk] !== +g[kk]) ? '<span class="tag">zmienione lokalnie</span>' : ""}`;
     }, 200);
   }));
-  const rb = $("probReset"); if (rb) rb.onclick = () => { probState[r.uid] = probDefaults(); renderAll(); };
+  const rb = $("probReset"); if (rb) rb.onclick = () => { probState[r.uid] = probDefaults(r); renderAll(); };
   wireX();
 }
 // przedziały dla porównania (założenia globalne)
@@ -2565,7 +2631,7 @@ const fmtRange = (lo, hi) => { lo = roundNice(lo); hi = roundNice(hi); const u =
   const f = v => { const x = v / u[0]; return (x >= 100 || u[0] === 1 ? Math.round(x).toLocaleString("pl-PL") : String(Math.round(x * 10) / 10).replace(".", ",")); };
   return `${f(lo)}–${f(hi)}${u[1]}`; };
 function probCompare(list){
-  const ms = list.map(r => ({r, m: probModel(r, probDefaults())})).filter(x => x.m.base > 0);
+  const ms = list.map(r => ({r, m: probModel(r, probDefaults(r))})).filter(x => x.m.base > 0);
   if (!ms.length) return NODATA;
   const lo = Math.min(...ms.map(x => x.m.levels[1].lo)), hi = Math.max(...ms.map(x => x.m.levels[1].hi));
   const P = v => (Math.log(v) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * 100;
@@ -2861,7 +2927,7 @@ const rowIn = (x, w) => x.start <= w.b && x.end >= w.a;
 function reanalyze(r){
   const ctx = periodCtx(r);
   const rows = ctx.focus ? r.rowsAll.filter(x => rowIn(x, ctx.focus)) : r.rowsAll;
-  Object.assign(r, analyze(rows, opts(), filters(), r.pageName, r.mediaLoaded, ctx));
+  Object.assign(r, analyze(rows, optsFor(r), filters(), r.pageName, r.mediaLoaded, ctx));
 }
 function rerender(){ for (const r of results) reanalyze(r); renderAll(); }
 
@@ -2974,7 +3040,7 @@ async function analyzeOne(job, region, label){
   const res = {uid: ++uidSeq, isMain: job.isMain, brand: job.brand || pageName, pageName: pageName || pageId, pageId, region,
     lang: langOpt.value ? langOpt.text : "", langCode: langOpt.value, cands, demoMissing, mediaLoaded, pol, polLoaded, rowsAll,
     limit: lim, limited: lim && truncated ? {limit: lim, n: rowsAll.length, active: rowsAll.filter(x => x.active).length} : null,
-    period: per, perMode, prevPer, fetchWin};
+    period: per, perMode, prevPer, fetchWin, key: job.key || (job.isMain ? "__main__" : limKey(job.brand, job.pageId))};
   reanalyze(res);
   if (res.limited) res.changes = {first: true, limitedSkip: true};
   else if (per) res.changes = {first: true, periodSkip: true};
@@ -2990,7 +3056,7 @@ function parseCompetitors(){
     let pid = parsePageId(rest.join(";").trim());
     if (pid === undefined){ bad.push(line); pid = null; }
     if (!name.trim() && !pid) continue;
-    jobs.push({brand: name.trim(), pageId: pid, isMain: false, limit: limitFor(limKey(name.trim(), pid))});
+    jobs.push({brand: name.trim(), pageId: pid, isMain: false, key: limKey(name.trim(), pid), limit: limitFor(limKey(name.trim(), pid))});
   }
   return {jobs, bad};
 }
@@ -3006,7 +3072,7 @@ async function run(){
   if (mainPid === undefined) return setStatus("Nie rozpoznano ID strony w polu „ID strony lub link”.", true);
   const {jobs: comp, bad} = parseCompetitors();
   const jobs = [];
-  if (brand || mainPid) jobs.push({brand, pageId: mainPid, isMain: true, limit: limitFor("__main__")});
+  if (brand || mainPid) jobs.push({brand, pageId: mainPid, isMain: true, key: "__main__", limit: limitFor("__main__")});
   jobs.push(...comp);
   if (!jobs.length) return setStatus("Wpisz markę albo konkurentów.", true);
   const per = periodRange();
@@ -3061,7 +3127,7 @@ async function swapPage(uid, pageId){
   const old = results[i];
   $("go").disabled = true;
   try {
-    const res = await analyzeOne({brand: old.brand, pageId, isMain: old.isMain}, old.region, old.brand);
+    const res = await analyzeOne({brand: old.brand, pageId, isMain: old.isMain, key: old.key, period: old.period, perMode: old.perMode}, old.region, old.brand);
     res.cands = old.cands;
     results[i] = res; view.top = res.uid;
     renderAll();
@@ -3354,6 +3420,10 @@ function exportXlsx(asData = false){
   }
   const name = `raport_meta_${iso(todayUTC)}`;
   S["Fakty do strategii"] = [STRAT_HEAD, ...strategyFacts(results)];
+  const asmS = S["Założenia kosztu"] = [["Strona", "Format", "Udział w zasięgu aktywnych (%)", "CPM min (zł)", "CPM max (zł)", "Źródło stawki", "Częstotliwość min", "Częstotliwość max", "Źródło częstotliwości"]];
+  for (const r of results){ const u = r.s.used; if (!u) continue;
+    for (const m of u.mix) asmS.push([r.pageName, FMT_SHORT[m.fmt] || m.fmt, m.share, Math.round(m.cMin * 100) / 100, Math.round(m.cMax * 100) / 100, {format: "CPM formatu marki", marka: "CPM marki", globalne: "globalny"}[m.src], u.freqMin, u.freqMax, u.own && u.own.freq ? "marka" : "globalna"]);
+    asmS.push([r.pageName, "EFEKTYWNIE (ważone zasięgiem)", 100, Math.round(u.cpmMin * 100) / 100, Math.round(u.cpmMax * 100) / 100, "", u.freqMin, u.freqMax, ""]); }
   if (results.some(r => r.s.okres)){
     const pc = S["Porównanie okresów"] = [["Strona", "Wskaźnik", "Wybrany okres", "Od", "Do", "Poprzedni okres", "Od", "Do", "Zmiana", "Jednostka zmiany", "Tryb"]];
     for (const r of results){ const a = r.s.okres, b = r.s.okresPrev; if (!a) continue;
@@ -3717,7 +3787,7 @@ function saveSet(){
   const name = prompt("Nazwa zestawu (np. „Natura — drogerie”):", $("sets").value || $("brand").value.trim());
   if (!name) return;
   const sets = loadSets();
-  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, limDef: $("limDef").value, limits: {...limMap}, period: {v: $("period").value, from: $("pFrom").value, to: $("pTo").value, mode: perModeVal()}, savedAt: iso(todayUTC)};
+  sets[name.trim()] = {brand: $("brand").value, page: $("page").value, comp: $("comp").value, world: $("world").checked, countries: [...selected], lang: $("lang").value, limDef: $("limDef").value, limits: {...limMap}, asm: Object.fromEntries(setupBrands().filter(b => asmMap[b.key]).map(b => [b.key, asmMap[b.key]])), period: {v: $("period").value, from: $("pFrom").value, to: $("pTo").value, mode: perModeVal()}, savedAt: iso(todayUTC)};
   if (!store.set(SETS_KEY, JSON.stringify(sets))) return setStatus("Przeglądarka nie pozwala zapisywać danych — użyj „Eksport”, żeby zachować zestaw w pliku.", true);
   refreshSets(name.trim());
   setStatus(`Zapisano zestaw „${name.trim()}”.`);
@@ -3732,6 +3802,7 @@ function loadSet(){
   if (s.limits){ Object.assign(limMap, s.limits); store.set(LIM_KEY, JSON.stringify(limMap)); }
   renderLimits();
   if (s.period) setPeriod(s.period);
+  if (s.asm){ Object.assign(asmMap, s.asm); store.set(ASM_KEY, JSON.stringify(asmMap)); renderAsm(); }
   regionChanged();
   setStatus(`Wczytano zestaw „${name}”. Kliknij „Analizuj”.`);
 }
@@ -3935,7 +4006,7 @@ function buildAiMd(o){
     `- Zakres: reklamy komercyjne, które dotarły do UE — Meta przechowuje je ok. rok od zakończenia emisji; reklamy pojawiają się z opóźnieniem do 1–2 dni`,
     `- Filtr wyników: ${fl || "brak (cała biblioteka)"}`,
     `- Evergreen = reklama emitowana co najmniej ${f.evDays} dni; „aktywna” = bez daty zakończenia lub z datą od dziś`,
-    `- Założenia kosztu: ${main.s.zalozenia}`,
+    sel.some(r => r.s.used && r.s.used.own && (r.s.used.own.cpm || r.s.used.own.freq || r.s.used.own.fmt)) ? `- Założenia kosztu są różne dla marek (ustawione przez analityka):\n${sel.map(r => `  - ${r.pageName}: ${r.s.zalozenia}`).join("\n")}` : `- Założenia kosztu: ${main.s.zalozenia}`,
     `- Szacowane wyświetlenia = zasięg × częstotliwość (Meta nie podaje wyświetleń reklam komercyjnych, tylko zasięg) — to szacunek, nie dane Meta`,
     main.mediaLoaded ? `- Formaty (wideo/grafika) pobrane filtrem typu mediów API` : `- Formaty nie były pobierane`,
     main.period ? `- **Okres analizy:** ${main.period.label}, wspólny dla wszystkich marek. Uwzględniono reklamy emitowane choć jeden dzień w tym okresie (także uruchomione wcześniej). Tryb: ${PER_MODE_NAMES[main.perMode] || ""}${main.prevPer ? ` (okres porównawczy ${main.prevPer.label})` : ""}. Wartości „w okresie” (wyświetlenia, koszt, zasięg) to część zasięgu reklamy przypadająca na dni okresu. ${main.perMode === "only" ? "Danych sprzed okresu NIE pobrano — brak porównań nie oznacza zera reklam." : "Tendencja = wybrany okres vs poprzedni analogiczny."}${staleData(main) ? " UWAGA: " + STALE_TXT : ""}` : `- Okres analizy: cała dostępna historia biblioteki`,
@@ -4120,7 +4191,108 @@ function renderLimits(){
     if (sel.value === "") delete limMap[sel.dataset.lim]; else limMap[sel.dataset.lim] = +sel.value;
     store.set(LIM_KEY, JSON.stringify(limMap));
   });
+  if (typeof renderAsm === "function") renderAsm();
 }
+// ================================================================ założenia kosztu dla poszczególnych marek (CPM, częstotliwość, CPM wg formatu kreacji)
+const ASM_KEY = "metaAdsBotBrandAsm";
+const ASM_FMTS = [["VIDEO", "Wideo"], ["IMAGE", "Grafika"], ["MEME", "Grafika z tekstem (mem)"], ["OTHER", "Inne (karuzela, katalog, tekst)"]];
+let asmMap = {}; try { asmMap = JSON.parse(store.get(ASM_KEY) || "{}"); } catch(e){}
+const numOrNull = v => { const x = String(v ?? "").trim().replace(",", "."); return x === "" ? null : +x; };
+// para min–max: kompletna i poprawna → [min, max]; pusta → null; błędna → {err}
+function asmPair(a, b, minAllowed, what){
+  const x = numOrNull(a), y = numOrNull(b);
+  if (x == null && y == null) return null;
+  if (x == null || y == null) return {err: `${what}: uzupełnij oba pola (min i max)`};
+  if (!(x >= minAllowed) || !(y >= minAllowed)) return {err: `${what}: wartości muszą być ≥ ${String(minAllowed).replace(".", ",")}`};
+  if (x > y) return {err: `${what}: min jest większe niż max`};
+  return [x, y];
+}
+// odczyt i walidacja założeń marki — nic nie jest zgadywane: puste pole = dziedziczenie, błędne pole = ignorowane i oznaczone
+function brandAsm(key){
+  const a = asmMap[key] || {}, out = {cpm: null, freq: null, fmt: {}, errors: []};
+  const c = asmPair(a.cpmMin, a.cpmMax, 0.5, "CPM marki"); if (Array.isArray(c)) out.cpm = c; else if (c) out.errors.push(c.err);
+  const f = asmPair(a.freqMin, a.freqMax, 1, "Częstotliwość"); if (Array.isArray(f)) out.freq = f; else if (f) out.errors.push(f.err);
+  for (const [k, l] of ASM_FMTS){ const v = (a.fmt || {})[k] || {}; const p = asmPair(v.min, v.max, 0.5, `CPM ${l.toLowerCase()}`); if (Array.isArray(p)) out.fmt[k] = p; else if (p) out.errors.push(p.err); }
+  return out;
+}
+const asmCount = key => { const a = brandAsm(key); return (a.cpm ? 1 : 0) + (a.freq ? 1 : 0) + Object.keys(a.fmt).length; };
+// założenia dla analizy konkretnej marki
+function optsFor(r){
+  const g = opts(), a = brandAsm(r && r.key);
+  const o = {...g, fmt: null, own: {cpm: !!a.cpm, freq: !!a.freq, fmt: Object.keys(a.fmt).length, fmtUnused: false}};
+  if (a.cpm){ o.cpmMin = a.cpm[0]; o.cpmMax = a.cpm[1]; }
+  if (a.freq){ o.freqMin = a.freq[0]; o.freqMax = a.freq[1]; }
+  if (o.own.fmt){ if (r && r.mediaLoaded) o.fmt = a.fmt; else o.own.fmtUnused = true; }
+  const parts = [o.own.cpm && "CPM marki", o.own.freq && "częstotliwość marki", o.fmt && "CPM wg formatu"].filter(Boolean);
+  o.label = parts.length ? `własne założenia marki: ${parts.join(", ")}; pozostałe — ${g.label}` : g.label;
+  return o;
+}
+// lista marek z formularza (jak w limitach)
+function setupBrands(){
+  const rows = [], mb = $("brand").value.trim(), mp = parsePageId($("page").value);
+  if (mb || mp) rows.push({key: "__main__", label: (mb || "ID " + mp) + " ★"});
+  for (const raw of $("comp").value.split("\n")){
+    const line = raw.trim(); if (!line) continue;
+    const [name, ...rest] = line.split(";"); const pid = parsePageId(rest.join(";").trim()) || null;
+    if (!name.trim() && !pid) continue;
+    rows.push({key: limKey(name.trim(), pid), label: name.trim() || "ID " + pid});
+  }
+  // marki z wyników, których nie ma w formularzu (np. wczytana analiza)
+  for (const r of results) if (r.key && !rows.some(x => x.key === r.key)) rows.push({key: r.key, label: r.pageName + (r.isMain ? " ★" : "")});
+  return rows.filter((x, i) => rows.findIndex(y => y.key === x.key) === i);   // ta sama marka wpisana dwa razy = jeden wiersz
+}
+function renderAsm(){
+  const box = $("asmRows"); if (!box) return;
+  const g = opts(), rows = setupBrands();
+  const ph = v => String(v).replace(".", ",");
+  if (!rows.length){ box.innerHTML = `<div class="sub">Wpisz markę i konkurentów — tu pojawią się pola założeń dla każdej marki.</div>`; return; }
+  const open = new Set([...box.querySelectorAll(".asm-b.open")].map(e => e.dataset.key));
+  const nComp = rows.filter(r => r.key !== "__main__").length, hasMain = rows.some(r => r.key === "__main__");
+  box.innerHTML = `<div class="asm-cnt">Pola dla ${rows.length} ${rows.length === 1 ? "marki" : "marek"}: ${hasMain ? "Twoja marka" : ""}${hasMain && nComp ? " + " : ""}${nComp ? `${nComp} ${nComp === 1 ? "konkurent" : nComp < 5 ? "konkurentów" : "konkurentów"}` : ""} — lista aktualizuje się sama, gdy dopisujesz lub usuwasz marki.</div><div class="asm-h"><span>Marka</span><span>CPM min</span><span>CPM max</span><span>Częst. min</span><span>Częst. max</span><span></span></div>` + rows.map(r => {
+    const a = asmMap[r.key] || {}, v = k => esc(a[k] ?? ""), fm = a.fmt || {}, chk = brandAsm(r.key), n = Object.keys(chk.fmt).length;
+    const res = results.find(x => x.key === r.key), noMedia = res && !res.mediaLoaded;
+    const inh = chk.cpm || [g.cpmMin, g.cpmMax];   // wartość dziedziczona przez formaty
+    return `<div class="asm-b ${open.has(r.key) ? "open" : ""}" data-key="${esc(r.key)}">
+      <div class="asm-r"><span class="nm" title="${esc(r.label)}">${esc(r.label)}</span>
+        <input type="number" step="0.5" min="0.5" data-a="cpmMin" value="${v("cpmMin")}" placeholder="${ph(g.cpmMin)}" aria-label="CPM min">
+        <input type="number" step="0.5" min="0.5" data-a="cpmMax" value="${v("cpmMax")}" placeholder="${ph(g.cpmMax)}" aria-label="CPM max">
+        <input type="number" step="0.1" min="1" data-a="freqMin" value="${v("freqMin")}" placeholder="${ph(g.freqMin)}" aria-label="Częstotliwość min">
+        <input type="number" step="0.1" min="1" data-a="freqMax" value="${v("freqMax")}" placeholder="${ph(g.freqMax)}" aria-label="Częstotliwość max">
+        <button type="button" class="ghost mini asm-t">CPM wg formatu${n ? ` · ${n}` : ""}</button></div>
+      <div class="asm-f">
+        ${ASM_FMTS.map(([k, l]) => `<div class="asm-fr"><span>${l}</span>
+          <input type="number" step="0.5" min="0.5" data-f="${k}" data-m="min" value="${esc((fm[k] || {}).min ?? "")}" placeholder="${ph(inh[0])}" aria-label="${l} CPM min">
+          <input type="number" step="0.5" min="0.5" data-f="${k}" data-m="max" value="${esc((fm[k] || {}).max ?? "")}" placeholder="${ph(inh[1])}" aria-label="${l} CPM max"></div>`).join("")}
+        <div class="hint">Puste = CPM marki (a gdy go brak — globalny). Format reklamy pochodzi z Meta (filtr typu mediów).${noMedia ? " <b>Dla tej marki formaty nie zostały pobrane — CPM formatów nie zostanie użyty, dopóki nie włączysz „Pobieraj typ mediów” i nie uruchomisz analizy ponownie.</b>" : ""}</div>
+        <div class="row"><button type="button" class="ghost mini asm-clear">Wyczyść założenia tej marki</button></div>
+      </div>
+      <div class="asm-err">${chk.errors.map(e => `<span>${esc(e)} — pole pominięte</span>`).join("")}</div>
+    </div>`; }).join("");
+  box.querySelectorAll(".asm-b").forEach(b => {
+    const key = b.dataset.key;
+    const save = () => {
+      const a = asmMap[key] || {};
+      b.querySelectorAll("input[data-a]").forEach(i => a[i.dataset.a] = i.value);
+      a.fmt = a.fmt || {};
+      b.querySelectorAll("input[data-f]").forEach(i => { (a.fmt[i.dataset.f] ||= {})[i.dataset.m] = i.value; });
+      asmMap[key] = a; store.set(ASM_KEY, JSON.stringify(asmMap));
+      const chk = brandAsm(key), n = Object.keys(chk.fmt).length;
+      b.querySelector(".asm-err").innerHTML = chk.errors.map(e => `<span>${esc(e)} — pole pominięte</span>`).join("");
+      b.querySelector(".asm-t").textContent = `CPM wg formatu${n ? ` · ${n}` : ""}`;
+      const inh = chk.cpm || [opts().cpmMin, opts().cpmMax];
+      b.querySelectorAll("input[data-f]").forEach(i => i.placeholder = String(inh[i.dataset.m === "min" ? 0 : 1]).replace(".", ","));
+      asmChanged();
+    };
+    let t; b.querySelectorAll("input").forEach(i => i.addEventListener("input", () => { clearTimeout(t); t = setTimeout(save, 350); }));
+    b.querySelector(".asm-t").onclick = () => b.classList.toggle("open");
+    b.querySelector(".asm-clear").onclick = () => { delete asmMap[key]; store.set(ASM_KEY, JSON.stringify(asmMap)); renderAsm(); asmChanged(); };
+  });
+}
+function asmChanged(){
+  if (typeof advSummary === "function") advSummary();
+  if (results.length) rerender();
+}
+
 (function initLimits(){
   const sv = store.get("metaAdsBotLimDef"); if (sv != null && [...$("limDef").options].some(o => o.value === sv)) $("limDef").value = sv;
   $("limDef").onchange = () => { store.set("metaAdsBotLimDef", $("limDef").value); renderLimits(); };
@@ -4140,6 +4312,8 @@ function advSummary(){
   const per = typeof periodRange === "function" ? periodRange() : null;
   parts.push(per ? per.name + " · " + (perModeVal() === "only" ? "bez porównań" : perModeVal() === "all" ? "tło: cała historia" : "vs poprzedni okres") : per === undefined ? "okres: błędne daty" : "cała historia");
   parts.push(`${CALIB ? "kalibracja · " : ""}CPM ${String($("cpmMin").value).replace(".", ",")}–${String($("cpmMax").value).replace(".", ",")} zł`);
+  const nAsm = setupBrands().filter(b => asmCount(b.key)).length;
+  if (nAsm) parts.push(`własne założenia: ${nAsm} ${nAsm === 1 ? "marka" : nAsm < 5 ? "marki" : "marek"}`);
   parts.push(concLimit() > 1 ? `${concLimit()} marki naraz` : "po kolei");
   el.innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
 }
@@ -4273,7 +4447,7 @@ $("snapExport").onclick = exportSnaps; $("snapImport").onclick = () => $("snapFi
   $("evPresets").querySelectorAll(".chip").forEach(b => b.onclick = () => { ev.value = b.dataset.ev; apply(ev); });
   mark();
 })();
-let rt; ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(rt); rt = setTimeout(() => results.length && rerender(), 300); }));
+let rt; ["cpmMin","cpmMax","freqMin","freqMax"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(rt); rt = setTimeout(() => { renderAsm(); if (results.length) rerender(); }, 300); }));
 $("lang").addEventListener("change", () => results.length && setStatus("Zmiana języka wymaga ponownego „Analizuj”."));
 refreshSets();
 regionChanged();
