@@ -149,6 +149,30 @@ Pasek pod nagłówkiem strony. Zaznacz, co chcesz oznaczyć na wynikach — blok
 
 Przed wysłaniem raportu klientowi warto włączyć „Poszlaki” i „Dedukcję”, żeby świadomie zdecydować, co zostawić.
 
+### Dymki „Skąd to?” — rachunek za każdą liczbą
+
+Najedź kursorem na liczbę, rekomendację, ramkę z wnioskiem albo ikonę ⓘ przy tytule sekcji (na telefonie: stuknij, a żeby zamknąć, stuknij obok). Pojawi się dymek, który pokazuje:
+
+- **rodzaj informacji** w kolorze Lupy: czyste dane z Meta, obliczenie, poszlaka (szacunek) albo dedukcja (reguła bota);
+- **jak powstała, na prawdziwych liczbach z tej analizy**. Przykład dla kosztu miesięcznego: `401 312 os./dzień × 30 dni × częst. 1,61 = 19 412 906 wyświetleń`, a potem `÷ 1000 × CPM 15,81 zł ≈ 306 945 zł`, razem z widełkami i źródłem założeń;
+- **źródło**: np. „Meta Ad Library API” albo „założenia: benchmark / kalibracja / CPM marki”.
+
+Gdzie są dymki:
+
+| Miejsce | Co pokazuje dymek |
+| --- | --- |
+| Kafelki na górze | Definicja aktywnych reklam i obszaru, średnia i mediana zasięgu, rachunek wyświetleń i kosztu, próg evergreenu. |
+| Koszt i wyświetlenia | Wzór krok po kroku, doszacowanie reklam bez zasięgu i założenia CPM oraz częstotliwości. |
+| Okres i porównanie okresów | Okno dat, sposób liczenia zasięgu w oknie i wzór zmiany %. Gdy dane są niepełne (starsze niż 12 mies.), pojawia się informacja, dlaczego zmiany nie ma. |
+| Tendencja | Liczby z obu okien, rachunek zmiany % i progi ±20%. |
+| Indeks aktywności | Każda składowa × waga = punkty i suma. |
+| Prawdopodobny budżet | Mediana, σ rozbite na CPM, częstotliwość i zasięg, wzór przedziału dla 50–99%. |
+| Udziały (np. w wydatkach) | Wartość marki ÷ suma marek. |
+| Rekomendacje | Reguła i próg, który ją uruchomił, oraz liczby z analizy. |
+| Ramki z wnioskami | Informacja, że zdanie powstało z szablonu i liczb, bez AI. |
+
+Dymki działają tylko na ekranie, a w PDF i PNG ich nie ma. Przy prezentacji dla zarządu można je wykorzystać do odpowiedzi na pytanie „skąd ta liczba?”: wystarczy najechać i pokazać rachunek.
+
 ---
 
 ## 6. Eksporty: PDF, Excel, plik dla AI, pakiet do strategii
@@ -314,6 +338,9 @@ Nie. Narzędzie działa **bez AI**. Wnioski powstają z jawnych reguł, np. „j
 
 **Jak odróżnić twarde dane od interpretacji?**
 Funkcją **Lupa detektywa**. Oznacza każdy element wyniku jako: czyste dane z Meta, obliczenia, szacunki/poszlaki albo dedukcję (wnioski). Oznaczenia widać na ekranie i w PDF.
+
+**Skąd mam wiedzieć, jak policzono konkretną liczbę?**
+Najedź na nią kursorem. Dymek „Skąd to?” pokaże rachunek krok po kroku na liczbach z tej analizy, np. zasięg × 30 dni × częstotliwość ÷ 1000 × CPM = koszt. Przy rekomendacjach dymek podaje regułę i próg, który ją uruchomił. Każdą liczbę da się więc sprawdzić na kalkulatorze (szczegóły w punkcie 5).
 
 **Jak liczona jest tendencja („rośnie / spada”)?**
 Porównujemy liczbę **nowych reklam** w dwóch okresach tej samej długości: domyślnie ostatnie 90 dni z poprzednimi 90 dniami (albo wybrany okres z poprzednim analogicznym). Zmiana o co najmniej 20% to „rośnie”/„spada”, mniejsza — „stabilna”.
