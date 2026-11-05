@@ -1,7 +1,6 @@
 #  https://biedronm.github.io/meta-ad-tool/
 
 # Meta Ads Bot — README
-# Meta Ads Bot — README
 
 Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
 
