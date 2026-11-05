@@ -598,7 +598,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .fv{text-align:right;font-weight:500;font-size:12.5px}.fv small{font-weight:400;color:var(--muted)}
 .rp .lr{grid-template-columns:40px 1fr 160px;font-size:9pt}.rp .fr{grid-template-columns:110px 1fr 110px;font-size:8.5pt}
 .rp .lr span,.rp .fv{font-size:8pt}
-@media (max-width:560px){.lr{grid-template-columns:40px 1fr;}.lr span{grid-column:1/-1;text-align:left}.fr{grid-template-columns:80px 1fr}.fr .fv{grid-column:1/-1;text-align:left}}
+@media (max-width:560px){.lr{grid-template-columns:40px 1fr;}.lr span{grid-column:1/-1;text-align:left}.fr{grid-template-columns:1fr;gap:6px}.fr .fv{text-align:left}.forest{gap:16px}}
 
 /* ---------------------------------------------------------------- limity i okres */
 .limits{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2)}
@@ -779,7 +779,8 @@ body.is-loading #status{display:none}
 #whyTip .f{display:block;font:12px/1.45 var(--mono);font-variant-numeric:tabular-nums;background:var(--field);border:1px solid var(--line);border-radius:7px;padding:5px 8px;margin:2px 0;color:var(--text);white-space:normal;overflow-wrap:anywhere}
 #whyTip .fi{font:11.5px/1.4 var(--mono);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:0 5px;white-space:nowrap}
 #whyTip .wt-s{margin-top:8px;padding-top:7px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
-@media print{#whyTip,.whyi{display:none!important}}
+@media print{#whyTip,.whyi,.gobud{display:none!important}}
+.rp-page .gobud,#pngStage .gobud{display:none!important}
 .mbhint{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:12.5px;color:var(--muted)}.mbhint .ic{width:15px;height:15px;flex:none;margin-top:2px}
 </style>
 </head>
@@ -2100,6 +2101,7 @@ const BLK_WHY = {
   "Indeks aktywności": ["p", "Sześć składowych (skala, zasięg, świeżość, testowanie, regularność, różnorodność) w skali 0–100, ważonych i zsumowanych. Najedź na wynik, żeby zobaczyć składowe."],
   "Porównanie okresów": ["c", "Te same wskaźniki policzone dla wybranego okresu i poprzedniego analogicznego. Zmiana % = (okres − poprzedni) ÷ poprzedni; dla odsetków różnica w punktach procentowych (pp)."],
   "Wybrany okres": ["c", "Wskaźniki policzone tylko dla reklam emitowanych w wybranym oknie czasu; zasięg, wyświetlenia i koszt — część przypadająca na dni okna."],
+  "Przedziały:": ["p", "Model log-normalny dla tej marki: mediana = zasięg × częstotliwość × CPM (środki założeń marki); przedział P% = mediana × e^(±z·σ). Najedź na wiersz, żeby zobaczyć rachunek."],
   "Przedziały prawdopodobieństwa": ["p", "Model log-normalny: łączy niepewność CPM, częstotliwości i zasięgu. Mediana = 50% szans, że wydatek jest niższy. Najedź na wiersz, żeby zobaczyć rachunek."],
   "Rekomendacje — co z tego wynika": ["x", "Każda rekomendacja to jawna reguła (warunek + próg), bez AI. Najedź na kartę, żeby zobaczyć regułę i liczby, które ją uruchomiły."],
   "Najważniejsze w skrócie": ["x", "Zdania złożone automatycznie z liczb policzonych w analizie — szablony z wartościami, bez AI."],
@@ -2456,7 +2458,7 @@ const filterLabel = () => {
   return parts.join(", ");
 };
 const BRAND_TABS = [["overview","Przegląd"],["budget","Prawdopodobny budżet"],["creative","Kreacje i testy"],["campaigns","Kampanie"],["message","Przekaz"],["offers","Oferty i ceny"],["audience","Odbiorcy"],["calendar","Kalendarz"],["changes","Zmiany"],["social","Społeczne i polityczne"]];
-const CMP_TABS = [["recs","Wnioski i rekomendacje"],["sov","Udział w głosie"],["creative","Kreacje i testy"],["message","Przekaz i oferty"],["audience","Odbiorcy"],["calendar","Kalendarz"],["ranks","Rankingi i indeks"]];
+const CMP_TABS = [["recs","Wnioski i rekomendacje"],["sov","Udział w głosie"],["budget","Prawdopodobny budżet"],["creative","Kreacje i testy"],["message","Przekaz i oferty"],["audience","Odbiorcy"],["calendar","Kalendarz"],["ranks","Rankingi i indeks"]];
 
 function adLine(r, extra = ""){
   return `<div class="ad">
@@ -2899,7 +2901,7 @@ function probCompare(list){
       <div class="ft"><div class="f95" style="left:${P(a.lo)}%;width:${P(a.hi) - P(a.lo)}%;background:${color(i)}"></div><div class="f80" style="left:${P(b.lo)}%;width:${P(b.hi) - P(b.lo)}%;background:${color(i)}"></div><div class="fm" style="left:${P(m.median)}%"></div></div>
       <span class="fv">${fmtRange(b.lo, b.hi)}<br><small>95%: ${fmtRange(a.lo, a.hi)}</small></span></div>`; }).join("")}</div>
     <div class="legend"><span><i style="background:var(--text);opacity:.25"></i>przedział 95%</span><span><i style="background:var(--text)"></i>przedział 80%</span><span>| mediana</span></div>
-    <div class="note">Miesięcznie przy obecnej aktywności, założenia globalne. Nakładające się przedziały oznaczają, że nie da się z pewnością powiedzieć, która marka wydaje więcej.</div>`;
+    <div class="note">Miesięcznie przy obecnej aktywności, przy założeniach CPM i częstotliwości każdej marki (własnych albo globalnych). Nakładające się przedziały oznaczają, że nie da się z pewnością powiedzieć, która marka wydaje więcej.</div>`;
 }
 
 // ================================================================ wnioski i rekomendacje
@@ -3165,6 +3167,14 @@ C.ranks = list => `${blk("[p]Indeks aktywności reklamowej", `<div class="gauges
     ${rankBlock(list, "Średni czas emisji", r => r.s.sredniCzasEmisji, " dni")}
   </div>`)}
   <div class="note">Koszty to estymacja liczona tymi samymi założeniami dla wszystkich marek — do porównań, nie jako dokładny budżet.</div>`;
+C.budget = list => {
+  const ms = list.map((r, i) => ({r, i, m: probModel(r, probDefaults(r))}));
+  return `${blk("[p]Szacowany budżet z przedziałami prawdopodobieństwa", probCompare(list))}
+  <div class="two">${ms.map(({r, i, m}) => blk(`[p]Przedziały: ${esc(r.pageName)}`, m.base > 0
+    ? `<div class="sub" style="margin-bottom:10px"><span class="dot" style="background:${color(i)}"></span> Najbardziej prawdopodobnie: <b>~${fmt(roundNice(m.median))} zł / mies.</b></div>${probLadder(m)}<button class="ghost mini gobud" data-gobud="${r.uid}" style="margin-top:12px">Pełna analiza budżetu tej marki →</button>`
+    : NODATA)).join("")}</div>
+  <div class="note">Pełna analiza (wykres rozkładu, „sprawdź konkretną kwotę”, własne założenia tylko dla zakładki) jest w zakładce „Prawdopodobny budżet” każdej marki.</div>`;
+};
 const cmpPanel = (tab, list) => (C[tab] || C.recs)(list);
 
 // ================================================================ stan i widok
@@ -3226,6 +3236,7 @@ function renderAll(){
     renderAll();
     const t2 = card.querySelector(".tabs2"); if (t2 && t2.getBoundingClientRect().top < 0) t2.scrollIntoView({block: "start"});
   });
+  card.querySelectorAll("button[data-gobud]").forEach(b => b.onclick = () => { view.top = +b.dataset.gobud; view.brandTab = "budget"; renderAll(); card.scrollIntoView({block: "start"}); });
   card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
   if (!isCmp && active === "budget") wireProb(r);
   addPngButtons(card); addWhyIcons(card);
