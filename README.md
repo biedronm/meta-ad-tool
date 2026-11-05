@@ -1,6 +1,7 @@
 #  https://biedronm.github.io/meta-ad-tool/
 
 # Meta Ads Bot — README
+# Meta Ads Bot — README
 
 Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
 
@@ -128,6 +129,7 @@ Na górze wybierasz **Porównanie** albo konkretną markę (liczba obok nazwy to
 | --- | --- |
 | **Wnioski i rekomendacje** | Najważniejsze wnioski, rekomendacje z priorytetami, karty „marki w skrócie” |
 | **Udział w głosie** | Budżety marek z przedziałami 80% i 95%, udziały w wydatkach / reklamach / zasięgu, udział w zasięgu miesiąc po miesiącu, emitowane reklamy w czasie |
+| **Prawdopodobny budżet** | Budżety wszystkich marek obok siebie (przedziały 80% / 95%) i „piramidka” 50–99% dla każdej marki; przycisk „Pełna analiza budżetu tej marki” przenosi do zakładki marki z wykresem rozkładu i sprawdzaniem konkretnej kwoty |
 | **Kreacje i testy** | Formaty, testowanie, koncepty, DCO, evergreeny, platformy — marka obok marki |
 | **Przekaz i oferty** | „Konkurencja mówi, Ty nie”, Twoje wyróżniki, oferty, rabaty, ceny, CTA |
 | **Odbiorcy** | Struktura wieku, luki demograficzne (gdzie konkurencja ma przewagę), lokalizacje |
