@@ -2,12 +2,15 @@
 
 # RivalCore — README
 
-**RivalCore** to narzędzie agencji BeDigital (w parze z feedcore) do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
+**RivalCore** to wewnętrzne narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
+
+Aktualna wersja: **19.0** (8 listopada 2026). Plik narzędzia nadal nazywa się `meta-ads-bot.html` — tej nazwy używają automatyczne testy. Wygląd ekranu, raportów PDF i grafik PNG jest zgodny z identyfikacją wizualną BeDigital.
 
 ---
 
 ## Spis treści
 
+0. [Co nowego? Wersja 19.0](#co-nowego-wersja-190)
 1. [Pierwsze uruchomienie (token Meta)](#1-pierwsze-uruchomienie-token-meta)
 2. [Jak zrobić analizę](#2-jak-zrobić-analizę)
 3. [Ustawienia](#3-ustawienia)
@@ -20,6 +23,45 @@
 10. [Rozwiązywanie problemów](#10-rozwiązywanie-problemów)
 11. [Prywatność i bezpieczeństwo](#11-prywatność-i-bezpieczeństwo)
 12. [Najczęstsze pytania (FAQ)](#12-najczęstsze-pytania-faq)
+
+---
+
+## Co nowego? Wersja 19.0
+
+Zmiany z 8 listopada 2026: poprawki z feedbacku zespołu (dokument RivalCore_v1) oraz przebudowa wizualna pod markę BeDigital.
+
+### Nazwa i wygląd
+- **Nowa nazwa: RivalCore** (wcześniej „Meta Ads Bot”) — w pasku u góry, tytule strony, na okładce i w stopce PDF, w nazwie pliku PDF, w pliku dla AI i w opisie pakietu do strategii.
+- **Identyfikacja BeDigital:** czerń #0D0D0D zamiast chłodnych szarości, niebieski akcent z key visuala, pomarańcz jako druga seria na wykresach, font Montserrat (liczby nadal w JetBrains Mono), ostrzejsze narożniki, cienka linia przed tytułami sekcji (jak „___Strategia” w prezentacjach).
+- **Logo BeDigital** w pasku aplikacji, w nowej stopce strony, na okładce PDF i w nagłówku każdego PNG.
+- **Nowa postać na stronie startowej:** analityk w bluzie z logo BeDigital i czapce z daszkiem, z kotem i telefonem, bez ramki — jako element tła na niebiesko-pomarańczowej poświacie. Pojawia się tylko na ekranie, nie w PDF.
+
+### Raport PDF i grafiki PNG
+- **Okładka PDF do wyboru:** ciemna (styl BeDigital, z logo, „expect more” i poświatą — do wysyłki PDF) albo **jasna do druku** (oszczędza tusz). Wybór w panelu raportu w polu „Okładka”, narzędzie go zapamiętuje.
+- Logo klienta (jeśli je dodasz) ląduje na okładce obok logo BeDigital.
+- W stopce każdej strony PDF: „BeDigital · RivalCore · raport konkurencji”.
+- **PNG z poprawnymi fontami:** wcześniej pojedyncze wykresy i pakiet do strategii zapisywały się fontem systemowym (fonty z Google nie były osadzane). Teraz PNG mają Montserrat i JetBrains Mono, tło w kolorach marki i logo w nagłówku.
+
+### Wykresy i treści
+- **„Starty reklam tydzień po tygodniu” (Porównanie → Kalendarz):**
+  - oś dopasowuje się do wybranego okresu (wcześniej zawsze ostatnie 26 tygodni); tytuł podaje zakres dat,
+  - przy „całej historii” przełącznik 13 / 26 / 52 tygodnie,
+  - **ważne daty do zaznaczenia** — domyślnie żadnych linii, same kropki; w panelu „Ważne daty na wykresie” wybierasz: kwartały Q1–Q4, początek wakacji i roku szkolnego, święta i okazje (od Dnia Babci po Sylwestra, z ruchomymi świętami liczonymi co roku), Dzień Singla, Black Friday, Cyber Monday, oraz **własne daty** (data + nazwa),
+  - wybrane daty trafiają też do PDF i PNG; panel z checkboxami nie.
+- **Komentarz przy „Formatach reklam”**, wyjaśniający, czym jest „grafika z tekstem (mem)” — to etykieta MEME nadawana automatycznie przez Meta (szczegóły w słowniczku i FAQ).
+- Udziały z jednym miejscem po przecinku i przełącznik **„Udział % / Wartości”** (liczby bezwzględne).
+- **Wybór marek w porównaniu („Porównuj:”)** — Twoja marka zostaje zawsze, minimum 2 marki, kolory przypięte do marek.
+- „dni” przy każdym słupku długości życia reklam.
+- Opis pod „Mechanikami promocyjnymi” (udziały nie sumują się do 100%, bo jedna reklama może mieć kilka mechanik).
+- Jaśniejszy blok **„Kto płaci i kto jest beneficjentem”** z wnioskiem, gdy płatnikiem jest agencja.
+- Miesiące na osiach w formacie „sty. 26”, „lut. 26”…
+
+### Eksporty i pliki
+- **Excel:** teksty przycinane bez rozbijania emoji, komórki czyszczone z niedozwolonych znaków — to była przyczyna pustego arkusza „Kampanie”. Nadal same wartości, bez formuł.
+- Kopie zapasowe mają nowe nazwy: `rivalcore-zestawy.json` i `rivalcore-migawki_….json`. **Analizy, zestawy i migawki z poprzednich wersji wczytują się bez zmian.**
+
+### W przygotowaniu (nie ma jeszcze w narzędziu)
+- **Google Ads** jako drugie źródło (Google Ads Transparency Center przez BigQuery) — jest research, plan wdrożenia z wariantami i makieta strony startowej. Szczegóły w osobnym dokumencie „RivalCore × Google Ads — research i plan wdrożenia”.
 
 ---
 
@@ -113,7 +155,7 @@ Na górze wybierasz **Porównanie** albo konkretną markę (liczba obok nazwy to
 | --- | --- |
 | **Przegląd** | KPI (w tym szacowane wyświetlenia), indeks aktywności, najważniejsze w skrócie, trend 12 miesięcy, szacowane wyświetlenia, szacowany koszt, największe aktywne reklamy |
 | **Prawdopodobny budżet** | Przedziały wydatków z prawdopodobieństwem (99% / 95% / 90% / 80% / 50%), rozkład, kalkulator „jakie są szanse, że wydaje więcej niż X zł”, co najbardziej wpływa na niepewność. Własne CPM, częstotliwość i inne założenia — działają tylko w tej zakładce |
-| **Kreacje i testy** | % reklam wyłączanych w ≤7 dni, reklamy działające równolegle, DCO, formaty, platformy, długość życia reklam, efektywność zasięgu, evergreeny |
+| **Kreacje i testy** | % reklam wyłączanych w ≤7 dni, reklamy działające równolegle, DCO, formaty (wideo / grafika / grafika z tekstem / inne — klasyfikacja Meta), platformy, długość życia reklam, efektywność zasięgu, evergreeny |
 | **Kampanie** | Koncepty kreatywne (ten sam tekst = jeden koncept) i fale startów (dni z ≥3 nowymi reklamami) |
 | **Przekaz** | Ton (sprzedażowy / wizerunkowy), CTA, emoji, długość tekstów, najczęstsze słowa i hasła, mechaniki, strony docelowe, nagłówki |
 | **Oferty i ceny** | Rabaty (średni, maksymalny, rozkład), ceny, mechaniki promocyjne, reklamy z najwyższym rabatem. Rabat liczy się tylko w jednoznacznym kontekście („-30%”, „rabat 20%”, „15% taniej”) — statystyki („87% kobiet”), składy („50% mniej cukru”) i zakresy nie są promocją; progi dostawy, bony, nagrody i kwoty rabatów nie są cenami |
@@ -134,7 +176,7 @@ Na górze wybierasz **Porównanie** albo konkretną markę (liczba obok nazwy to
 | **Kreacje i testy** | Formaty, testowanie, koncepty, DCO, evergreeny, platformy — marka obok marki |
 | **Przekaz i oferty** | „Konkurencja mówi, Ty nie”, Twoje wyróżniki, oferty, rabaty, ceny, CTA |
 | **Odbiorcy** | Struktura wieku, luki demograficzne (gdzie konkurencja ma przewagę), lokalizacje |
-| **Kalendarz** | Tygodniowa oś startów wszystkich marek z ważnymi datami |
+| **Kalendarz** | Tygodniowa oś startów wszystkich marek (zakres = wybrany okres albo 13 / 26 / 52 tygodnie) z ważnymi datami, które zaznaczasz sam: kwartały, szkoła i wakacje, święta, Black Friday i własne daty; ulubiony dzień startu, fale startów |
 | **Rankingi i indeks** | Wskaźniki indeksu i rankingi z różnicą „vs Ty” |
 
 ---
@@ -187,7 +229,7 @@ Przycisk **„Pakiet do strategii (PNG + dane)”** po analizie. Wybierasz wykre
 - `dane/raport_meta_….xlsx` — pełny Excel (wszystkie arkusze + „Fakty do strategii”), same wartości, bez formuł;
 - `CZYTAJ-MNIE.md` — zakres analizy, jak czytać liczby, założenia szacunków i lista plików z opisem.
 
-Pojedynczy wykres pobierzesz też od razu z wyników: najedź na wykres i kliknij **PNG** przy jego tytule. PDF z danymi to przycisk „Raport PDF”.
+Pojedynczy wykres pobierzesz też od razu z wyników: najedź na wykres i kliknij **PNG** przy jego tytule. Każdy PNG ma logo BeDigital w nagłówku i fonty narzędzia (Montserrat, JetBrains Mono). PDF z danymi to przycisk „Raport PDF”.
 
 ### Raport PDF
 
@@ -198,7 +240,7 @@ Przycisk **Raport PDF** → panel z ustawieniami:
 - okładka: **ciemna** (styl BeDigital, do wysyłki PDF) albo **jasna** (do druku, oszczędza tusz),
 - gotowe zestawy: **Pełny raport** (~50 stron przy 4 markach) i **Skrót dla klienta** (~10 stron).
 
-Otworzy się okno drukowania — jako drukarkę wybierz **„Zapisz jako PDF”**. Jeśli tła się nie drukują, zaznacz „Grafika tła”.
+Otworzy się okno drukowania — jako drukarkę wybierz **„Zapisz jako PDF”**. Jeśli tła się nie drukują, zaznacz „Grafika tła” (ważne zwłaszcza przy ciemnej okładce). Do druku na papierze wybierz jasną okładkę — strony w środku raportu są zawsze jasne.
 
 ### Excel
 
@@ -239,6 +281,7 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 | **Aktywne naraz** | Średnia dzienna liczba równolegle działających reklam z ostatnich 90 dni |
 | **DCO** | Reklamy z kilkoma wariantami tekstu (dynamiczne kreacje) |
 | **Koncept** | Reklamy z tym samym tekstem głównym (różne grafiki i zestawy liczą się razem) |
+| **Format: grafika / grafika z tekstem (mem) / wideo / inne** | Klasyfikacja z filtra typu mediów w Meta API (`IMAGE`, `MEME`, `VIDEO`); reklamy spoza tych grup to „inne” (karuzele, katalogi, sam tekst). „Grafika z tekstem (mem)” to wewnętrzna etykieta Meta: w dokumentacji jest tylko na liście wartości, bez definicji. Z nazwy i działania Biblioteki Reklam wynika, że chodzi o obrazek z nałożonym napisem. O przypisaniu decyduje automat Meta — RivalCore nie ogląda obrazków |
 | **Fala startów** | Dzień, w którym wystartowały co najmniej 3 nowe reklamy |
 | **Indeks aktywności 0–100** | Skala 25%, zasięg 25%, świeżość 15%, testowanie 15%, regularność 10%, różnorodność 10% (skale logarytmiczne) |
 | **Ton sprzedażowy** | Reklama zawiera ofertę, cenę lub rabat |
@@ -279,9 +322,9 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 
 ## 11. Prywatność i bezpieczeństwo
 
-- Plik działa w całości w Twojej przeglądarce. Dane idą tylko między przeglądarką a Meta (graph.facebook.com). Biblioteka do Excela ładuje się z cdnjs, czcionki z Google Fonts, a przy pakiecie do strategii — biblioteki do PNG (jsdelivr) i ZIP (cdnjs).
+- Plik działa w całości w Twojej przeglądarce. Dane idą tylko między przeglądarką a Meta (graph.facebook.com). Biblioteka do Excela ładuje się z cdnjs, czcionki (Montserrat, JetBrains Mono) z Google Fonts, a przy pakiecie do strategii — biblioteki do PNG (jsdelivr) i ZIP (cdnjs).
 - Token zapisuje się tylko lokalnie i tylko wtedy, gdy zaznaczysz „Zapamiętaj token”. **Nie wysyłaj tokena nikomu** — działa jak hasło.
-- Zestawy, migawki, ustawienia i logo do PDF są w pamięci przeglądarki (localStorage) na tym komputerze.
+- Zestawy, migawki, ustawienia, logo do PDF, wybór okładki i zaznaczone ważne daty są w pamięci przeglądarki (localStorage) na tym komputerze.
 
 ---
 
@@ -305,6 +348,9 @@ Tak, ale tylko przez ok. **rok od zakończenia emisji** — potem Meta usuwa rek
 
 **Czy widać kreacje (grafiki, wideo)?**
 Bot pokazuje teksty, nagłówki, format (wideo/grafika) i link do każdej reklamy w Bibliotece Reklam. Samych obrazków API nie udostępnia — podgląd otwiera się w Bibliotece po kliknięciu linku.
+
+**Czym różni się „grafika” od „grafiki z tekstem (mem)”?**
+To podział Meta, nie RivalCore. API Biblioteki Reklam ma filtr typu mediów z wartościami grafika (`IMAGE`), mem (`MEME`) i wideo (`VIDEO`), a RivalCore przejmuje to przypisanie. Meta nie publikuje definicji „mema”; z nazwy i działania Biblioteki wynika, że to grafika z nałożonym tekstem. Jeśli w raporcie dla klienta ten podział budzi wątpliwości, traktuj obie kategorie łącznie jako „grafiki”.
 
 **Czy widać wyniki konkurencji — CTR, sprzedaż, ROAS?**
 Nie. Tych danych Meta nie udostępnia nikomu poza właścicielem konta. Narzędzie pokazuje, **co i jak intensywnie** konkurencja reklamuje, a nie jak skuteczne są te reklamy. Pośrednią wskazówką są evergreeny — reklamy działające bardzo długo zwykle się opłacają, bo inaczej zostałyby wyłączone.
