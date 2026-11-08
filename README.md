@@ -2,7 +2,7 @@
 
 # RivalCore — README
 
-**RivalCore** to wewnętrzne narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
+**RivalCore** to wewnętrzne narzędzie agencji BeDigital (w parze z feedcore) do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
 
 Aktualna wersja: **19.0** (8 listopada 2026). Plik narzędzia nadal nazywa się `meta-ads-bot.html` — tej nazwy używają automatyczne testy. Wygląd ekranu, raportów PDF i grafik PNG jest zgodny z identyfikacją wizualną BeDigital.
 
@@ -26,13 +26,25 @@ Aktualna wersja: **19.0** (8 listopada 2026). Plik narzędzia nadal nazywa się 
 
 ---
 
-## Co nowego? Wersja 19.0
+## Co nowego? Wersja 22.0
 
 Zmiany z 8 listopada 2026: poprawki z feedbacku zespołu (dokument RivalCore_v1) oraz przebudowa wizualna pod markę BeDigital.
 
+### Marki z kilkoma kontami reklamowymi
+- **Nowy formularz marek w okienkach.** Twoja marka: okienko z nazwą, obok okienko na ID strony albo link, a przycisk **„+ konto”** dodaje kolejne. Konkurenci: domyślnie jedno okienko (nazwa + ID/link), **„+ konto”** przy każdym konkurencie i **„+ Dodaj konkurenta”** pod listą. Konto usuwasz krzyżykiem, konkurenta ikoną kosza. Zamiast jednego pola tekstowego, w którym łatwo o literówkę w średniku albo przecinku.
+- Błędne ID albo link podświetla się na czerwono od razu, przed analizą. Kilka ID wklejonych w jedno okienko samo rozdziela się na osobne okienka.
+- **Jedna marka = kilka kont (stron) liczonych razem**, np. Kaufland z kilkoma fanpage'ami. Maksymalnie 10 kont na markę.
+- Możesz łączyć dowolnie: jedna marka vs pojedyncze konta, marka z kilku kont vs pojedyncze konta, albo marki z kilku kont po obu stronach. Konto dodane jako osobny konkurent = osobna marka w porównaniu.
+- W „Przeglądzie” takiej marki jest nowy blok **„Konta reklamowe w tej marce”**: udział każdego konta w aktywnych reklamach i w dziennym zasięgu oraz link do Biblioteki Reklam dla każdego konta.
+- Przy znalezionych stronach (gdy marka była szukana po nazwie) jest przycisk **„+”**, który dołącza konto do marki zamiast ją podmieniać.
+- W „Odkryj konkurentów po frazie” są dwa nowe przyciski: **„Dodaj zaznaczone jako jedną markę”** i **„Dołącz zaznaczone do mojej marki”**.
+- Narzędzie pilnuje, żeby to samo konto nie trafiło do dwóch marek naraz.
+
 ### Nazwa i wygląd
 - **Nowa nazwa: RivalCore** (wcześniej „Meta Ads Bot”) — w pasku u góry, tytule strony, na okładce i w stopce PDF, w nazwie pliku PDF, w pliku dla AI i w opisie pakietu do strategii.
-- **Identyfikacja BeDigital:** czerń #0D0D0D zamiast chłodnych szarości, niebieski akcent z key visuala, pomarańcz jako druga seria na wykresach, font Montserrat (liczby nadal w JetBrains Mono), ostrzejsze narożniki, cienka linia przed tytułami sekcji (jak „___Strategia” w prezentacjach).
+- **Identyfikacja BeDigital:** czerń #0D0D0D zamiast chłodnych szarości, niebieski akcent z key visuala, pomarańcz jako druga seria na wykresach, font Montserrat (liczby nadal w JetBrains Mono), cienka linia przed tytułami sekcji (jak „___Strategia” w prezentacjach).
+- **Typografia jak w prezentacjach agencji:** opisy, wnioski i podpowiedzi lekkim Montserratem (Light) na ekranie, większe i lżejsze tytuły, linia przy tytule marki wychodząca od krawędzi karty. W PDF teksty zostają w zwykłej grubości, żeby były czytelne w druku.
+- **Ostre narożniki (2 px)** w kartach, przyciskach i polach — jak kwadratowy sygnet BeDigital.
 - **Logo BeDigital** w pasku aplikacji, w nowej stopce strony, na okładce PDF i w nagłówku każdego PNG.
 - **Nowa postać na stronie startowej:** analityk w bluzie z logo BeDigital i czapce z daszkiem, z kotem i telefonem, bez ramki — jako element tła na niebiesko-pomarańczowej poświacie. Pojawia się tylko na ekranie, nie w PDF.
 
@@ -89,9 +101,9 @@ Jeśli widzisz nazwy stron — wszystko działa. Ważne: weryfikacja, aplikacja 
 
 1. Otwórz `meta-ads-bot.html` (plik narzędzia RivalCore) w Chrome lub Edge (dwuklik).
 2. Wklej **token** (opcjonalnie zaznacz „Zapamiętaj token na tym komputerze”).
-3. Wpisz **Twoją markę**. Pewniej: wklej **ID strony** albo link z Biblioteki Reklam (z `view_all_page_id=…`) — wtedy bot nie musi zgadywać strony po nazwie.
+3. Wpisz **Twoją markę**: nazwę w pierwszym okienku, a obok — pewniej — **ID strony** albo link z Biblioteki Reklam (z `view_all_page_id=…`); wtedy bot nie musi zgadywać strony po nazwie. **Marka ma kilka kont reklamowych** (np. osobne fanpage'e sieci i regionów)? Kliknij **„+ konto”** i dodaj kolejne ID (maks. 10) — RivalCore policzy je razem jako jedną markę. Błędne ID podświetli się na czerwono.
 4. Wybierz **obszar emisji** — kraje (kafelki, można kilka) albo „Cały świat”.
-5. Wpisz **konkurentów** — jeden w linii: sama nazwa albo `Nazwa; ID strony lub link`.
+5. Wpisz **konkurentów** — każdy w osobnym okienku: nazwa i (pewniej) ID strony albo link. Kolejnego konkurenta dodasz przyciskiem **„+ Dodaj konkurenta”**, usuniesz ikoną kosza. Konkurent z kilkoma kontami: **„+ konto”** w jego okienku — konta liczone razem. Żeby porównać konta jednej firmy osobno, dodaj je jako osobnych konkurentów.
    Nie wiesz, kogo wpisać? Rozwiń **„Odkryj konkurentów po frazie”**, wpisz np. „krem z filtrem”, zaznacz reklamodawców i kliknij „Dodaj zaznaczone do konkurentów”.
 6. Pozostałe ustawienia są schowane pod **„Ustawienia zaawansowane”** (zwinięty pasek pokazuje ich aktualne wartości, np. „evergreen ≥30 dni · bez limitu reklam · cała historia · CPM 10–25 zł · 3 marki naraz”). W środku:
    **Pobieranie marek** — domyślnie 3 marki naraz (szybciej o ok. 40–50% przy kilku konkurentach); przy błędach limitu zapytań zmień na 2 albo „po kolei”.
@@ -313,6 +325,8 @@ Prompt każe AI opierać się wyłącznie na danych z pliku, odróżniać dane o
 | **„Limit zapytań API, czekam…”** | Normalne przy wielu markach — bot sam odczeka i pociągnie dalej. |
 | **Błąd wersji API** | W ustawieniach zmień wersję Graph API, np. na `v24.0`. |
 | **Bot wybrał złą stronę** | Podaj ID strony / link z Biblioteki Reklam albo kliknij właściwą stronę w zakładce „Przegląd”. |
+| **Marka ma kilka fanpage'y i część reklam „ucieka”** | Dodaj wszystkie konta przyciskiem „+ konto” albo kliknij „+” przy znalezionej stronie w „Przeglądzie” — konta policzą się razem. |
+| **„Pominięto — ta sama strona (konto) już jest w analizie”** | To samo konto jest w dwóch markach. Zostaw je tylko w jednej. |
 | **Brak demografii** | Włącz „Pobieraj demografię…”; dla reklam spoza UE Meta jej nie podaje. |
 | **Zakładka „Zmiany” pusta** | To pierwsza analiza tej strony na tym obszarze — porównanie pojawi się przy kolejnej (najwcześniej następnego dnia). |
 | **PDF bez kolorowych teł** | W oknie drukowania zaznacz „Grafika tła”. |
@@ -405,6 +419,9 @@ Wskaźnik autorski, który łączy w jedną liczbę: skalę (liczbę aktywnych r
 Że analiza nie objęła wszystkich danych — np. ustawiono limit liczby reklam, wybrano okres albo dane są starsze niż rok. Ramka mówi, czego dotyczy ograniczenie i które liczby mogą być zaniżone.
 
 ### O pracy z narzędziem
+
+**Co jeśli marka ma kilka kont reklamowych (np. Kaufland)?**
+Dodaj wszystkie konta przy jednej marce przyciskiem „+ konto” (maks. 10). RivalCore pobierze je razem i policzy jako jedną markę, a w „Przeglądzie” pokaże, ile wnosi każde konto. Jeśli chcesz porównać konta tej samej firmy ze sobą, dodaj je jako osobnych konkurentów — wtedy każde jest osobną marką.
 
 **Ile trwa analiza?**
 Zwykle od kilkunastu sekund do kilku minut — zależy od liczby marek i liczby ich reklam. Marki pobierane są równolegle (domyślnie 3 naraz). Dla bardzo dużych marek można ustawić limit reklam.
