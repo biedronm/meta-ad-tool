@@ -3,65 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meta Ads Bot</title>
+<title>RivalCore · BeDigital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* =====================================================================
-   Meta Ads Bot — system wizualny
-   Ciemny, techniczny interfejs (ekran) + papierowy wariant jasny (PDF,
-   włączany przez data-theme="light" na czas drukowania).
+   RivalCore (BeDigital) — system wizualny
+   Identyfikacja: czerń #0D0D0D, Montserrat, sygnet-ramka, linia „___” przed
+   tytułem, ziarniste poświaty niebiesko-pomarańczowe (jak w prezentacjach).
+   Ciemny ekran + papierowy wariant jasny (PDF/PNG, data-theme="light").
    ===================================================================== */
 :root{
   color-scheme:dark;
   /* powierzchnie */
-  --bg:#09090B; --bg-2:#0D0D10; --card:#121215; --card-2:#18181C; --field:#0C0C0F;
-  --glass:rgba(11,11,14,.72);
+  --bg:#0D0D0D; --bg-2:#111111; --card:#141414; --card-2:#1B1B1B; --field:#0F0F0F;
+  --glass:rgba(13,13,13,.78);
   /* tekst */
-  --text:#EDEDEF; --muted:#8B8B94; --faint:#5D5D66;
+  --text:#F1F1F1; --muted:#9A9A9A; --faint:#636363;
   /* linie włoskowe */
   --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12); --line-3:rgba(255,255,255,.2);
   --track:rgba(255,255,255,.055); --hover:rgba(255,255,255,.04);
   /* akcent i stany */
-  --accent:#0A84FF; --accent-hover:#2E95FF; --accent-soft:rgba(10,132,255,.12); --on-accent:#fff;
-  --ring:rgba(10,132,255,.32);
+  --accent:#2D6FD6; --accent-hover:#4884E2; --accent-soft:rgba(45,111,214,.14); --on-accent:#fff;
+  --ring:rgba(45,111,214,.34);
+  /* BeDigital: kolory poświat z key visuala */
+  --bd-blue:#2D6FD6; --bd-deep:#0B1E3D; --bd-ember:#E0703F; --bd-box:#2B2B2B;
   --good:#34C38F; --bad:#FF5F57; --warn:#E5B53B;
-  --bar1:#0A84FF; --bar2:#1E3A5C; --shadow:none;
+  --bar1:#2D6FD6; --bar2:#1F3557; --shadow:none;
   /* serie danych */
-  --c0:#0A84FF; --c1:#FF9F43; --c2:#34C38F; --c3:#FF6B8B; --c4:#9D8CFF; --c5:#E5B53B; --c6:#3FC6DD; --c7:#8E8E96;
+  --c0:#2D6FD6; --c1:#E0703F; --c2:#34C38F; --c3:#FF6B8B; --c4:#9D8CFF; --c5:#E5B53B; --c6:#3FC6DD; --c7:#8E8E96;
   /* skala sekwencyjna (heatmapy) */
   --a0:#0F1B2D; --a1:#13284A; --a2:#17386A; --a3:#1B4C8E; --a4:#2064B8; --a5:#3D86E0; --a6:#8DBDFF; --a7:#2C2C33;
   /* Lupa detektywa */
-  --kd:#34C38F; --kc:#0A84FF; --kp:#E5B53B; --kx:#9D8CFF; --kt:#0A0A0C;
+  --kd:#34C38F; --kc:#2D6FD6; --kp:#E5B53B; --kx:#9D8CFF; --kt:#0A0A0C;
   /* typografia */
-  --sans:-apple-system,BlinkMacSystemFont,"Inter","SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --sans:"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --mono:"JetBrains Mono","SF Mono",ui-monospace,"Fira Code",Menlo,Consolas,monospace;
   /* promienie */
-  --r-lg:12px; --r-md:8px; --r-sm:6px;
+  --r-lg:6px; --r-md:4px; --r-sm:3px;
   --appbar:48px;
 }
 :root[data-theme="light"],.light-scope{
   color-scheme:light;
-  --bg:#FBFBFD; --bg-2:#F7F7F9; --card:#FFFFFF; --card-2:#F5F5F7; --field:#FFFFFF;
-  --glass:rgba(251,251,253,.78);
-  --text:#1D1D1F; --muted:#6E6E73; --faint:#A1A1A6;
+  --bg:#FFFFFF; --bg-2:#F6F6F6; --card:#FFFFFF; --card-2:#F3F3F3; --field:#FFFFFF;
+  --glass:rgba(255,255,255,.8);
+  --text:#0D0D0D; --muted:#5F5F5F; --faint:#9C9C9C;
   --line:rgba(0,0,0,.08); --line-2:rgba(0,0,0,.13); --line-3:rgba(0,0,0,.22);
   --track:rgba(0,0,0,.05); --hover:rgba(0,0,0,.035);
-  --accent:#0066CC; --accent-hover:#0071E3; --accent-soft:rgba(0,102,204,.08); --on-accent:#fff;
-  --ring:rgba(0,102,204,.25);
+  --accent:#1F5FBF; --accent-hover:#2A6DD0; --accent-soft:rgba(31,95,191,.08); --on-accent:#fff;
+  --ring:rgba(31,95,191,.25);
+  --bd-box:#F1F1F1;
   --good:#1A7F4B; --bad:#D70015; --warn:#A66B00;
-  --bar1:#0066CC; --bar2:#A9C8EA;
-  --c0:#0066CC; --c1:#D9480F; --c2:#0F8A5F; --c3:#C2255C; --c4:#6741D9; --c5:#A67C00; --c6:#0C8599; --c7:#6E6E73;
+  --bar1:#1F5FBF; --bar2:#A9C3E8;
+  --c0:#1F5FBF; --c1:#CC5A28; --c2:#0F8A5F; --c3:#C2255C; --c4:#6741D9; --c5:#A67C00; --c6:#0C8599; --c7:#6E6E73;
   --a0:#E6F0FA; --a1:#C5DCF3; --a2:#95BFE8; --a3:#5C9BD9; --a4:#2B7AC9; --a5:#0B5FB0; --a6:#063F7A; --a7:#D2D2D7;
-  --kd:#0F8A5F; --kc:#0066CC; --kp:#A66B00; --kx:#6741D9; --kt:#fff;
+  --kd:#0F8A5F; --kc:#1F5FBF; --kp:#A66B00; --kx:#6741D9; --kt:#fff;
 }
 
 /* ---------------------------------------------------------------- baza */
 *{box-sizing:border-box}
 html{scroll-padding-top:calc(var(--appbar) + 16px);scrollbar-width:thin;scrollbar-color:rgba(127,127,127,.32) transparent}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"cv11","ss01"}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 ::selection{background:color-mix(in srgb,var(--accent) 34%,transparent)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:rgba(127,127,127,.28);border-radius:99px;border:3px solid transparent;background-clip:content-box}
@@ -84,8 +88,9 @@ svg.lc text,.heat .hl,.lc .hl,.lc .sl,.donut .dc,.gauge .gv{font-family:var(--mo
 .appbar{position:sticky;top:0;z-index:30;height:var(--appbar);background:var(--glass);-webkit-backdrop-filter:saturate(170%) blur(16px);backdrop-filter:saturate(170%) blur(16px);border-bottom:1px solid var(--line)}
 .appbar-in{max-width:1080px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brandmark{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-.brandmark .logo{width:22px;height:22px;flex:none;border-radius:6px;border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card-2)}
-.brandmark .logo svg{width:13px;height:13px;fill:none;stroke:var(--text);stroke-width:1.6;stroke-linecap:round}
+.brandmark .bdlogo{height:23px;width:auto;display:block;color:var(--text);flex:none}
+.brandmark .bdsep{width:1px;height:16px;background:var(--line-3)}
+.brandmark b{font-weight:600}
 .brandmark .crumb{font:400 12px var(--mono);color:var(--faint)}
 .appbar-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden}
 .appbar-meta .sep{width:1px;height:14px;background:var(--line-2)}
@@ -97,15 +102,23 @@ kbd,.kbd{font:500 11px var(--mono);padding:2px 6px;border-radius:5px;border:1px 
 .wrap{max-width:1080px;margin:0 auto;padding:0 16px 72px}
 
 /* ---------------------------------------------------------------- hero */
-.hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:center;padding:44px 0 32px;border-bottom:1px solid var(--line)}
-.hero .kicker{display:inline-flex;align-items:center;gap:8px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.hero .kicker::before{content:"";width:6px;height:6px;border-radius:2px;background:var(--accent)}
-header h1{margin:12px 0 0;font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-.035em}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:center;padding:44px 0 32px;border-bottom:1px solid var(--line)}
+.hero .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hero .kicker::before{content:"";width:28px;height:1px;background:currentColor}
+header h1{margin:14px 0 0;font-size:42px;line-height:1.05;font-weight:400;letter-spacing:-.02em}
+header h1::before{content:"";display:inline-block;width:.85em;height:.05em;min-height:2px;background:currentColor;margin-right:.06em;vertical-align:baseline}
 header p{margin:14px 0 0;color:var(--muted);max-width:560px;font-size:15px;line-height:1.6}
 .hero-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
 .hero-meta span{font:400 11.5px var(--mono);color:var(--muted);padding:3px 8px;border:1px solid var(--line);border-radius:6px}
-.hero-fig{margin:0;border:1px solid var(--line);border-radius:14px;background-color:var(--card);background-image:radial-gradient(var(--line-2) 1px,transparent 1.2px);background-size:14px 14px;background-position:-7px -7px;padding:14px 12px 0;overflow:hidden}
-.hero-fig figcaption{display:flex;justify-content:space-between;gap:8px;margin:0 -12px;padding:8px 12px;border-top:1px solid var(--line);background:var(--card);font:400 10.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.hero-fig{position:relative;isolation:isolate;margin:0;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg);padding:14px 12px 0;overflow:hidden}
+/* poświata z key visuala BeDigital: pierścień niebieski + żar pomarańczowy + ziarno */
+.bd-orb::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse 20% 15% at 70% 20%,rgba(224,112,63,.85),transparent 75%),
+    radial-gradient(ellipse 48% 44% at 50% 56%,transparent 0%,transparent 52%,rgba(45,111,214,.85) 68%,rgba(30,80,160,.35) 82%,transparent 96%);
+  filter:blur(10px)}
+.bd-orb::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.22;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.hero-fig figcaption{display:flex;justify-content:space-between;gap:8px;margin:0 -12px;padding:8px 12px;border-top:1px solid var(--line);background:var(--bg);font:400 10.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
 .detective{width:100%;max-width:300px;display:block;margin:0 auto;flex:none;overflow:visible}
 .detective .float1{animation:bob 3.2s ease-in-out infinite}
 .detective .float2{animation:bob 3.8s ease-in-out infinite .6s}
@@ -140,10 +153,11 @@ header p{margin:14px 0 0;color:var(--muted);max-width:560px;font-size:15px;line-
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;margin-top:16px}
 .card h2{margin:0 0 16px;font-size:15px;font-weight:600;letter-spacing:-.015em;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .card h2 .sub{font-weight:400}
-.sn{font:500 11px var(--mono);color:var(--faint);letter-spacing:.02em}
+.sn{font:500 11px var(--mono);color:var(--faint);letter-spacing:.02em;display:inline-flex;align-items:center;gap:8px}
+.sn::after{content:"";width:22px;height:1px;background:currentColor}
 h3{font-size:13px;font-weight:600;letter-spacing:-.01em;margin:22px 0 10px}
 .title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.title-row h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.025em}
+.title-row h2{margin:0;font-size:20px;font-weight:500;letter-spacing:-.015em}
 .sub{color:var(--muted);font-size:12.5px}
 .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
 .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
@@ -206,7 +220,7 @@ button:disabled{opacity:.5;cursor:wait}
 .kpis{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 .kpis:has(> .kpi:nth-child(6)){grid-template-columns:repeat(3,1fr)}
 @media (max-width:640px){.kpis:has(> .kpi:nth-child(6)){grid-template-columns:repeat(2,1fr)}}
-.kpi{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--bg-2)}
+.kpi{border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;background:var(--bg-2)}
 .kpi .v{font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.03em}
 .kpi .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px;line-height:1.35}
 .cost{font-size:20px;font-weight:500;letter-spacing:-.03em}
@@ -282,7 +296,7 @@ details.sec > summary > span:first-child{flex:1}
 /* ---------------------------------------------------------------- PDF: strona i druk */
 #report{display:none}
 @page{size:A4;margin:13mm 13mm 15mm;
-  @bottom-left{content:"Meta Ads Bot · raport konkurencji";font:7pt "JetBrains Mono",Menlo,Consolas,monospace;color:#8a8a8f}
+  @bottom-left{content:"BeDigital · RivalCore · raport konkurencji";font:7pt "JetBrains Mono",Menlo,Consolas,monospace;color:#8a8a8f}
   @bottom-right{content:counter(page) " / " counter(pages);font:7pt "JetBrains Mono",Menlo,Consolas,monospace;color:#8a8a8f}}
 @page cover{margin:0;@bottom-left{content:none}@bottom-right{content:none}}
 @media print{
@@ -295,7 +309,8 @@ details.sec > summary > span:first-child{flex:1}
 .rp-page{break-after:page}
 .rp-page:last-child,.rp-cover:last-child{break-after:auto}
 .rp-top{display:flex;justify-content:space-between;gap:10px;font-size:7pt;letter-spacing:.03em;color:var(--muted);border-bottom:1px solid var(--line-2);padding-bottom:5px;margin-bottom:14px}
-.rp-h{font-size:17pt;font-weight:600;letter-spacing:-.025em;margin:0 0 14px;padding-bottom:7px;border-bottom:1.5px solid var(--accent);display:inline-block}
+.rp-h{font-size:18pt;font-weight:400;letter-spacing:-.015em;margin:0 0 14px;display:block}
+.rp-h::before{content:"";display:inline-block;width:.9em;height:1.2pt;background:currentColor;margin-right:.08em;vertical-align:baseline}
 .rp h3{font-size:10.5pt;margin:14px 0 8px}
 .rp-block{break-inside:avoid}
 .rp-label{font:600 7pt var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
@@ -325,40 +340,59 @@ details.sec > summary > span:first-child{flex:1}
 .rp .stackrow{grid-template-columns:minmax(90px,150px) 1fr;font-size:8.5pt}
 .rp .hbar{font-size:8.5pt}
 .rp .wc{font-size:8pt;padding:2px 7px}
-.rp-brandhead{padding:12px 14px;border-radius:8px;background:var(--card-2);border:1px solid var(--line);margin-bottom:12px;break-inside:avoid}
+.rp-brandhead{padding:12px 14px;border-radius:var(--r-md);background:var(--card-2);border:1px solid var(--line);margin-bottom:12px;break-inside:avoid}
 .rp-scgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rp-sc{border:1px solid var(--line-2);border-radius:8px;padding:12px;break-inside:avoid}
+.rp-sc{border:1px solid var(--line-2);border-radius:var(--r-md);padding:12px;break-inside:avoid}
 .rp-sc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:10pt}
 .rp-sc-g{display:grid;grid-template-columns:.8fr 1.35fr .8fr .85fr;gap:8px 8px}
 .rp-sc-g b{display:block;white-space:nowrap;font-size:9.5pt;font-weight:500;letter-spacing:-.02em}
 .rp-sc-g span{display:block;font-size:6.5pt;color:var(--muted);line-height:1.25;text-transform:uppercase;letter-spacing:.04em}
 .rp-method li{font-size:9pt}
 /* okładka */
-.rp-cover{page:cover;width:210mm;height:296.5mm;box-sizing:border-box;padding:16mm 16mm 0;display:flex;flex-direction:column;position:relative;overflow:hidden;break-after:page;background:var(--card)}
-.rp-cover::after{content:"";position:absolute;left:16mm;right:16mm;bottom:9mm;height:.6mm;background:var(--text)}
+.rp-cover{page:cover;width:210mm;height:296.5mm;box-sizing:border-box;padding:16mm 16mm 0;display:flex;flex-direction:column;position:relative;overflow:hidden;isolation:isolate;break-after:page;
+  --bg:#0D0D0D;--card:#0D0D0D;--card-2:#1B1B1B;--text:#F1F1F1;--muted:#A3A3A3;--faint:#6B6B6B;--line:rgba(255,255,255,.1);--line-2:rgba(255,255,255,.16);--accent:#4C8BEA;--c0:#2D6FD6;--c1:#E0703F;
+  background:#0D0D0D;color:var(--text)}
+.rp-cover::before{content:"";position:absolute;z-index:-1;left:62mm;top:30mm;width:190mm;height:140mm;pointer-events:none;
+  background:radial-gradient(ellipse 30% 30% at 46% 52%,#0D0D0D 55%,transparent 100%),
+    radial-gradient(ellipse 26% 20% at 64% 22%,rgba(224,112,63,.75),transparent 70%),
+    radial-gradient(ellipse 50% 46% at 50% 52%,rgba(45,111,214,.8) 0%,rgba(21,58,120,.5) 48%,transparent 74%);
+  filter:blur(6mm)}
+.rp-cover::after{content:"";position:absolute;left:16mm;right:16mm;bottom:9mm;height:.3mm;background:var(--line-2)}
 .rp-cover-top{display:flex;justify-content:space-between;align-items:center;font-size:8.5pt;color:var(--muted)}
-.rp-logo{max-height:16mm;max-width:60mm;object-fit:contain}
+.rp-bdlogo{display:block;height:11mm;width:auto;color:#F1F1F1}
+.rp-claim{display:block;margin:1.4mm 0 0 12.2mm;font:300 5.4pt var(--sans);letter-spacing:.5em;color:#F1F1F1;opacity:.85;white-space:nowrap}
+.rp-logo{max-height:12mm;max-width:44mm;object-fit:contain;background:#fff;padding:2.2mm 3mm;border-radius:1mm}
 .rp-wordmark{font-weight:600;font-size:12pt;color:var(--text);letter-spacing:-.015em}
-.rp-wordmark::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--accent);margin-right:8px}
-.rp-hero{margin-top:22mm;background-color:var(--card-2);background-image:radial-gradient(var(--line-2) .6px,transparent .8px);background-size:4mm 4mm;border:1px solid var(--line);border-radius:10px;padding:12mm 10mm;display:flex;align-items:center;gap:8mm}
-.rp-hero-txt{flex:1}
-.rp-hero .kicker{font:600 7.5pt var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.rp-hero h1{font-size:28pt;line-height:1.08;font-weight:600;letter-spacing:-.035em;margin:4mm 0 4mm}
-.rp-hero p{color:var(--muted);font-size:10.5pt;margin:0}
-.rp-det{width:62mm;flex:none}
-.rp-det *{animation:none!important}
-.rp-cover-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-top:12mm}
-.rp-cover-kpis > div{border:1px solid var(--line-2);border-radius:8px;padding:5mm 4mm}
-.rp-cover-kpis .v{font-size:18pt;font-weight:500;letter-spacing:-.03em}
-.rp-cover-kpis .l{font-size:7pt;color:var(--muted);margin-top:1.5mm;text-transform:uppercase;letter-spacing:.05em}
-.rp-cover-brands{margin-top:12mm}
-.rp-brandchip{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:6px;padding:2mm 4mm;margin:0 2mm 2mm 0;font-size:9.5pt;font-weight:500}
-.rp-cover-foot{margin-top:auto;margin-bottom:14mm;display:flex;justify-content:space-between;gap:10mm;font-size:8.5pt;color:var(--muted);border-top:1px solid var(--line-2);padding-top:5mm}
+.rp-hero{margin-top:46mm;display:block}
+.rp-hero-txt{max-width:150mm}
+.rp-hero .kicker{display:flex;align-items:center;gap:3mm;font:500 7.5pt var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.rp-hero .kicker::before{content:"";width:12mm;height:.3mm;background:currentColor}
+.rp-hero h1{font-size:32pt;line-height:1.08;font-weight:400;letter-spacing:-.02em;margin:7mm 0 5mm;color:var(--text)}
+.rp-hero h1::before{content:"";display:inline-block;width:.85em;height:1.6pt;background:currentColor;margin-right:.06em;vertical-align:baseline}
+.rp-hero p{color:var(--muted);font-size:10.5pt;margin:0;font-weight:300}
+.rp-det{display:none}
+.rp-cover-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:2.5mm;margin-top:auto}
+.rp-cover-kpis > div{border:1px solid rgba(255,255,255,.14);border-radius:0;padding:5mm 4mm;background:rgba(43,43,43,.72)}
+.rp-cover-kpis .v{font-size:18pt;font-weight:500;letter-spacing:-.03em;color:var(--text)}
+.rp-cover-kpis .l{font-size:6.8pt;color:var(--muted);margin-top:1.5mm;text-transform:uppercase;letter-spacing:.08em}
+.rp-cover-brands{margin-top:9mm}
+.rp-cover .rp-label{display:flex;align-items:center;gap:2.5mm;font-family:var(--sans);letter-spacing:.14em;color:var(--muted)}
+.rp-cover .rp-label::before{content:"";width:8mm;height:.3mm;background:currentColor}
+.rp-brandchip{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:0;padding:2mm 4mm;margin:0 2mm 2mm 0;font-size:9.5pt;font-weight:500;color:var(--text)}
+.rp-cover--light{--bg:#fff;--card:#fff;--card-2:#F3F3F3;--text:#0D0D0D;--muted:#5F5F5F;--faint:#9C9C9C;--line:rgba(0,0,0,.08);--line-2:rgba(0,0,0,.14);--accent:#1F5FBF;--c0:#1F5FBF;--c1:#CC5A28;background:#fff}
+.rp-cover--light::before{opacity:.5;filter:blur(7mm);
+  background:radial-gradient(ellipse 24% 18% at 64% 22%,rgba(224,112,63,.55),transparent 72%),
+    radial-gradient(ellipse 48% 44% at 50% 52%,transparent 50%,rgba(45,111,214,.5) 66%,rgba(45,111,214,.18) 80%,transparent 94%)}
+.rp-cover--light .rp-bdlogo,.rp-cover--light .rp-claim{color:#0D0D0D}
+.rp-cover--light .rp-claim{opacity:.7}
+.rp-cover--light .rp-cover-kpis > div{background:#F3F3F3;border-color:rgba(0,0,0,.1)}
+.rp-cover--light .rp-logo{background:none;padding:0}
+.rp-cover-foot{margin-top:9mm;margin-bottom:14mm;display:flex;justify-content:space-between;align-items:flex-end;gap:10mm;font-size:8.5pt;color:var(--muted);border-top:1px solid var(--line-2);padding-top:5mm}
 .rp-cover-foot b{color:var(--text)}
 
 /* ---------------------------------------------------------------- zakładki */
 .tabs1{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
-.t1{min-height:0;display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:7px;background:transparent;color:var(--muted);border:1px solid var(--line);font:500 13px/1.3 var(--sans)}
+.t1{min-height:0;display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:var(--r-md);background:transparent;color:var(--muted);border:1px solid var(--line);font:500 13px/1.3 var(--sans)}
 .t1:hover{color:var(--text);background:var(--hover);border-color:var(--line-2)}
 .t1 .dot{margin:0}
 .t1.on{background:var(--card-2);color:var(--text);border-color:var(--line-3)}
@@ -371,18 +405,19 @@ details.sec > summary > span:first-child{flex:1}
 .t2.on{color:var(--text);border-bottom-color:var(--accent)}
 .tb{display:inline-block;margin-left:6px;font-size:10px;font-weight:500;padding:1px 5px;border-radius:4px;background:color-mix(in srgb,var(--c1) 16%,transparent);color:var(--c1)}
 .panel{padding-top:10px}
-.cmphead{margin-top:16px}.cmphead h2{margin:0;font-size:20px;letter-spacing:-.025em}
+.cmphead{margin-top:16px}.cmphead h2{margin:0;font-size:20px;font-weight:500;letter-spacing:-.015em}
 
 /* ---------------------------------------------------------------- bloki */
 .blk{margin-top:22px}
-.blk > h3{margin:0 0 12px;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.blk > h3{margin:0 0 12px;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.blk > h3::before{content:"";flex:none;width:16px;height:1px;background:currentColor;opacity:.8}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px 32px}
 .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 28px}
-.see{display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,var(--accent) 5%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:10px;padding:11px 14px;margin-top:14px;font-size:13.5px;line-height:1.55}
+.see{display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,var(--accent) 5%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:var(--r-lg);padding:11px 14px;margin-top:14px;font-size:13.5px;line-height:1.55}
 .see > span{flex:none;color:var(--accent);line-height:0;padding-top:2px}
 .see > span .ic{width:15px;height:15px}
 .mkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:14px}
-.mk{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg-2)}
+.mk{border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 14px;background:var(--bg-2)}
 .mk b{display:block;font-size:18px;font-weight:500;letter-spacing:-.03em;line-height:1.2}
 .mk b small{font-size:11px;font-weight:400;color:var(--muted)}
 .mk span{display:block;font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.35}
@@ -403,7 +438,7 @@ details.sec > summary > span:first-child{flex:1}
 .idxwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .idxparts{flex:1;min-width:220px}
 .gauges{display:flex;flex-wrap:wrap;gap:10px}
-.gw{border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:center;background:var(--bg-2)}
+.gw{border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 12px;text-align:center;background:var(--bg-2)}
 .gn{font-size:12.5px;font-weight:500;margin-bottom:4px}
 .idxchip{font-weight:500;font-size:15px;color:var(--accent)}.idxchip small{font-size:10px;color:var(--muted)}
 .heat{display:block}
@@ -458,7 +493,7 @@ details.sec > summary > span:first-child{flex:1}
 .wc.good{background:color-mix(in srgb,var(--c2) 12%,transparent);color:var(--c2);border-color:color-mix(in srgb,var(--c2) 22%,transparent)}
 .mtag{display:inline-block;font-size:10px;font-weight:500;padding:1px 6px;border-radius:4px;margin-left:6px;background:var(--track);color:var(--muted);letter-spacing:.02em}
 .recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
-.rec{border:1px solid var(--line);border-left:2px solid;border-radius:10px;padding:13px 15px;break-inside:avoid;background:var(--bg-2)}
+.rec{border:1px solid var(--line);border-left:2px solid;border-radius:var(--r-lg);padding:13px 15px;break-inside:avoid;background:var(--bg-2)}
 .rh{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .rprio{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:2px 6px;border-radius:4px}
 .ra{font-size:10.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
@@ -466,7 +501,7 @@ details.sec > summary > span:first-child{flex:1}
 .rw{font-size:12.5px;color:var(--muted);margin-bottom:6px}
 .rd{font-size:13px}
 .rp-scgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
-.rp-sc{border:1px solid var(--line);border-radius:10px;padding:13px;break-inside:avoid}
+.rp-sc{border:1px solid var(--line);border-radius:var(--r-lg);padding:13px;break-inside:avoid}
 .rp-sc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-size:13.5px}
 .rp-sc-g{display:grid;grid-template-columns:.8fr 1.35fr .8fr .9fr;gap:8px}
 .rp-sc-g b{display:block;white-space:nowrap;font-size:14px;font-weight:500;letter-spacing:-.03em}
@@ -496,8 +531,9 @@ details.sec > summary > span:first-child{flex:1}
 .rp .dleg{font-size:8.5pt;min-width:120px}
 .rp .donutwrap{gap:12px}
 .rp-newpage{break-before:page}
-.rp-kicker{font:600 7pt var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
-.rp-h2{font-size:15pt;font-weight:600;margin:0 0 4px;letter-spacing:-.025em}
+.rp-kicker{display:flex;align-items:center;gap:6px;font:600 7pt var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.rp-kicker::before{content:"";width:14pt;height:.8pt;background:currentColor}
+.rp-h2{font-size:15pt;font-weight:500;margin:0 0 4px;letter-spacing:-.015em}
 .rp .idxparts .hbar{font-size:8pt}
 .rp .concept{padding:5px 0}.rp .concept .t{font-size:9pt}
 .rp .wave{font-size:8.3pt;grid-template-columns:80px 100px 1fr;padding:4px 0}
@@ -510,7 +546,9 @@ details.sec > summary > span:first-child{flex:1}
 .rp .pyr .pr,.rp .divg .dr{font-size:8pt}
 .rp .cands{display:none}
 
-.three .share,.blk .share{grid-template-columns:minmax(90px,130px) 1fr 42px}
+.three .share,.blk .share{grid-template-columns:minmax(90px,130px) 1fr minmax(48px,auto)}
+.segtog{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r-md);overflow:hidden;margin:4px 0 14px}.segtog button{background:none;border:0;color:var(--muted);font:500 12.5px var(--sans);padding:6px 12px;cursor:pointer}.segtog button.on{background:var(--hover);color:var(--text)}
+.bfilter{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}.bchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:none;color:var(--text);border-radius:var(--r-sm);padding:4px 10px;font:500 12.5px var(--sans);cursor:pointer}.bchip[aria-pressed="false"]{opacity:.45;text-decoration:line-through}.bchip:disabled{cursor:default;color:var(--text)}.bchip .dot{width:8px;height:8px;border-radius:50%}
 .rp-scgrid{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
 .idxparts{min-width:280px}
 
@@ -532,7 +570,7 @@ details.sec > summary > span:first-child{flex:1}
 .mbt b .ic{color:var(--muted)}
 .mbt span{color:var(--muted);font-size:12.5px}
 .mchks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:12px}
-.mchk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;color:var(--text);transition:background-color .15s ease,border-color .15s ease;text-transform:none;letter-spacing:0}
+.mchk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;color:var(--text);transition:background-color .15s ease,border-color .15s ease;text-transform:none;letter-spacing:0}
 .mchk:hover{border-color:var(--line-2);background:var(--hover)}
 .mchk input{width:auto;margin-top:3px;accent-color:var(--k)}
 .mchk i{flex:none;width:8px;height:8px;border-radius:2px;background:var(--k);margin-top:6px}
@@ -541,7 +579,7 @@ details.sec > summary > span:first-child{flex:1}
 .mchk:has(input:checked){background:color-mix(in srgb,var(--k) 8%,transparent);border-color:color-mix(in srgb,var(--k) 55%,transparent)}
 [data-k="d"]{--k:var(--kd);--kl:"Czyste dane"}[data-k="c"]{--k:var(--kc);--kl:"Obliczenia"}[data-k="p"]{--k:var(--kp);--kl:"Poszlaki"}[data-k="x"]{--k:var(--kx);--kl:"Dedukcja detektywa"}
 .blk[data-k],.see[data-k]{position:relative}
-body.mk-d [data-k="d"],body.mk-c [data-k="c"],body.mk-p [data-k="p"],body.mk-x [data-k="x"]{background:color-mix(in srgb,var(--k) 6%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,var(--k) 70%,transparent);border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.mk-d [data-k="d"],body.mk-c [data-k="c"],body.mk-p [data-k="p"],body.mk-x [data-k="x"]{background:color-mix(in srgb,var(--k) 6%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,var(--k) 70%,transparent);border-radius:var(--r-lg);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body.mk-d .blk[data-k="d"],body.mk-c .blk[data-k="c"],body.mk-p .blk[data-k="p"],body.mk-x .blk[data-k="x"]{padding:16px 14px 12px;margin-top:26px}
 body.mk-d .blk[data-k="d"]::before,body.mk-c .blk[data-k="c"]::before,body.mk-p .blk[data-k="p"]::before,body.mk-x .blk[data-k="x"]::before,
 body.mk-x .see[data-k="x"]::before{content:var(--kl);position:absolute;top:-9px;right:12px;font:500 9.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--k);color:var(--kt);padding:4px 7px;border-radius:4px;z-index:1}
@@ -566,7 +604,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 
 /* ---------------------------------------------------------------- eksport AI */
 .aigrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
-.aichk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;color:var(--text);transition:background-color .15s ease,border-color .15s ease}
+.aichk{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;color:var(--text);transition:background-color .15s ease,border-color .15s ease}
 .aichk:hover{border-color:var(--line-2);background:var(--hover)}
 .aichk input{width:auto;margin-top:3px}
 .aichk b{display:block;font-size:13px;font-weight:500}.aichk small{display:block;font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:2px}
@@ -574,7 +612,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .aichk.dis{opacity:.45;cursor:not-allowed}
 
 /* ---------------------------------------------------------------- prawdopodobny budżet */
-.probctl{padding:16px;border:1px solid var(--line);border-radius:10px;margin-top:14px;background:var(--bg-2)}
+.probctl{padding:16px;border:1px solid var(--line);border-radius:var(--r-lg);margin-top:14px;background:var(--bg-2)}
 .probctl h3{margin:0 0 12px;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .pgrid label{font-size:12px}
@@ -601,7 +639,7 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 @media (max-width:560px){.lr{grid-template-columns:40px 1fr;}.lr span{grid-column:1/-1;text-align:left}.fr{grid-template-columns:1fr;gap:6px}.fr .fv{text-align:left}.forest{gap:16px}}
 
 /* ---------------------------------------------------------------- limity i okres */
-.limits{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2)}
+.limits{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg-2)}
 .limhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .limhead label{margin:0}
 .limhead select,.limhead input{width:auto}
@@ -612,15 +650,15 @@ body.mk-d .rp [data-k="d"],body.mk-c .rp [data-k="c"],body.mk-p .rp [data-k="p"]
 .limrows > .sub{grid-column:1/-1}
 .limrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .limrow select{padding:6px 28px 6px 9px;font-size:12.5px}
-.limwarn{display:block;margin-top:10px;padding:9px 12px;border-radius:8px;background:color-mix(in srgb,var(--c5) 8%,transparent);border:1px solid color-mix(in srgb,var(--c5) 30%,transparent);font-size:12.5px;line-height:1.5;color:var(--text)}
+.limwarn{display:block;margin-top:10px;padding:9px 12px;border-radius:var(--r-md);background:color-mix(in srgb,var(--c5) 8%,transparent);border:1px solid color-mix(in srgb,var(--c5) 30%,transparent);font-size:12.5px;line-height:1.5;color:var(--text)}
 .limwarn > .ic{color:var(--c5);margin-right:5px}
 .rp .limwarn{font-size:8.5pt}
 
 /* ---------------------------------------------------------------- ekran ładowania */
 body.is-loading #status{display:none}
-.loader{margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);padding:16px 16px 10px;overflow:hidden}
+.loader{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg-2);padding:16px 16px 10px;overflow:hidden}
 .ld-head{display:flex;align-items:center;gap:12px}
-.ld-lens{width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--accent);overflow:hidden}
+.ld-lens{width:34px;height:34px;flex:none;border-radius:var(--r-md);border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--accent);overflow:hidden}
 .ld-lens svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;animation:ldscan 2.4s ease-in-out infinite}
 @keyframes ldscan{0%,100%{transform:translate(-3px,-2px)}25%{transform:translate(3px,-2px)}50%{transform:translate(3px,2px)}75%{transform:translate(-3px,2px)}}
 .ld-title{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -654,24 +692,24 @@ body.is-loading #status{display:none}
 @media (prefers-reduced-motion:reduce){.ld-lens svg,.ld-bar > div::after,.ld-row.run .ld-ic,.ld-row{animation:none}}
 
 /* ---------------------------------------------------------------- puste stany */
-.nodata{display:flex;align-items:center;gap:10px;padding:14px 16px!important;margin:4px 0;border:1px dashed var(--line-2);border-radius:10px;color:var(--muted);font-size:12.5px;line-height:1.5;background:color-mix(in srgb,var(--text) 1.5%,transparent)}
+.nodata{display:flex;align-items:center;gap:10px;padding:14px 16px!important;margin:4px 0;border:1px dashed var(--line-2);border-radius:var(--r-lg);color:var(--muted);font-size:12.5px;line-height:1.5;background:color-mix(in srgb,var(--text) 1.5%,transparent)}
 .nodata::before{content:"";width:16px;height:16px;flex:none;background:var(--faint);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m20 20-4.6-4.6M8 10.5h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m20 20-4.6-4.6M8 10.5h5'/%3E%3C/svg%3E") center/contain no-repeat}
 .rp .nodata{padding:8px 10px!important;font-size:8.5pt}
 .stackrow .nodata,.share .nodata{border:none;background:none;padding:0!important;margin:0}.stackrow .nodata::before,.share .nodata::before{display:none}
 .empty-hero{text-align:center;padding:44px 24px 36px;border-style:dashed;border-color:var(--line-2);background:transparent}
 #resultsCard:not(.hidden) ~ #emptyCard,body.is-loading #emptyCard{display:none}
-.eh-ic{width:48px;height:48px;margin:0 auto 16px;border-radius:12px;border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--muted)}
+.eh-ic{width:48px;height:48px;margin:0 auto 16px;border-radius:var(--r-lg);border:1px solid var(--line-2);display:grid;place-items:center;background:var(--card);color:var(--muted)}
 .eh-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .eh-t{font-size:16px;font-weight:600;letter-spacing:-.02em}
 .eh-s{max-width:460px;margin:6px auto 0;font-size:13px;color:var(--muted);line-height:1.6}
 .eh-s b{color:var(--text);font-weight:500}
 .eh-steps{list-style:none;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:20px 0 0;padding:0}
-.eh-steps li{display:flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--muted)}
+.eh-steps li{display:flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--line);border-radius:var(--r-md);font-size:12.5px;color:var(--muted)}
 .eh-steps span{font:500 10.5px var(--mono);color:var(--faint)}
 @media print{#emptyCard,.loader{display:none!important}}
 
 /* ---------------------------------------------------------------- ustawienia zaawansowane */
-.adv{margin-top:20px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2)}
+.adv{margin-top:20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg-2)}
 .adv > summary{margin:0;padding:12px 14px;color:var(--text);flex-wrap:wrap;row-gap:6px}
 .adv-t{font-size:13px;font-weight:500}
 .adv-sum{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
@@ -692,25 +730,34 @@ body.is-loading #status{display:none}
 @media (hover:none){.blkpng{opacity:1}}
 .png-stage{position:fixed;left:-20000px;top:0;width:1000px;pointer-events:none;color:var(--text);font:14px/1.55 var(--sans)}
 .png-src{width:960px}
-.png-frame{width:960px;padding:28px 32px 20px;background:var(--card);color:var(--text);font:14px/1.55 var(--sans)}
-.png-frame .pf-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:6px;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.png-frame{width:960px;padding:28px 32px 20px;background:var(--bg);color:var(--text);font:14px/1.55 var(--sans)}
+.png-frame .pf-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:6px;font:500 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.png-frame .pf-r{display:inline-flex;align-items:center;gap:14px}
+.png-frame .pf-r svg{height:18px;width:auto;color:var(--text);display:block}
+.png-frame .pf-r i{width:1px;height:14px;background:var(--line-3)}
 .png-frame .pf-brand{display:inline-flex;align-items:center;gap:8px;color:var(--text)}
 .png-frame .pf-brand i{width:8px;height:8px;border-radius:2px;display:inline-block}
 .png-frame .blk{margin:0!important;padding:0!important;background:none!important;box-shadow:none!important;outline:none!important}
 .png-frame .blk::before{display:none!important}
-.png-frame .blk > h3{font-size:20px;font-weight:600;letter-spacing:-.02em;text-transform:none;color:var(--text);margin:0 0 18px}
+.png-frame .blk > h3{font-size:22px;font-weight:400;letter-spacing:-.015em;text-transform:none;color:var(--text);margin:0 0 18px;align-items:baseline;gap:0}
+.png-frame .blk > h3::before{width:.9em;height:2px;opacity:1;margin-right:.08em;align-self:baseline}
 .png-frame [data-k]{box-shadow:none!important;outline:none!important}
 .png-frame .kpi::after,.png-frame .mk::after{display:none!important}
 .png-frame .pf-foot{display:flex;justify-content:space-between;gap:16px;margin-top:20px;padding-top:10px;border-top:1px solid var(--line);font:400 10.5px var(--mono);color:var(--faint)}
 .png-frame .two,.png-frame .three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
 @media print{#stratCard,.blkpng{display:none!important}}
+.bdfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+.bdfoot .bdlogo{height:16px;width:auto;color:var(--text)}
+.bdfoot > span:nth-child(2){font-weight:300;letter-spacing:.32em;color:var(--muted)}
+.bdfoot-r{margin-left:auto;color:var(--faint)}
+@media (max-width:640px){.bdfoot-r{margin-left:0;flex-basis:100%}}
 
 /* ---------------------------------------------------------------- porównanie okresów */
 .nd{color:var(--faint);font-weight:400}
 .dl{display:inline-block;font:500 11px var(--mono);padding:1px 6px;border-radius:4px;background:var(--track);color:var(--muted);white-space:nowrap}
 .dl.up{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
 .dl.down{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
-.pcmp{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pcmp{display:grid;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
 .pcmp .pc-h,.pcmp .pc-r{display:grid;grid-template-columns:minmax(150px,1.6fr) 1fr 1fr 90px;gap:12px;align-items:center;padding:9px 14px}
 .pcmp.single .pc-h,.pcmp.single .pc-r{grid-template-columns:minmax(150px,1.6fr) 1fr}
 .pcmp .pc-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -718,7 +765,7 @@ body.is-loading #status{display:none}
 .pcmp .pc-r{border-top:1px solid var(--line);font-size:13px}
 .pcmp .pc-r b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
 .pcmp .pc-r .pv{font:400 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
-.pcb{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pcb{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
 .pcb-h,.pcb-r{display:grid;grid-template-columns:minmax(120px,1.2fr) repeat(4,1fr);gap:12px;align-items:center;padding:9px 14px}
 .pcb-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .pcb-r{border-top:1px solid var(--line);font-size:13px}
@@ -731,7 +778,7 @@ body.is-loading #status{display:none}
 .rp .pcmp .pc-r,.rp .pcb-r{font-size:8.5pt;padding:5px 10px}.rp .pcmp .pc-h,.rp .pcb-h{font-size:7pt;padding:5px 10px}.rp .pcmp .pc-r b{font-size:9pt}
 
 /* ---------------------------------------------------------------- kalibracja */
-.calib{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.calib{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card)}
 
 /* ---------------------------------------------------------------- założenia marek */
 .tag.own{background:color-mix(in srgb,var(--c5) 14%,transparent);color:var(--c5)}
@@ -739,7 +786,7 @@ body.is-loading #status{display:none}
 .asm-cnt{font-size:12px;color:var(--muted)}
 .asm-h,.asm-r{display:grid;grid-template-columns:minmax(120px,1.4fr) repeat(4,minmax(70px,.7fr)) 150px;gap:8px;align-items:center}
 .asm-h{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 11px}
-.asm-b{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg-2)}
+.asm-b{border:1px solid var(--line);border-radius:var(--r-md);padding:8px 10px;background:var(--bg-2)}
 .asm-r .nm{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .asm-r input,.asm-fr input{padding:6px 8px;font-size:12.5px}
 .asm-f{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
@@ -748,7 +795,7 @@ body.is-loading #status{display:none}
 .asm-fr{display:grid;grid-template-columns:minmax(120px,1.4fr) minmax(70px,.7fr) minmax(70px,.7fr) minmax(70px,.7fr) minmax(70px,.7fr) 150px;gap:8px;align-items:center;margin-bottom:6px;font-size:12.5px;color:var(--muted)}
 .asm-err{display:flex;flex-direction:column;gap:2px}
 .asm-err span{font-size:12px;color:var(--bad);margin-top:6px}
-.mixt{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mixt{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
 .mx-h,.mx-r{display:grid;grid-template-columns:1.3fr .8fr 1fr 1.6fr;gap:10px;padding:7px 12px;align-items:center;font-size:12.5px}
 .mx-h{background:var(--bg-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mx-r{border-top:1px solid var(--line)}
@@ -765,7 +812,7 @@ body.is-loading #status{display:none}
 .whyi{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:6px;vertical-align:-3px;color:var(--faint);border-radius:50%}
 .whyi svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .whyi:hover,.whyi:focus-visible{color:var(--text);box-shadow:none;background:var(--hover)}
-#whyTip{position:fixed;z-index:9999;left:0;top:0;max-width:380px;padding:12px 14px 11px;border-radius:12px;
+#whyTip{position:fixed;z-index:9999;left:0;top:0;max-width:380px;padding:12px 14px 11px;border-radius:var(--r-lg);
   background:var(--card-2);border:1px solid var(--line-2);color:var(--text);font:12.5px/1.5 var(--sans);letter-spacing:0;text-transform:none;
   box-shadow:0 12px 32px rgba(0,0,0,.35);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;visibility:hidden}
 #whyTip.on{opacity:1;transform:none;visibility:visible}
@@ -776,7 +823,7 @@ body.is-loading #status{display:none}
 #whyTip .wt-t{font-weight:600;font-size:13.5px;letter-spacing:-.01em;margin-bottom:6px}
 #whyTip .wt-b{display:grid;gap:5px;color:var(--text)}
 #whyTip .wt-b b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
-#whyTip .f{display:block;font:12px/1.45 var(--mono);font-variant-numeric:tabular-nums;background:var(--field);border:1px solid var(--line);border-radius:7px;padding:5px 8px;margin:2px 0;color:var(--text);white-space:normal;overflow-wrap:anywhere}
+#whyTip .f{display:block;font:12px/1.45 var(--mono);font-variant-numeric:tabular-nums;background:var(--field);border:1px solid var(--line);border-radius:var(--r-md);padding:5px 8px;margin:2px 0;color:var(--text);white-space:normal;overflow-wrap:anywhere}
 #whyTip .fi{font:11.5px/1.4 var(--mono);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:0 5px;white-space:nowrap}
 #whyTip .wt-s{margin-top:8px;padding-top:7px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
 @media print{#whyTip,.whyi,.gobud{display:none!important}}
@@ -785,11 +832,13 @@ body.is-loading #status{display:none}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bdLogo" viewBox="0 0 729.5 262.5"><path fill="currentColor" fill-rule="evenodd" d="M245.5 262.2C245.7 262 245.8 257.1 245.8 242.0C245.8 222.5 245.7 222 245.3 221.8C245 221.6 241.2 221.5 234.7 221.5C226.3 221.5 224.5 221.6 224.3 221.8C224.1 222.1 224 224.9 224 231.8C224 237 223.9 241.4 223.8 241.5C223.7 241.7 179.7 241.7 123 241.7L22.4 241.6L22.3 131.4C22.3 49.9 22.3 21.1 22.5 20.8C22.8 20.6 38.9 20.5 123.3 20.6C178.5 20.6 223.8 20.7 223.9 20.8C223.9 20.9 224 29.7 224 40.5C224 54.7 224.1 60.2 224.3 60.4C224.5 60.7 226.4 60.7 234.8 60.7C240.4 60.7 245.1 60.7 245.4 60.6C245.7 60.5 245.8 57.6 245.8 30.5C245.8 7.6 245.7 0.5 245.4 0.3C245.2 0.1 217.6 0 122.8 0.0C2.2 0 0.5 0 0.3 0.5C-0.1 1.2 -0.1 261.3 0.3 262.0C0.5 262.5 2.2 262.5 122.8 262.5C217.6 262.5 245.2 262.4 245.5 262.2Z M474.9 210.0C479 209.6 485.4 208.1 487.5 207.1C487.8 206.9 488.3 206.7 488.5 206.7C488.7 206.7 489.4 206.4 490.1 206.0C490.8 205.6 491.7 205.1 492 204.9C493.7 204.1 498.6 200.1 500.4 198.1C502.2 196.2 504.5 192.9 505.2 191.2C505.5 190.6 505.8 190 506 189.8C506.7 188.6 507.9 185 508.6 181.9C509.1 179.7 509.1 179.1 509.2 142.5C509.2 121.1 509.2 105.3 509 105.2C508.9 105.1 505.9 105 502.2 105.0C496.3 105 495.6 105.1 495.3 105.4C495.1 105.8 495 107.2 495 111.7C495 114.9 495 117.6 494.9 117.7C494.8 117.8 493.6 116.6 493 115.5C492.3 114.3 489 111.2 487.2 110.0C485.3 108.7 481.6 106.7 481.1 106.8C480.9 106.8 480.4 106.6 479.9 106.3C479.5 106.1 478.4 105.8 477.5 105.6C476.6 105.4 475.3 105.2 474.6 105.0C473.9 104.8 471.3 104.7 468.2 104.7C463.9 104.7 462.8 104.8 461 105.2C459.8 105.5 458.5 105.8 458.2 105.8C457.9 105.8 457.2 106 456.7 106.3C456.2 106.5 455.5 106.8 455.3 106.8C454.8 106.8 454.2 107 450.4 108.9C447.3 110.5 446.2 111.3 443.3 114.3C439.5 118 437 121.9 435.6 126.2C435.3 127.4 434.8 128.6 434.7 128.8C434.6 129.1 434.4 130.2 434.2 131.3C434.1 132.5 433.9 133.8 433.7 134.4C433.5 135 433.4 137.6 433.4 140.6C433.4 146.2 433.8 150.2 434.8 153.1C435 153.9 435.3 154.8 435.3 155.0C435.3 155.2 435.4 155.7 435.6 156.0C435.8 156.4 436.1 157.1 436.3 157.7C436.4 158.2 436.7 158.8 436.9 159.1C437.1 159.4 437.2 159.7 437.2 159.9C437.2 160.2 439.5 163.9 440.4 165.2C442.3 167.7 447.8 172.8 448.7 172.8C448.8 172.8 449.1 173 449.4 173.2C449.6 173.5 450 173.8 450.3 173.8C450.5 173.8 451 174 451.3 174.2C451.7 174.5 452.1 174.8 452.2 174.8C452.4 174.8 453 175 453.6 175.2C455.4 176 457.3 176.7 459.8 177.3C462 177.8 462.6 177.9 468.4 177.9C474.1 177.8 474.8 177.8 476.2 177.3C477.1 177 478.1 176.8 478.3 176.8C478.6 176.8 479.2 176.6 479.6 176.4C480 176.2 481.2 175.7 482.1 175.4C483.1 175 484.2 174.5 484.5 174.2C484.8 174 486 173.3 487 172.6C489.1 171.2 491.7 168.7 493.2 166.5C495 164.1 495.1 164.2 495 171.1C495 175 494.8 177.6 494.6 178.7C494.4 179.6 494.3 180.6 494.3 180.9C494.2 181.6 492.8 185.1 491.5 187.5C489.9 190.4 485.7 194.2 482.5 195.6C482 195.8 481.3 196.2 481 196.4C480.6 196.6 480.1 196.8 479.8 196.8C479.6 196.8 478.9 197 478.4 197.2C477.8 197.5 477 197.7 476.6 197.7C476.2 197.8 475 197.9 473.9 198.1C468.6 199.1 459.7 198.1 455.5 196.2C453.1 195.1 450.3 193.6 449.7 193.1C449.5 192.9 449.2 192.8 449.1 192.8C448.9 192.8 448.6 192.5 448.4 192.2C448.1 192 447.8 191.8 447.7 191.8C447.6 191.8 446.9 191.3 446.1 190.7C444.5 189.5 443.8 189.6 443.2 190.8C442.8 191.6 440.1 196.2 439.2 197.7C439 198.1 438.7 198.6 438.5 198.8C438.3 199.1 438.4 199.3 438.6 199.5C439 200 440.7 201.3 441.6 201.8C442 202.1 442.7 202.5 443.1 202.7C445 203.8 446.2 204.5 447.9 205.3C448.6 205.6 449.5 206 450 206.3C450.5 206.5 451.1 206.8 451.3 206.8C451.5 206.8 452.1 207 452.6 207.2C453.2 207.5 453.8 207.7 454 207.7C454.2 207.7 455.1 208 455.9 208.2C461.1 209.9 468.3 210.6 474.9 210.0Z M241.1 182.1C245.7 181.3 248.6 180.7 249.5 180.1C249.9 179.9 250.4 179.8 250.6 179.8C251 179.8 257.6 176.6 258.8 175.8C261.8 173.8 266.8 169.5 267 168.6C267.2 168.2 256 156.8 255.5 156.8C255.3 156.8 254.8 157 254.5 157.4C252.6 159.4 248.7 161.7 245.2 163.0C241.4 164.4 235.2 165.1 232.2 164.5C229.7 164 228.1 163.5 227.2 163.1C226.8 162.9 226.2 162.6 225.9 162.4C223.7 161.3 222.3 160.2 220.3 158.2C218.4 156.1 216 151.8 215.9 150.2L215.9 149.4L243.2 149.3C262.9 149.3 270.7 149.2 270.9 149.0C271.2 148.7 271.2 147.6 271.2 143.4C271.2 140.5 271.1 137.5 271 136.8C270.9 136 270.7 134.4 270.5 133.2C270.3 132.1 270 130.4 269.7 129.6C269.5 128.8 269.2 127.9 269.2 127.6C269.2 127.3 269 126.7 268.8 126.1C268.5 125.6 268.3 125 268.3 124.8C268.3 124.6 268 124.1 267.8 123.5C267.5 123 267 122.1 266.7 121.4C263.9 115.4 258 109.5 252.2 106.8C248.4 105 245.8 104.3 240.2 103.4C237 102.9 228.3 102.9 226 103.4C225.1 103.6 224 103.7 223.6 103.7C223.1 103.7 222.1 104 221.3 104.2C220.5 104.5 219.7 104.8 219.4 104.8C219.1 104.8 218.4 105 217.9 105.2C217.3 105.5 216.7 105.7 216.5 105.7C216.3 105.7 215.9 105.9 215.6 106.1C215.3 106.3 214.7 106.6 214.1 106.7C213.6 106.9 213 107.2 212.8 107.3C212.6 107.5 212.2 107.7 211.8 108.0C208.4 109.8 204.3 113.1 202.1 115.8C199.3 119.1 198.3 120.8 195.8 126.1C195.5 126.9 195.1 128.3 194.5 130.5C194.3 131.1 194 132.2 193.8 133.0C192.7 137.1 192.7 148.6 193.9 153.3C194.5 155.9 195.3 158.3 195.8 159.4C196.6 161.3 197.8 163.6 198.4 164.6C198.7 165.2 199.1 165.8 199.2 166.1C201.2 169.8 207.7 175.8 211.9 177.7C212.2 177.8 213.1 178.3 214 178.7C215.9 179.6 218.2 180.4 219.6 180.8C220.2 180.9 221.1 181.2 221.6 181.4C222.2 181.6 223 181.7 223.5 181.7C224 181.8 224.9 181.9 225.5 182.0C228.6 182.8 236.8 182.8 241.1 182.1Z M600 182.0C601.2 181.8 602.8 181.5 603.7 181.2C604.6 181 605.5 180.8 605.7 180.8C606 180.8 606.4 180.6 606.6 180.4C606.9 180.2 607.4 180 607.8 179.9C608.4 179.7 610.3 178.9 611 178.5C614.3 176.6 614.3 176.7 614.2 175.9C614.2 175.5 614.1 174.8 613.9 174.4C613.6 174 613.4 173.1 613.2 172.4C613.1 171.8 612.8 170.9 612.6 170.5C612.4 170.2 612.2 169.7 612.2 169.4C612.2 169.1 612 168.4 611.8 167.9C611.5 167.3 611.3 166.7 611.3 166.6C611.2 166.1 610.5 165.9 610.1 166.3C609.8 166.5 609 166.9 608.2 167.2C607.5 167.5 606.5 168 606.1 168.2C603.2 169.5 598.1 170 595.9 169.2C593.4 168.2 591.6 166.6 590.8 164.8C589.6 162.1 589.6 161.6 589.6 139.2L589.6 118.1L601.2 118.1C610.1 118 612.9 117.9 613 117.7C613.2 117.5 613.2 115.3 613.2 112.8C613.2 110.2 613.2 108 613 107.8C612.9 107.6 610.1 107.5 601.2 107.4L589.6 107.4L589.6 97.4C589.5 90.5 589.4 87.3 589.2 87.1C589 86.8 587.6 86.8 582.7 86.8C579.3 86.8 576.4 86.8 576.1 86.9C575.8 87 575.8 88.2 575.8 97.0C575.8 104.4 575.7 107 575.4 107.2C575.2 107.4 573.8 107.5 570.4 107.5C567 107.5 565.5 107.6 565.3 107.8C564.9 108.2 564.9 117.3 565.3 117.7C565.5 117.9 567 118 570.4 118.0C573.8 118 575.2 118.1 575.4 118.3C575.7 118.5 575.8 123.8 575.8 140.6C575.8 163.6 575.9 167 576.9 168.9C577.1 169.3 577.2 169.8 577.2 170.1C577.3 170.7 579.1 174.2 580.2 175.5C584.4 180.6 591.8 183 600 182.0Z M152.9 181.4C157.6 180.7 158.8 180.5 159.9 180.1C160.5 179.9 161.2 179.8 161.5 179.8C161.8 179.8 162.6 179.5 163.3 179.2C166.6 177.9 167.2 177.7 167.6 177.5C171 175.7 172.5 174.8 174.5 173.2C176.7 171.4 179.2 168.3 180.1 166.4C180.5 165.6 180.9 165 181 164.9C181.1 164.8 181.3 164.5 181.3 164.3C181.3 164.1 181.4 163.5 181.6 163.2C181.8 162.8 182.2 161.6 182.4 160.7C184.5 151.2 182.2 141.8 176.3 135.4C174.2 133.3 171.2 131.2 168.7 130.1C167.8 129.8 166.8 129.3 166.3 129.1C165.9 128.9 165.3 128.8 164.9 128.8C164.1 128.8 163.5 128.5 163.5 128.2C163.5 128.1 164.1 127.7 164.9 127.3C167.8 126 168.9 125.4 170.6 124.1C172.5 122.7 174.6 120.6 175.3 119.5C176.7 117.3 178.2 114.1 178.2 113.6C178.2 113.4 178.5 112.7 178.7 111.8C179.7 108.9 179.6 102.1 178.6 99.0C177.4 95.1 174.9 91.3 172.3 89.1C171 87.9 167.8 85.8 167.6 85.7C167.5 85.7 167.1 85.5 166.8 85.2C166.4 85 166 84.8 165.8 84.8C165.6 84.8 165.2 84.6 164.8 84.3C164.1 83.8 158.1 81.8 157.4 81.8C157.1 81.8 156.2 81.6 155.4 81.4C151.8 80.4 147.1 80.3 121.7 80.3C103.1 80.3 97.3 80.3 97 80.6C96.6 81 96.6 181.4 97.1 181.6C97.2 181.7 109.3 181.7 123.9 181.7C145.5 181.7 150.8 181.7 152.9 181.4Z M340.5 181.0C342.1 180.7 343.9 180.3 344.5 180.1C345.1 179.9 345.9 179.7 346.2 179.7C346.6 179.7 347.3 179.5 347.9 179.2C348.4 179 349 178.8 349.2 178.8C349.6 178.8 353.9 177 354.8 176.5C355 176.4 356.1 175.7 357.4 175.0C358.6 174.3 359.8 173.6 360 173.5C360.2 173.4 360.9 172.9 361.5 172.6C366.7 169.3 372.8 162.9 375.9 157.3C377.1 155.2 379.2 150.9 379.2 150.5C379.2 150.4 379.5 149.8 379.7 149.3C380.3 148.1 380.7 147 381.1 145.2C381.3 144.5 381.6 143.2 381.8 142.4C383.3 136.5 383.4 125.7 382 119.5C381.3 116.4 381 115.5 380.6 114.2C380.4 113.5 380 112.4 379.7 111.9C379.5 111.3 379.1 110.3 378.7 109.5C378.4 108.7 378.1 108 378 107.8C377.8 107.5 377.6 107.1 377.4 106.8C376.6 105.1 374.1 101.2 372.4 99.2C368.4 94.2 361.7 88.7 356.9 86.4C352.7 84.5 351 83.8 350.5 83.7C350.3 83.7 349.7 83.5 349.1 83.2C348.6 83 348 82.8 347.8 82.8C347.6 82.8 346.7 82.5 345.8 82.3C339.3 80.4 337.1 80.3 311.3 80.3C290 80.3 289.5 80.3 289.3 80.7C288.9 81.5 288.9 181.1 289.3 181.5C289.6 181.7 294.7 181.8 313.6 181.7C337.1 181.6 337.7 181.6 340.5 181.0Z M414.8 181.5C415.2 181.2 415.2 180.5 415.2 143.3C415.2 113.2 415.2 105.3 414.9 105.1C414.8 105 411.7 104.9 408.1 105.0L401.6 105.1L401.6 143.2L401.6 181.4L407.9 181.5C411.3 181.6 414.2 181.7 414.2 181.7C414.2 181.7 414.5 181.6 414.8 181.5Z M657.1 181.5C661.5 180.8 665.9 179.6 668.1 178.4C668.4 178.3 669 177.9 669.5 177.7C671.6 176.6 675.5 173.6 676.1 172.5C676.4 172 676.7 171.8 677 171.8C677.3 171.9 677.4 172.5 677.5 176.6L677.6 181.4L683.8 181.4C689.8 181.5 690 181.5 690.3 181.0C690.4 180.6 690.5 172.4 690.4 152.7L690.4 124.9L689.8 123.4C689.5 122.6 689.2 121.7 689.2 121.4C689.2 121.1 689 120.5 688.8 120.1C688.5 119.7 688.3 119.2 688.3 119.0C688.2 118.5 686.3 115.4 685.2 114.1C683.9 112.6 681.4 110.3 680.2 109.7C679.3 109.2 678.7 108.9 677.7 108.2C677.3 107.9 676.9 107.7 676.7 107.7C676.5 107.7 676 107.6 675.6 107.4C674.6 106.8 671.6 105.9 669.2 105.4C664.8 104.4 653.9 104.4 650.2 105.4C649.5 105.6 648.6 105.7 648.2 105.7C647.5 105.7 644.5 106.6 643.1 107.3C642.5 107.5 641.9 107.7 641.7 107.7C641.6 107.8 640.9 108 640.1 108.3C635.7 110.4 634 111.3 633.9 111.5C633.8 111.6 633.5 111.8 633.3 111.8C633 111.8 632.7 111.9 632.5 112.1C632.3 112.3 631.8 112.7 631.4 112.9C631 113.1 630.3 113.5 630 113.6C629.6 113.8 629.1 114.3 628.8 114.6L628.2 115.2L628.7 115.8C629 116.1 629.2 116.5 629.2 116.6C629.2 116.7 629.7 117.4 630.2 118.2C630.7 119 631.8 120.6 632.5 121.7C633.7 123.4 634 123.8 634.5 123.8C634.9 123.7 635.3 123.6 635.4 123.5C635.5 123.4 635.9 123 636.5 122.7C637 122.5 637.7 122 638.1 121.7C638.5 121.5 639.2 121.1 639.5 121.0C639.8 120.8 640.3 120.6 640.5 120.5C641.4 120 644 118.8 644.2 118.8C644.4 118.8 645 118.5 645.6 118.3C650.4 116.2 658 115.4 663.5 116.5C667.4 117.3 669.9 118.5 672.6 121.0C675.6 123.8 677 127.5 677 132.7C677 134.7 676.9 135.8 676.7 136.0C676.5 136.2 673.2 136.2 663.6 136.2C650.3 136.2 645.9 136.5 642.9 137.3C641.9 137.5 640.9 137.8 640.6 137.8C640.1 137.8 639.3 138.1 636 139.7C633.5 140.9 630.2 143.4 628.9 145.0C627.6 146.4 626.2 148.5 626.2 148.8C626.2 149 626.1 149.4 625.9 149.7C625.7 150 625.2 151.3 624.9 152.6C624 155.7 624 161.6 624.8 163.9C625 164.7 625.2 165.5 625.2 165.8C625.2 166.1 625.4 166.6 625.6 167.0C625.8 167.3 626.4 168.5 626.9 169.6C628.4 172.7 631 175.5 634.9 178.1C635.4 178.4 636 178.7 636.1 178.7C636.3 178.7 636.8 179 637.4 179.2C639.8 180.4 641.6 180.9 645 181.5C646.5 181.7 655.5 181.8 657.1 181.5Z M729.2 181.4C729.7 181 729.6 75.5 729.2 74.9C728.9 74.5 728.3 74.5 722.3 74.6C718.7 74.6 715.7 74.7 715.6 74.8C715.5 75 715.4 181.2 715.6 181.5C715.9 181.9 728.8 181.8 729.2 181.4Z M547.2 181.0C547.7 180.3 547.6 106 547.2 105.4C546.9 105 546.3 105 540.2 105.1L533.6 105.1L533.6 143.0C533.5 163.8 533.6 181 533.6 181.2C533.7 181.4 535.3 181.5 540.4 181.5C546.7 181.5 547 181.5 547.2 181.0Z M647.9 170.5C643.7 169.4 642.4 168.7 640.4 166.6C638.5 164.8 637.6 163.1 637.1 160.8C636.7 158.7 636.7 157.8 637.1 155.7C637.6 153.5 638.2 152.3 639.7 151.0C641.7 149.1 643.6 148.2 647.1 147.4C649.2 147 650.6 146.9 663 146.8C672 146.7 676.6 146.8 676.8 147.0C677.2 147.4 677.1 155.1 676.6 156.6C675.5 159.9 675 160.9 672.6 163.4C669.4 166.9 664.4 169.5 658.5 170.5C657 170.8 648.9 170.8 647.9 170.5Z M303.6 168.5C303.6 168.4 303.5 151.5 303.5 131.0C303.5 101.6 303.6 93.6 303.8 93.5C304 93.3 310.5 93.3 318.4 93.3C333.1 93.3 337.8 93.5 340.1 94.4C340.7 94.6 341.4 94.7 341.8 94.7C342.1 94.8 342.8 95 343.4 95.2C343.9 95.5 344.5 95.7 344.7 95.7C345 95.7 347 96.5 347.8 97.0C348.1 97.1 348.5 97.4 348.8 97.5C351.4 98.8 352.9 99.9 355.1 101.6C358.4 104.2 361.1 107.4 363.1 110.8C363.6 111.6 364.3 112.8 364.7 113.3C365 113.8 365.2 114.4 365.2 114.6C365.2 114.7 365.5 115.3 365.8 115.8C366 116.3 366.3 116.9 366.3 117.1C366.3 117.2 366.4 117.7 366.6 118.1C366.8 118.5 367.2 119.5 367.4 120.4C367.5 121.2 367.8 122.3 368 122.9C368.3 124.4 368.8 128.6 368.8 131.0C368.7 133.9 368.1 139.5 367.6 140.6C367.4 141.1 367.2 141.7 367.2 142.1C367.2 142.4 367 143.1 366.8 143.6C366.5 144.2 366.3 144.8 366.3 145.1C366.3 145.3 366 145.9 365.8 146.5C365.5 147 365.2 147.7 365 148.0C364.4 149.4 363.6 150.8 361.5 153.9C360.3 155.7 355.2 160.6 352.8 162.2C351.5 163.1 350.4 163.8 350.3 163.8C350.3 163.8 349.9 164 349.6 164.2C349.2 164.5 348.8 164.8 348.5 164.8C348.3 164.8 347.8 165 347.5 165.2C347.2 165.5 346.7 165.7 346.5 165.7C346.4 165.7 345.8 165.9 345.4 166.1C344.2 166.7 341.5 167.5 340.4 167.8C335 168.8 335.6 168.7 319.5 168.7C309.9 168.7 303.7 168.7 303.6 168.5Z M466.9 166.5C464.6 166.2 461.9 165.5 461.4 165.1C461.1 164.9 460.6 164.8 460.3 164.8C460 164.8 459.7 164.6 459.6 164.5C459.6 164.4 458.8 163.9 457.9 163.4C456.1 162.4 453.2 159.7 451.6 157.5C449.3 154.4 447.9 151 446.9 146.6C446.1 142.9 446.6 134.9 447.9 132.5C448.1 132.1 448.2 131.7 448.2 131.5C448.2 131.2 449.5 128.7 450.1 127.6C452.2 124.2 454.5 121.8 457.2 120.0C458.2 119.3 459.1 118.7 459.2 118.7C459.3 118.7 459.8 118.5 460.4 118.2C460.9 118 461.5 117.8 461.7 117.8C461.9 117.8 462.3 117.6 462.7 117.4C463.1 117.2 464.6 116.8 466 116.5C470.1 115.6 476.7 116.1 479.2 117.4C479.5 117.6 480 117.8 480.2 117.8C480.6 117.8 481.7 118.3 484.3 119.7C485.7 120.5 489.7 124.5 490.9 126.4C491.5 127.2 492.3 128.7 492.7 129.6C493.2 130.6 493.6 131.6 493.8 131.8C493.9 132 494.3 133.4 494.6 134.9C495.2 137.3 495.3 138.1 495.3 141.5C495.3 146.4 494.7 148.9 492.6 153.4C491.7 155.3 491.2 156.1 489.7 158.0C488.3 159.7 485.6 162.2 484.6 162.8C479.5 165.7 479.1 165.9 476.4 166.5C475.2 166.8 468.7 166.8 466.9 166.5Z M119.6 162.4C119.5 162.2 119.4 156.9 119.5 150.6L119.6 139.1L133.6 139.1C149.3 139.1 149.5 139.2 153.1 140.9C155.5 142.1 157.7 144.3 158.6 146.6C159.4 148.5 159.5 152.2 158.8 153.7C157.1 157.6 155.8 159 153 160.3C152.1 160.7 151.2 161.1 151 161.3C150.3 161.6 147 162.3 144.8 162.5C143.6 162.6 137.5 162.7 131.2 162.7C121.5 162.7 119.7 162.7 119.6 162.4Z M215.1 136.0C214.8 135.5 215.3 133 215.8 131.8C216 131.2 216.2 130.6 216.2 130.4C216.2 130.2 216.5 129.8 216.7 129.5C217 129.1 217.5 128.3 217.9 127.7C218.6 126.4 220.7 124.2 221.8 123.4C222.2 123.1 222.9 122.6 223.2 122.4C224.1 121.7 225.5 121.1 227.7 120.3C231 119.3 237.7 119.6 240.4 121.1C240.7 121.2 241.4 121.6 242.1 122.0C243.5 122.7 246.7 125.7 247.4 127.0C249 130.2 249.5 131.4 249.9 134.6C250.2 136.4 251.4 136.2 232.4 136.2C220.4 136.2 215.2 136.2 215.1 136.0Z M119.8 120.8C119.5 120.6 119.5 118.4 119.5 110.0C119.5 104.2 119.6 99.3 119.6 99.2C119.7 99.1 125.3 99 132 99.0C147.5 99 149.1 99.3 152.4 102.1C154.1 103.5 154.9 104.8 155.5 106.8C156.5 109.8 156 113.6 154.3 116.0C153.2 117.6 150.9 119.3 148.7 120.1L146.9 120.8L133.5 120.9C126.1 121 120 120.9 119.8 120.8Z M412 91.2C414.4 90 415.8 88.5 416.6 86.1C417.7 82.9 416.4 78.3 413.9 76.4C412 75 411.1 74.7 408.2 74.7C405.8 74.7 405.5 74.7 404.1 75.4C402.3 76.4 401 77.8 400.1 79.7C399.2 81.7 399.2 84.9 400.1 86.8C400.9 88.6 402.2 90 403.9 91.0C405.5 91.9 406 92 408.8 91.9C410.4 91.8 411.1 91.7 412 91.2Z M544.6 91.0C549.1 88.4 550.4 82.6 547.5 78.1C546.6 76.8 545.9 76.2 544.2 75.4C543 74.7 542.6 74.7 540.2 74.7C537.8 74.7 537.5 74.7 536.1 75.4C534.3 76.4 533 77.8 532.1 79.7C531.6 80.8 531.5 81.5 531.5 83.4C531.5 84.6 531.6 85.8 531.7 85.9C531.8 86 532.1 86.5 532.2 87.0C532.8 88.9 535.9 91.5 537.9 91.8C538.3 91.9 539.6 91.9 540.9 91.9C542.9 91.8 543.3 91.7 544.6 91.0Z"/></symbol></svg>
 <nav class="appbar" aria-label="Pasek aplikacji">
   <div class="appbar-in">
     <div class="brandmark">
-      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/><path d="M7.5 12.5v-2M10.5 12.5V8.5M13.5 12.5v-3"/></svg></span>
-      <b>Meta Ads Bot</b><span class="crumb">/ ad-library</span>
+      <svg class="bdlogo" viewBox="0 0 729.5 262.5" role="img" aria-label="BeDigital"><use href="#bdLogo"/></svg>
+      <span class="bdsep" aria-hidden="true"></span>
+      <b>RivalCore</b><span class="crumb">/ meta ad library</span>
     </div>
     <div class="appbar-meta">
       <span><span class="dotok" aria-hidden="true"></span>dane tylko w tej przeglądarce</span>
@@ -801,37 +850,48 @@ body.is-loading #status{display:none}
 <div class="wrap">
   <header class="hero">
     <div class="hero-main">
-      <div class="kicker">Śledztwo w Bibliotece Reklam</div>
-      <h1>Meta Ads Bot</h1>
-      <p>Wpisz markę, a detektyw sprawdzi, ile reklam puszcza, do kogo trafia, co komunikuje, które kreacje działają najdłużej i ile mniej więcej na to wydaje. Konkurencję też prześwietli.</p>
+      <div class="kicker">BeDigital · analiza konkurencji w Bibliotece Reklam Meta</div>
+      <h1>RivalCore</h1>
+      <p>Wpisz markę, a RivalCore sprawdzi, ile reklam puszcza, do kogo trafia, co komunikuje, które kreacje działają najdłużej i ile mniej więcej na to wydaje. Konkurencję też prześwietli.</p>
       <div class="hero-meta"><span>Meta Ad Library API</span><span>eksport PDF · XLSX · MD</span><span>bez serwera</span></div>
     </div>
-    <figure class="hero-fig">
-    <svg class="detective" viewBox="0 0 270 230" role="img" aria-label="Uśmiechnięty detektyw z kotem na ręce i lupą">
-      <circle cx="132" cy="128" r="98" fill="var(--accent-soft)"/>
-      <!-- unoszące się dowody -->
+    <figure class="hero-fig bd-orb">
+    <svg class="detective" viewBox="0 0 270 230" role="img" aria-label="Uśmiechnięty analityk BeDigital w bluzie z logo i czapce z daszkiem, z kotem na ręce i telefonem">
+      <circle cx="132" cy="128" r="98" fill="var(--bg)" fill-opacity="0"/>
+      <!-- unoszące się karty: wykres, reklama, polubienie -->
       <g class="float1">
-        <rect x="200" y="14" width="56" height="42" rx="9" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
-        <rect x="210" y="37" width="8" height="11" rx="2" fill="var(--c1)"/>
-        <rect x="222" y="29" width="8" height="19" rx="2" fill="var(--c2)"/>
-        <rect x="234" y="21" width="8" height="27" rx="2" fill="var(--accent)"/>
+        <rect x="200" y="14" width="56" height="42" rx="6" fill="var(--card)" stroke="var(--line-2)" stroke-width="2"/>
+        <rect x="210" y="37" width="8" height="11" rx="1.5" fill="var(--c1)"/>
+        <rect x="222" y="29" width="8" height="19" rx="1.5" fill="var(--c2)"/>
+        <rect x="234" y="21" width="8" height="27" rx="1.5" fill="var(--accent)"/>
       </g>
       <g class="float2">
-        <rect x="12" y="96" width="44" height="26" rx="7" fill="var(--card)" stroke="var(--line)" stroke-width="2"/>
-        <text x="34" y="114" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="13" fill="var(--c3)">AD</text>
+        <rect x="12" y="96" width="44" height="26" rx="5" fill="var(--card)" stroke="var(--line-2)" stroke-width="2"/>
+        <text x="34" y="114" text-anchor="middle" font-family="Montserrat,system-ui,sans-serif" font-weight="800" font-size="13" fill="var(--c1)">AD</text>
       </g>
-      <g class="float3"><text x="22" y="56" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="28" fill="var(--accent)" opacity=".5">?</text></g>
+      <g class="float3">
+        <rect x="20" y="34" width="34" height="26" rx="5" fill="var(--card)" stroke="var(--line-2)" stroke-width="2"/>
+        <path d="M37 54 l-7.5 -7 a4.3 4.3 0 0 1 7.5 -4.6 a4.3 4.3 0 0 1 7.5 4.6 z" fill="var(--accent)"/>
+      </g>
 
       <g class="dt-body">
-        <!-- płaszcz -->
-        <path d="M62 230 L74 166 Q132 140 190 166 L202 230 Z" fill="#c69a5c"/>
-        <path d="M108 154 L132 196 L156 154 Q132 146 108 154 Z" fill="#f4ece0"/>
-        <path d="M104 156 L132 200 L120 164 Z M160 156 L132 200 L144 164 Z" fill="#a87d43"/>
-        <path d="M128 162 L136 162 L139 196 L132 204 L125 196 Z" fill="var(--c3)"/>
-        <circle cx="96" cy="210" r="3" fill="#7a5230"/><circle cx="168" cy="210" r="3" fill="#7a5230"/>
+        <!-- bluza z kapturem -->
+        <path d="M62 230 L72 168 Q132 140 192 168 L202 230 Z" fill="#34343C" stroke="#4A4A54" stroke-width="1.5"/>
+        <path d="M60 230 L66 196" stroke="#40404A" stroke-width="2"/>
+        <rect x="123" y="128" width="18" height="20" rx="4" fill="#e9b788"/>
+        <path d="M94 156 Q132 122 170 156 Q162 166 151 162 Q132 146 113 162 Q102 166 94 156 Z" fill="#44444D"/>
+        <path d="M113 162 Q132 150 151 162" stroke="#26262C" stroke-width="2" fill="none"/>
+        <!-- ściągacze kaptura -->
+        <path d="M125 161 L123 188 M139 161 L141 188" stroke="#E8E8EA" stroke-width="2.2" stroke-linecap="round"/>
+        <rect x="120.5" y="187" width="5" height="7" rx="1.5" fill="#BDBDC2"/><rect x="138.5" y="187" width="5" height="7" rx="1.5" fill="#BDBDC2"/>
+        <!-- kieszeń kangurka -->
+        <path d="M104 230 L110 210 Q132 204 154 210 L160 230" fill="#3B3B44" stroke="#26262C" stroke-width="1.5"/>
+        <!-- logo BeDigital na piersi -->
+        <use href="#bdLogo" x="149" y="172" width="38" height="14" style="color:#F1F1F1"/>
 
         <!-- ręka z kotem (lewa strona obrazka) -->
-        <path d="M88 162 Q58 178 64 208 L118 212 L118 198 L86 194 Q82 184 96 172 Z" fill="#b8894e"/>
+        <path d="M88 162 Q58 178 64 208 L118 212 L118 198 L86 194 Q82 184 96 172 Z" fill="#34343C"/>
+        <path d="M112 198 L118 198 L118 212 L112 212 Z" fill="#44444D"/>
         <g class="dt-cat">
           <path class="dt-tail" d="M122 196 Q146 194 144 172 Q143 162 136 164" fill="none" stroke="#e39a3b" stroke-width="7" stroke-linecap="round"/>
           <ellipse cx="100" cy="194" rx="27" ry="16" fill="#f0a94b"/>
@@ -854,48 +914,52 @@ body.is-loading #status{display:none}
         <g class="dt-head">
           <circle cx="132" cy="104" r="31" fill="#f2c79d"/>
           <circle cx="101" cy="107" r="6" fill="#e9b788"/><circle cx="163" cy="107" r="6" fill="#e9b788"/>
+          <!-- włosy spod czapki -->
+          <path d="M103 86 Q101 96 104 103 L108 101 Q106 94 108 87 Z M161 86 Q163 96 160 103 L156 101 Q158 94 156 87 Z" fill="#6b4b2a"/>
           <!-- oko mrugające i oko otwarte -->
           <path d="M113 101 Q119 106 125 101" stroke="#2b2f38" stroke-width="3" fill="none" stroke-linecap="round"/>
           <ellipse cx="144" cy="100" rx="6" ry="6.6" fill="#fff"/><circle cx="145" cy="101" r="3.2" fill="#2b2f38"/><circle cx="146.3" cy="99.6" r="1.1" fill="#fff"/>
-          <path d="M111 92 L126 91" stroke="#6b4b2a" stroke-width="3.2" stroke-linecap="round"/>
-          <path class="dt-brow" d="M136 89 Q144 83 153 88" stroke="#6b4b2a" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-          <circle cx="133" cy="109" r="4.6" fill="#e6a979"/>
-          <!-- wąsik z zawijasami -->
-          <path d="M116 116 Q124 110 133 115 Q142 110 150 116 Q154 112 155 108 Q156 116 149 119 Q141 115 133 118 Q125 115 117 119 Q110 116 111 108 Q112 112 116 116 Z" fill="#6b4b2a"/>
-          <!-- szeroki uśmiech z zębami -->
-          <path d="M117 121 Q133 138 150 120 Q133 127 117 121 Z" fill="#7a2e2e"/>
-          <path d="M119 122 Q133 128 148 121 L147 125 Q133 131 120 126 Z" fill="#fff"/>
-          <path d="M126 125 L126 128.5 M133 126 L133 129.5 M140 125.5 L140 129" stroke="#e8dccb" stroke-width=".8"/>
-          <!-- błysk w zębie -->
+          <path d="M111 93 L126 92" stroke="#6b4b2a" stroke-width="3.2" stroke-linecap="round"/>
+          <path class="dt-brow" d="M136 90 Q144 85 153 89" stroke="#6b4b2a" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+          <circle cx="133" cy="110" r="4.6" fill="#e6a979"/>
+          <circle cx="112" cy="116" r="4" fill="#f0a3a0" opacity=".45"/><circle cx="155" cy="116" r="4" fill="#f0a3a0" opacity=".45"/>
+          <!-- szeroki uśmiech -->
+          <path d="M117 119 Q133 138 150 118 Q133 125 117 119 Z" fill="#7a2e2e"/>
+          <path d="M119 120 Q133 126 148 119 L147 123 Q133 129 120 124 Z" fill="#fff"/>
           <g class="dt-spark">
-            <path d="M141 117 L142.6 122.4 L148 124 L142.6 125.6 L141 131 L139.4 125.6 L134 124 L139.4 122.4 Z" fill="#fff"/>
-            <path d="M141 119.5 L142 123 L145.5 124 L142 125 L141 128.5 L140 125 L136.5 124 L140 123 Z" fill="#ffe066"/>
+            <path d="M141 115 L142.6 120.4 L148 122 L142.6 123.6 L141 129 L139.4 123.6 L134 122 L139.4 120.4 Z" fill="#fff"/>
+            <path d="M141 117.5 L142 121 L145.5 122 L142 123 L141 126.5 L140 123 L136.5 122 L140 121 Z" fill="#ffe066"/>
           </g>
-          <!-- kapelusz uchylony -->
+          <!-- czapka z daszkiem z sygnetem BeDigital -->
           <g class="dt-hat">
-            <path d="M101 82 Q103 44 133 42 Q163 44 165 82 Z" fill="#3b3f4a"/>
-            <path d="M120 45 Q133 55 146 45" stroke="#2b2f38" stroke-width="3" fill="none"/>
-            <rect x="102" y="69" width="62" height="10" fill="var(--accent)"/>
-            <path d="M152 70 l8 -3 l-1 8 z" fill="#fcc419"/>
-            <ellipse cx="133" cy="82" rx="54" ry="10" fill="#2b2f38"/>
+            <path d="M100 87 Q99 52 132 49 Q166 52 165 87 Z" fill="#1B1B1F"/>
+            <path d="M132 50 L132 86 M116 54 Q111 70 112 86 M148 54 Q153 70 152 86" stroke="#2C2C32" stroke-width="1.6" fill="none"/>
+            <circle cx="132" cy="50" r="3.2" fill="#2C2C32"/>
+            <path d="M139 61 H125 V78 H139 M139 61 V64.5 M139 78 V74.5" stroke="#F1F1F1" stroke-width="2.4" fill="none" stroke-linecap="square"/>
+            <path d="M100 84 Q132 92 165 84 L165 88 Q132 96 100 88 Z" fill="#111114"/>
+            <path d="M146 86 Q178 80 198 90 Q188 98 150 95 Z" fill="#141417"/>
+            <path d="M150 95 Q188 98 198 90" stroke="var(--accent)" stroke-width="1.6" fill="none"/>
           </g>
         </g>
 
-        <!-- ręka z lupą (prawa strona obrazka) -->
-        <path d="M176 160 Q204 166 212 136 L200 130 Q194 150 172 150 Z" fill="#b8894e"/>
+        <!-- ręka z telefonem (prawa strona obrazka) -->
+        <path d="M176 160 Q204 166 212 136 L200 130 Q194 150 172 150 Z" fill="#34343C"/>
         <g class="dt-lens">
-          <line x1="208" y1="128" x2="222" y2="104" stroke="#7a5230" stroke-width="9" stroke-linecap="round"/>
+          <g transform="rotate(14 222 100)">
+            <rect x="207" y="66" width="32" height="56" rx="6" fill="#141417" stroke="#3A3A42" stroke-width="2"/>
+            <rect x="211" y="72" width="24" height="44" rx="2.5" fill="var(--bd-deep,#0B1E3D)"/>
+            <rect x="215" y="98" width="4" height="12" rx="1" fill="var(--c1)"/>
+            <rect x="221" y="91" width="4" height="19" rx="1" fill="var(--c2)"/>
+            <rect x="227" y="82" width="4" height="28" rx="1" fill="var(--accent)"/>
+          </g>
           <circle cx="206" cy="132" r="8.5" fill="#f2c79d"/>
-          <circle cx="232" cy="84" r="23" fill="#dff1ff" fill-opacity=".85" stroke="#2b2f38" stroke-width="6"/>
-          <path d="M218 76 Q224 66 236 64" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".95"/>
-          <text x="232" y="92" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="17" fill="var(--accent)">%</text>
         </g>
       </g>
       <!-- iskierki dookoła -->
       <g class="dt-twinkle"><path d="M40 146 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 z" fill="var(--c5)"/></g>
       <g class="dt-twinkle dt-tw2"><path d="M196 196 l1.6 4.4 l4.4 1.6 l-4.4 1.6 l-1.6 4.4 l-1.6 -4.4 l-4.4 -1.6 l4.4 -1.6 z" fill="var(--c2)"/></g>
     </svg>
-      <figcaption><span>fig. 01 — detektyw</span><span>kot na służbie</span></figcaption>
+      <figcaption><span>fig. 01 — analityk</span><span>kot na służbie</span></figcaption>
     </figure>
   </header>
   <div class="card marksbar" id="marksBar">
@@ -1114,10 +1178,18 @@ body.is-loading #status{display:none}
       <li><span>03</span>Wybierz obszar i okres</li>
     </ol>
   </div>
+  <footer class="bdfoot">
+    <svg class="bdlogo" viewBox="0 0 729.5 262.5" role="img" aria-label="BeDigital"><use href="#bdLogo"/></svg>
+    <span>expect more</span>
+    <span class="bdfoot-r">narzędzie wewnętrzne agencji BeDigital · dane: Meta Ad Library API</span>
+  </footer>
 </div>
 
 <div id="report"></div>
 <script>
+// ================================================================ marka BeDigital
+const BD_LOGO_VB = (document.getElementById("bdLogo") || {getAttribute: () => "0 0 730 263"}).getAttribute("viewBox");
+function bdLogoSvg(){ const p = document.querySelector("#bdLogo path"); return p ? `<svg viewBox="${BD_LOGO_VB}" aria-label="BeDigital"><path fill="currentColor" fill-rule="evenodd" d="${p.getAttribute("d")}"/></svg>` : "BeDigital"; }
 // ================================================================ dane stałe
 const EU = {PL:"Polska",DE:"Niemcy",CZ:"Czechy",SK:"Słowacja",AT:"Austria",FR:"Francja",IT:"Włochy",ES:"Hiszpania",NL:"Holandia",BE:"Belgia",LT:"Litwa",LV:"Łotwa",EE:"Estonia",HU:"Węgry",RO:"Rumunia",BG:"Bułgaria",HR:"Chorwacja",SI:"Słowenia",SE:"Szwecja",DK:"Dania",FI:"Finlandia",IE:"Irlandia",PT:"Portugalia",GR:"Grecja",LU:"Luksemburg",CY:"Cypr",MT:"Malta"};
 const ALL_COUNTRIES = {...EU, GB: "Wielka Brytania"};
@@ -1147,6 +1219,10 @@ const store = {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const fmt = n => n == null ? "brak danych" : Math.round(n).toLocaleString("pl-PL");
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const pct1 = (a, b) => b ? (a / b * 100).toFixed(1).replace(".", ",") : "0";   // jedno miejsce po przecinku
+const MON_PL = ["sty.", "lut.", "mar.", "kwi.", "maj", "cze.", "lip.", "sie.", "wrz.", "paź.", "lis.", "gru."];
+const monL = k => `${MON_PL[+String(k).slice(5, 7) - 1] || k.slice(5)} ${String(k).slice(2, 4)}`;   // "2025-12" → "gru. 25"
+const cutCP = (t, n) => { const a = Array.from(String(t || "")); return a.length > n ? a.slice(0, n).join("") : String(t || ""); };   // cięcie bez rozbijania emoji
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const DAY = 86400000;
 const toDay = s => s ? Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) : null;
@@ -1158,7 +1234,8 @@ const mean = a => a.reduce((s,x) => s+x, 0) / a.length;
 const median = a => { const s = [...a].sort((x,y)=>x-y), m = s.length>>1; return s.length % 2 ? s[m] : (s[m-1]+s[m])/2; };
 const topN = (obj, n) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0, n);
 const COLORS = 8;
-const color = i => `var(--c${i % COLORS})`;
+let colorMap = null;   // przy ukrytych markach kolory zostają przypięte do marki
+const color = i => `var(--c${(colorMap ? colorMap[i] ?? i : i) % COLORS})`;
 const ageColor = i => `var(--a${i})`;
 function setStatus(msg, err){
   if (LOAD.on && !err) return loaderMsg(msg);
@@ -1402,7 +1479,7 @@ async function loadAnalysis(e){
   const file = e.target.files[0]; if (!file) return;
   try {
     const d = JSON.parse(await file.text());
-    if (d.app !== "meta-ads-bot" || !Array.isArray(d.results) || !d.results.length) throw new Error("to nie jest plik analizy Meta Ads Bota");
+    if (d.app !== "meta-ads-bot" || !Array.isArray(d.results) || !d.results.length) throw new Error("to nie jest plik analizy RivalCore");
     todayUTC = isoMs(d.asOf); ASOF = {date: d.asOf, file: file.name};
     const st = d.settings || {};
     for (const k of ["cpmMin", "cpmMax", "freqMin", "freqMax", "evDays"]) if (st[k] != null) $(k).value = st[k];
@@ -1544,7 +1621,7 @@ function pricesIn(t){
 }
 const WEEKDAYS = ["pn", "wt", "śr", "cz", "pt", "sb", "nd"];
 const WEEKDAYS_FULL = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
-const LIFE_B = [[1,3,"1–3 dni"],[4,7,"4–7"],[8,14,"8–14"],[15,30,"15–30"],[31,60,"31–60"],[61,90,"61–90"],[91,1e9,"90+"]];
+const LIFE_B = [[1,3,"1–3 dni"],[4,7,"4–7 dni"],[8,14,"8–14 dni"],[15,30,"15–30 dni"],[31,60,"31–60 dni"],[61,90,"61–90 dni"],[91,1e9,"90+ dni"]];
 const LEN_B = [[0,50,"do 50 zn."],[51,100,"51–100"],[101,200,"101–200"],[201,400,"201–400"],[401,1e9,"400+"]];
 const DISC_B = [[0,10,"do 10%"],[11,20,"11–20%"],[21,30,"21–30%"],[31,40,"31–40%"],[41,50,"41–50%"],[51,100,"50%+"]];
 const PRICE_B = [[0,19.99,"< 20 zł"],[20,49.99,"20–49"],[50,99.99,"50–99"],[100,199.99,"100–199"],[200,499.99,"200–499"],[500,1e9,"500+"]];
@@ -1601,7 +1678,7 @@ function buildRows(ads){
       id: ad.id, start, stop, end, active, days, reach,
       rpd: reach != null ? reach / days : null,
       platforms: (ad.publisher_platforms || []).map(p => String(p).toLowerCase()),
-      text: (bodies[0] || "").slice(0, 240), title: (titles[0] || "").slice(0, 140), desc: (descs[0] || "").slice(0, 160),
+      text: cutCP(bodies[0], 240), title: cutCP(titles[0], 140), desc: cutCP(descs[0], 160),
       body: bodies[0] || "",
       fullText: cleanTxt(bodies.join(" ") + " " + titles.join(" ") + " " + descs.join(" ")),
       dco: new Set(bodies).size > 1 || new Set(titles).size > 1,
@@ -2268,10 +2345,20 @@ function colChart(items, {color = "var(--bar1)", unit = "", highlight = -1, h = 
     <div class="xl">${items.map(([l]) => `<span>${esc(l)}</span>`).join("")}</div>`;
 }
 
+// wniosek: kto obsługuje reklamy marki (płatnik ≠ marka → zwykle agencja)
+function payerSee(r, targ){
+  const top = topN(targ.payers, 1)[0]; if (!top) return "";
+  const norm = t => String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
+  const words = norm(r.pageName).split(/[^a-z0-9]+/).filter(w => w.length >= 4);
+  const own = words.some(w => norm(top[0]).includes(w));
+  const share = pct(top[1], targ.payAds);
+  return own ? see(`Marka sama płaci za większość reklam (${share}% przez <b>${esc(top[0])}</b>) — brak śladu agencji w danych.`)
+    : see(`<b>${share}%</b> reklam opłaca <b>${esc(top[0])}</b>, a nie sama marka — to najpewniej agencja lub dom mediowy, który prowadzi jej kampanie.`);
+}
 function hbars(list, total, {labelW = 150} = {}){
   if (!total || !list.length) return NODATA;
   const max = Math.max(...list.map(x => x[1]), 1);
-  return list.map(([k,v]) => `<div class="hbar" style="grid-template-columns:${labelW}px 1fr 44px"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span class="pct">${pct(v,total)}%</span></div>`).join("");
+  return list.map(([k,v]) => `<div class="hbar" style="grid-template-columns:${labelW}px 1fr 56px"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span class="pct">${pct1(v,total)}%</span></div>`).join("");
 }
 
 function brandBars(list, getter, {fmtV = v => fmt(v), unit = "", note = ""} = {}){
@@ -2353,7 +2440,7 @@ function stackArea100(keys, series){
   }).join("");
   return `<svg class="lc" viewBox="0 0 ${W} ${H}">${polys}
     ${[0, .5, 1].map(t => `<text x="${L-6}" y="${Y(t)+4}" text-anchor="end">${t * 100}%</text>`).join("")}
-    ${keys.map((k, i) => `<text x="${X(i)}" y="${H-8}" text-anchor="middle">${k.slice(5)}.${k.slice(2,4)}</text>`).join("")}</svg>`;
+    ${keys.map((k, i) => `<text x="${X(i)}" y="${H-8}" text-anchor="middle">${monL(k)}</text>`).join("")}</svg>`;
 }
 
 function swimlanes(list, {weeks = 26} = {}){
@@ -2410,12 +2497,13 @@ function lineChart(list){
   const ticks = [...new Set([0, .25, .5, .75, 1].map(t => Math.round(maxV * t)))];
   return `<svg class="lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="Emitowane reklamy miesięcznie">
     ${ticks.map(t => `<line class="grid" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`).join("")}
-    ${keys.map((k,i) => `<text x="${L + i*step}" y="${H-8}" text-anchor="middle">${k.slice(5)}.${k.slice(2,4)}</text>`).join("")}
+    ${keys.map((k,i) => `<text x="${L + i*step}" y="${H-8}" text-anchor="middle">${monL(k)}</text>`).join("")}
     ${list.map((r, idx) => `<polyline fill="none" stroke="${color(idx)}" stroke-width="${r.isMain ? 3 : 2}" stroke-linejoin="round" points="${r.months.map((m,i) => `${(L + i*step).toFixed(1)},${y(m.emitowane).toFixed(1)}`).join(" ")}"/>
         ${r.months.map((m,i) => `<circle cx="${L + i*step}" cy="${y(m.emitowane)}" r="${r.isMain ? 3.5 : 2.5}" fill="${color(idx)}"><title>${esc(r.pageName)} · ${m.key}: ${m.emitowane} emitowanych, ${m.nowe} nowych</title></circle>`).join("")}`).join("")}
   </svg>`;
 }
 
+const absVal = (v, unit) => unit === "zł" ? "~" + fmtK(Math.round(v)) + " zł" : unit === "reklam" ? fmt(Math.round(v)) : fmtK(Math.round(v));
 function shareBlock(list, getter, unit){
   const total = list.reduce((s,r) => s + (getter(r) || 0), 0);
   if (!total) return NODATA;
@@ -2423,7 +2511,7 @@ function shareBlock(list, getter, unit){
     const v = getter(r) || 0, p = v / total * 100;
     return `<div class="nm" title="${esc(r.pageName)}"><span class="dot" style="background:${color(idx)}"></span>${esc(r.pageName)}</div>
       <div class="track" title="${fmt(v)} ${unit}"><div class="fill" style="width:${p}%;background:${color(idx)}"></div></div>
-      <div class="pct"${WHY.share(r.pageName, v, total, unit)}>${p.toFixed(0)}%</div>`;
+      <div class="pct"${WHY.share(r.pageName, v, total, unit)}>${view.shareAbs ? absVal(v, unit) : p.toFixed(1).replace(".", ",") + "%"}</div>`;
   }).join("")}</div>`;
 }
 
@@ -2515,7 +2603,7 @@ function secTrend(res){
         <div class="n">${m.emitowane || ""}</div>
         <div class="bars"><div class="bar a" style="height:${m.emitowane/maxE*100}%"></div><div class="bar b" style="height:${m.nowe/maxE*100}%"></div></div></div>`).join("")}
     </div>
-    <div class="xl">${months.map(m => `<span>${m.key.slice(5)}.${m.key.slice(2,4)}${m.partial ? "*" : ""}</span>`).join("")}</div>
+    <div class="xl">${months.map(m => `<span>${monL(m.key)}${m.partial ? "*" : ""}</span>`).join("")}</div>
     <div class="legend"><span><i style="background:var(--bar1)"></i>emitowane w miesiącu</span><span><i style="background:var(--bar2)"></i>nowe w miesiącu</span>${months.some(m => m.partial) ? "<span>* miesiąc niepełny (dane od " + iso(s.covMin) + ")</span>" : ""}</div>
     ${res.period ? `<div class="note">${trendNote(res)}</div>` : ""}`;
 }
@@ -2672,7 +2760,7 @@ P.offers = (r) => {
       ${blk("[p]Głębokość rabatów", colChart(p.discHist, {color: "var(--c1)", h: 130}))}
       ${blk("[p]Poziomy cen w reklamach", colChart(p.priceHist, {color: "var(--c2)", h: 130}) + `<div class="note">Najniższa cena z każdej reklamy. Nie liczymy: progów darmowej dostawy, kwot rabatów („-50 zł”, „50 zł taniej”), bonów, nagród i cashbacku.</div>`)}
     </div>
-    ${blk("[p]Mechaniki promocyjne", hbars(OFFERS.map(([name]) => [name, r.msg.offers[name] || 0]).filter(x => x[1] > 0), r.rows.length, {labelW: 190}) || NODATA)}
+    ${blk("[p]Mechaniki promocyjne", (hbars(OFFERS.map(([name]) => [name, r.msg.offers[name] || 0]).filter(x => x[1] > 0), r.rows.length, {labelW: 190}) || NODATA) + `<div class="note">Odsetek reklam marki, w których tekście jest dana mechanika. Wartości nie sumują się do 100%: jedna reklama może mieć kilka mechanik (np. konkurs i pilność), a wiele nie ma żadnej. Długość paska — względem najczęstszej mechaniki.</div>`)}
     ${blk("[p]Reklamy z najwyższym rabatem", p.topDisc.length ? p.topDisc.map(x => adLine(x, `<span class="evbadge" style="color:var(--c1)">−${x.disc}%</span>`)).join("") : NODATA)}`;
 };
 P.audience = (r) => {
@@ -2694,7 +2782,7 @@ P.audience = (r) => {
     </div>
     ${blk("[d]Kto płaci i kto jest beneficjentem", targ.payAds ? `<div class="two"><div><div class="sub">Płatnik</div><ul class="lines">${topN(targ.payers, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div>
       <div><div class="sub">Beneficjent</div><ul class="lines">${topN(targ.bens, 5).map(([k,v]) => `<li>${esc(k)} — ${pct(v, targ.payAds)}% reklam</li>`).join("")}</ul></div></div>
-      <div class="note">Dane wymagane w UE (DSA). Jeśli płatnik różni się od marki, często jest to agencja lub dom mediowy.</div>` : `<div class="sub nodata">Brak danych o płatniku (pole dostępne dla reklam emitowanych w UE).</div>`)}`;
+      <div class="note"><b>Płatnik</b> — kto zapłacił za reklamę. <b>Beneficjent</b> — marka, w której imieniu reklama jest emitowana. Procent = część reklam tej marki z danym płatnikiem lub beneficjentem (jedna reklama może mieć kilku). Gdy płatnikiem jest inna firma niż marka, to zwykle agencja lub dom mediowy, który ją obsługuje. Dane deklarowane przez reklamodawcę, wymagane w UE (DSA).</div>${payerSee(r, targ)}` : `<div class="sub nodata">Brak danych o płatniku (pole dostępne dla reklam emitowanych w UE).</div>`)}`;
 };
 P.calendar = (r) => {
   const dowMax = r.cal.dow.indexOf(Math.max(...r.cal.dow));
@@ -2705,7 +2793,7 @@ P.calendar = (r) => {
     ${blk(r.s.ref < todayUTC ? "[d]Kalendarz startów reklam (rok do końca okresu)" : "[d]Kalendarz startów reklam (ostatni rok)", heatCalendar(r.cal.launches, r.s.ref, {from: r.s.covMin}) + (r.s.covMin != null ? `<div class="note">Kratki przerywane = dni przed ${iso(r.s.covMin)}, dla których nie pobrano danych (to nie jest brak reklam).</div>` : ""))}
     <div class="two">
       ${blk("[c]Dzień tygodnia startu", colChart(r.cal.dow.map((v, i) => [WEEKDAYS[i], v]), {color: "var(--c6)", highlight: dowMax, h: 120}))}
-      ${blk("[c]Nowe reklamy miesiąc po miesiącu", colChart(r.months.map(m => [`${m.key.slice(5)}.${m.key.slice(2,4)}`, m.nowe]), {color: "var(--bar1)", h: 120}))}
+      ${blk("[c]Nowe reklamy miesiąc po miesiącu", colChart(r.months.map(m => [monL(m.key), m.nowe]), {color: "var(--bar1)", h: 120}))}
     </div>
     ${blk("[c]Aktywność przed ważnymi datami (30 dni przed)", near.length ? `<ul class="lines">${near.map(x => `<li><b>${x.k.name}</b> (${iso(x.k.t)}): ${x.nAds} nowych reklam${x.w.length ? `, ${x.w.length} ${x.w.length === 1 ? "fala" : x.w.length < 5 ? "fale" : "fal"} startów, pierwsza ~${x.lead} dni przed` : ""}</li>`).join("")}</ul>` : `<div class="sub nodata">Brak nowych reklam w okresach przed ważnymi datami w ostatnim roku.</div>`)}`;
 };
@@ -2732,7 +2820,7 @@ P.social = (r) => {
     ${p.otherCur || p.openUpper ? `<div class="note">${p.otherCur ? `${p.otherCur} reklam w innej walucie niż ${esc(p.currency)} pominięto w sumie wydatków. ` : ""}${p.openUpper ? "Część reklam ma otwarty górny przedział wydatków (Meta podaje tylko dolną granicę) — górna suma jest zaniżona." : ""}</div>` : ""}
     ${miniKpis("d", [[fmt(p.n), "reklam"], [`${fmtK(p.spLo)}–${fmtK(p.spHi)}`, `wydatki (${esc(p.currency)})`], [`${fmtK(p.imLo)}–${fmtK(p.imHi)}`, "wyświetlenia"], [fmt(p.active), "aktywnych"]])}
     <div class="two">
-      ${blk("[d]Wydatki wg miesiąca startu", colChart(p.months.map(([k, v]) => [`${k.slice(5)}.${k.slice(2,4)}`, Math.round(v)]), {color: "var(--c5)", h: 120}))}
+      ${blk("[d]Wydatki wg miesiąca startu", colChart(p.months.map(([k, v]) => [monL(k), Math.round(v)]), {color: "var(--c5)", h: 120}))}
       ${blk("[d]Płacący (byline)", p.bylines.length ? `<ul class="lines">${p.bylines.map(([k,v]) => `<li>${esc(k)} — ${v} reklam</li>`).join("")}</ul>` : NODATA)}
     </div>
     <div class="two">
@@ -3080,6 +3168,7 @@ C.sov = list => {
   return `${main ? see(list[0].s.okres
     ? `W wybranym okresie Twój szacowany udział w wydatkach to <b>${totP ? Math.round(main.s.okres.koszt / totP * 100) : 0}%</b>, w nowych reklamach <b>${pct(main.s.okres.nowe, list.reduce((s, r) => s + r.s.okres.nowe, 0))}%</b>. Prognoza „na dziś” (tylko reklamy aktywne dziś): <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b> wydatków — różnica pokazuje, czy marka przyspiesza, czy zwalnia.`
     : `Twój szacowany udział w wydatkach: <b>${tot ? Math.round(main.s.miesSr / tot * 100) : 0}%</b>, w aktywnych reklamach: <b>${pct(main.s.aktywne, list.reduce((s, r) => s + r.s.aktywne, 0))}%</b>.`) : ""}
+    <div class="segtog" role="group" aria-label="Sposób pokazywania"><button data-shareabs="0" class="${view.shareAbs ? "" : "on"}">Udział %</button><button data-shareabs="1" class="${view.shareAbs ? "on" : ""}">Wartości</button></div>
     <div class="three">
       ${blk(list[0].s.okres ? "[p]Prognoza wydatków / mies. (aktywne dziś)" : "[p]Szacowane wydatki / mies.", shareBlock(list, r => r.s.miesSr, "zł"))}
       ${blk(list[0].s.okres ? "[c]Aktywne dziś" : "[c]Aktywne reklamy", shareBlock(list, r => r.s.aktywne, "reklam"))}
@@ -3183,7 +3272,21 @@ const filters = () => ({days: +$("fDays").value, platform: $("fPlat").value, med
 function evDaysVal(){ const v = Math.round(+$("evDays").value); return v >= 7 && v <= 365 ? v : 30; }
 let results = [];
 let uidSeq = 0;
-const view = {top: "cmp", cmpTab: "recs", brandTab: "overview"};
+const view = {top: "cmp", cmpTab: "recs", brandTab: "overview", hidden: new Set(), shareAbs: false};
+// marki widoczne w porównaniu (Twoja marka zawsze; zostają min. 2 marki)
+const cmpList = () => { const l = results.filter(r => r.isMain || !view.hidden.has(r.uid)); return l.length >= 2 ? l : results; };
+function cmpRender(tab){
+  const list = cmpList();
+  colorMap = list.map(r => results.indexOf(r));
+  try { return cmpPanel(tab, list); } finally { colorMap = null; }
+}
+function brandFilter(){
+  if (results.length < 3) return "";
+  const vis = cmpList().length;
+  return `<div class="bfilter"><span>Porównuj:</span>${results.map((r, i) => { const on = !view.hidden.has(r.uid) || r.isMain;
+    return `<button class="bchip" data-bf="${r.uid}" aria-pressed="${on}"${r.isMain || (on && vis <= 2) ? " disabled" : ""} title="${r.isMain ? "Twoja marka — zawsze w porównaniu" : on ? "Kliknij, żeby ukryć" : "Kliknij, żeby pokazać"}"><span class="dot" style="background:${color(i)}"></span>${esc(r.pageName)}${r.isMain ? " ★" : ""}</button>`; }).join("")}
+    ${view.hidden.size ? `<span>· udziały liczone tylko dla zaznaczonych marek</span>` : ""}</div>`;
+}
 try { const v = JSON.parse(store.get("metaAdsBotView") || "{}"); if (v.cmpTab) view.cmpTab = v.cmpTab; if (v.brandTab) view.brandTab = v.brandTab; } catch(e){}
 
 // kontekst czasu: okres analizy (focus), okres porównawczy (prev) i od kiedy mamy pełne dane (covMin)
@@ -3226,9 +3329,10 @@ function renderAll(){
       ${results.map((x, i) => `<button class="t1 ${x.uid === view.top ? "on" : ""}" data-top="${x.uid}"><span class="dot" style="background:${color(i)}"></span>${esc(x.pageName)}${x.isMain ? " ★" : ""}<span class="t1i">${x.idx.index}</span></button>`).join("")}
     </div>
     ${isCmp ? `<div class="cmphead"><h2>Porównanie z konkurencją</h2><div class="sub">${results.length} ${results.length >= 2 && results.length <= 4 ? "marki" : "marek"} · emisja: ${esc(regionLabel(results[0].region))} · ${iso(todayUTC)}${filterLabel() ? ` · filtr: ${esc(filterLabel())}` : ""}</div>${asofWarn()}${periodWarn(results)}${limitWarn(results)}</div>` : ""}
+    ${isCmp ? brandFilter() : ""}
     <div class="tabs2" role="tablist">${tabs.map(([k, l]) => `<button class="t2 ${k === active ? "on" : ""}" data-tab="${k}">${l}${isCmp ? "" : badge(k, r)}</button>`).join("")}</div>
     <div id="resLegend">${marksLegend()}</div>
-    <div class="panel">${isCmp ? cmpPanel(active, results) : brandPanel(active, r, idx)}</div>`;
+    <div class="panel">${isCmp ? cmpRender(active) : brandPanel(active, r, idx)}</div>`;
   card.querySelectorAll(".t1").forEach(b => b.onclick = () => { view.top = b.dataset.top === "cmp" ? "cmp" : +b.dataset.top; renderAll(); });
   card.querySelectorAll(".t2").forEach(b => b.onclick = () => {
     if (isCmp) view.cmpTab = b.dataset.tab; else view.brandTab = b.dataset.tab;
@@ -3236,6 +3340,8 @@ function renderAll(){
     renderAll();
     const t2 = card.querySelector(".tabs2"); if (t2 && t2.getBoundingClientRect().top < 0) t2.scrollIntoView({block: "start"});
   });
+  card.querySelectorAll("button[data-bf]").forEach(b => b.onclick = () => { const u = +b.dataset.bf; view.hidden.has(u) ? view.hidden.delete(u) : view.hidden.add(u); renderAll(); });
+  card.querySelectorAll("button[data-shareabs]").forEach(b => b.onclick = () => { view.shareAbs = b.dataset.shareabs === "1"; renderAll(); });
   card.querySelectorAll("button[data-gobud]").forEach(b => b.onclick = () => { view.top = +b.dataset.gobud; view.brandTab = "budget"; renderAll(); card.scrollIntoView({block: "start"}); });
   card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
   if (!isCmp && active === "budget") wireProb(r);
@@ -3412,7 +3518,7 @@ async function swapPage(uid, pageId){
 function exportSnaps(){
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(loadSnaps())], {type: "application/json"}));
-  a.download = `meta-ads-bot-migawki_${iso(todayUTC)}.json`; a.click();
+  a.download = `rivalcore-migawki_${iso(todayUTC)}.json`; a.click();
 }
 async function importSnaps(e){
   const file = e.target.files[0]; if (!file) return;
@@ -3453,6 +3559,7 @@ function openPdfPanel(){
         <div class="row"><button class="ghost mini" id="pdfLogoBtn">Wybierz plik</button><button class="ghost mini ${pdfLogo ? "" : "hidden"}" id="pdfLogoDel">Usuń</button>
         <img id="pdfLogoPrev" alt="" style="max-height:34px;max-width:120px;${pdfLogo ? "" : "display:none"}" src="${pdfLogo || ""}"></div>
         <input type="file" id="pdfLogoFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="hidden"></div>
+      <div><label for="pdfCover">Okładka</label><select id="pdfCover"><option value="dark" ${p.cover === "light" ? "" : "selected"}>ciemna — BeDigital (do wysyłki PDF)</option><option value="light" ${p.cover === "light" ? "selected" : ""}>jasna — do druku</option></select></div>
     </div>
     <div style="margin-top:14px"><label for="pdfNote">Komentarz analityka (pojawi się na stronie podsumowania)</label>
       <textarea id="pdfNote" placeholder="np. Konkurencja mocno inwestuje w wideo i rabaty — rekomendujemy test kreacji z kodem rabatowym…"></textarea></div>
@@ -3488,21 +3595,21 @@ function generatePdf(){
   const card = $("pdfCard");
   const o = {
     title: $("pdfTitle").value.trim() || "Raport reklam Meta",
-    client: $("pdfClient").value.trim(), author: $("pdfAuthor").value.trim(), note: $("pdfNote").value.trim(), logo: pdfLogo,
+    client: $("pdfClient").value.trim(), author: $("pdfAuthor").value.trim(), note: $("pdfNote").value.trim(), logo: pdfLogo, cover: ($("pdfCover") || {}).value === "light" ? "light" : "dark",
     secs: new Set([...card.querySelectorAll("input[data-sec]:checked")].map(cb => cb.dataset.sec)),
     brands: results.length > 1 ? [...card.querySelectorAll("input[data-brand]:checked")].map(cb => +cb.dataset.brand) : results.map(r => r.uid)
   };
   if (!o.brands.length) return setStatus("Zaznacz co najmniej jedną markę do raportu.", true);
   if (!o.secs.size) return setStatus("Zaznacz co najmniej jedną sekcję raportu.", true);
   const main = results.find(r => r.isMain) || results[0];
-  const prefs = {author: o.author, client: o.client, lastBrand: main.pageName, sections: [...o.secs]};
+  const prefs = {author: o.author, client: o.client, lastBrand: main.pageName, sections: [...o.secs], cover: o.cover};
   if (o.logo && o.logo.length < 400000) prefs.logo = o.logo;
   store.set(PDF_KEY, JSON.stringify(prefs));
 
   $("report").innerHTML = buildReport(o);
   const root = document.documentElement, prevTheme = root.getAttribute("data-theme"), prevTitle = document.title;
   root.setAttribute("data-theme", "light");
-  document.title = `Raport Meta Ads - ${o.client || main.pageName} - ${iso(todayUTC)}`.replace(/[\\/:*?"<>|]/g, "");
+  document.title = `RivalCore - raport - ${o.client || main.pageName} - ${iso(todayUTC)}`.replace(/[\\/:*?"<>|]/g, "");
   const restore = () => {
     document.title = prevTitle;
     if (prevTheme) root.setAttribute("data-theme", prevTheme); else root.removeAttribute("data-theme");
@@ -3525,14 +3632,15 @@ function buildReport(o){
   if (has("cover")){
     const det = (document.querySelector("header .detective") || {outerHTML: ""}).outerHTML.replace('class="detective"', 'class="detective rp-det"');
     const kp = main.s;
-    pages.push(`<section class="rp-cover">
+    pages.push(`<section class="rp-cover${o.cover === "light" ? " rp-cover--light" : ""}">
       <div class="rp-cover-top">
-        <div>${o.logo ? `<img class="rp-logo" src="${o.logo}" alt="">` : `<span class="rp-wordmark">Meta Ads Bot</span>`}</div>
-        <div class="rp-cover-date">${dateLong}</div>
+        <div><svg class="rp-bdlogo" viewBox="${BD_LOGO_VB}" role="img" aria-label="BeDigital"><use href="#bdLogo"/></svg><span class="rp-claim">expect more</span></div>
+        <div style="display:flex;align-items:center;gap:6mm">${o.logo ? `<img class="rp-logo" src="${o.logo}" alt="">` : ""}
+        <div class="rp-cover-date">${dateLong}</div></div>
       </div>
       <div class="rp-hero">
         <div class="rp-hero-txt">
-          <div class="kicker">Raport konkurencji · reklamy Meta (Facebook i Instagram)</div>
+          <div class="kicker">RivalCore · raport konkurencji · Facebook i Instagram</div>
           <h1>${esc(o.title)}</h1>
           <p>${sel.length > 1 ? `${esc(main.pageName)} na tle ${sel.length - 1} ${sel.length - 1 === 1 ? "konkurenta" : "konkurentów"}` : `Analiza reklam marki ${esc(main.pageName)}`} · emisja: ${esc(regionLabel(main.region))}${fl ? ` · ${esc(fl)}` : ""}</p>
         </div>
@@ -3615,6 +3723,8 @@ function buildReport(o){
 // ================================================================ eksport Excel (same wartości)
 const PERIOD_METRICS = [["Nowe reklamy", "nowe", ""], ["Emitowane reklamy", "emitowane", ""], ["Nowe koncepty", "koncepty", ""], ["Szac. wyświetlenia", "wysw", ""], ["Szac. koszt (zł)", "koszt", ""], ["Zasięg w okresie", "reach", ""], ["Reklamy z ofertą (%)", "ofertaProc", "pp"], ["Średni rabat (%)", "rabatAvg", "pp"], ["Udział wideo (%)", "wideoProc", "pp"]];
 const periodDelta = (x, y, kind) => x == null || y == null ? null : kind === "pp" ? x - y : y ? Math.round((x - y) / y * 100) : null;
+// Excel odrzuca komórki z niedozwolonymi znakami (np. połówka emoji po ucięciu tekstu) — wtedy „naprawia” plik, czyszcząc cały arkusz
+const xlClean = v => typeof v !== "string" ? v : v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, "").replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "").slice(0, 32000);
 function exportXlsx(asData = false){
   const f = filters(), fl = filterLabel() || "brak";
   const main = results.find(r => r.isMain);
@@ -3714,7 +3824,7 @@ function exportXlsx(asData = false){
     if (nm === "Luki demograficzne" && aoa.length < 2) continue;
     if (nm === "Zmiany" && aoa.length < 2) continue;
     if (nm === "Społeczne i polityczne" && aoa.length < 2) continue;
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const ws = XLSX.utils.aoa_to_sheet(aoa.map(row => row.map(xlClean)));
     ws["!cols"] = aoa[0].map((h, i) => ({wch: Math.min(60, Math.max(10, ...aoa.slice(0, 200).map(r => String(r[i] ?? "").length)) + 1)}));
     XLSX.utils.book_append_sheet(wb, ws, nm.slice(0, 31));
   }
@@ -3809,7 +3919,7 @@ async function nodeToPng(node, meta, o){
   const lib = await loadLib("img");
   const st = pngStage(o.theme);
   const frame = document.createElement("div"); frame.className = "png-frame";
-  frame.innerHTML = `<div class="pf-head"><span class="pf-brand">${meta.dot ? `<i style="background:${meta.dot}"></i>` : ""}${esc(meta.brand)}</span><span class="pf-tab">${esc(meta.tab)}</span></div>`;
+  frame.innerHTML = `<div class="pf-head"><span class="pf-brand">${meta.dot ? `<i style="background:${meta.dot}"></i>` : ""}${esc(meta.brand)}</span><span class="pf-r"><span class="pf-tab">${esc(meta.tab)}</span><i></i>${bdLogoSvg()}</span></div>`;
   const clone = node.cloneNode(true);
   clone.querySelectorAll(".blkpng,.whyi,input,button,select").forEach(e => e.remove());
   frame.appendChild(clone);
@@ -3983,7 +4093,7 @@ async function buildStratZip(){
 }
 function stratReadme(brands, files, log){
   const main = brands.find(r => r.isMain) || brands[0], L = [];
-  L.push(`# Pakiet do strategii — ${main.pageName}`, "", `Wygenerowano: ${iso(todayUTC)} · Meta Ads Bot · źródło: Meta Ad Library API (Biblioteka Reklam Meta)`, "");
+  L.push(`# Pakiet do strategii — ${main.pageName}`, "", `Wygenerowano: ${iso(todayUTC)} · RivalCore (BeDigital) · źródło: Meta Ad Library API (Biblioteka Reklam Meta)`, "");
   L.push("## Zakres", `- Marki: ${brands.map(r => r.pageName + (r.isMain ? " (analizowana)" : "")).join(", ")}`, `- Obszar emisji: ${regionLabel(main.region)}${main.lang ? `, język: ${main.lang}` : ""}`,
     `- Okres: ${main.period ? main.period.label : "cała dostępna historia"}`, `- Filtry wyników: ${filterLabel() || "brak"}`,
     brands.some(r => r.limited) ? `- Próba (limit reklam): ${brands.filter(r => r.limited).map(r => `${r.pageName} — ${r.limited.n} reklam`).join("; ")} — liczby bezwzględne dla tych marek są zaniżone` : "- Pobrano wszystkie dostępne reklamy każdej marki", "");
@@ -4087,7 +4197,7 @@ function delSet(){
 function exportSets(){
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(loadSets(), null, 2)], {type: "application/json"}));
-  a.download = "meta-ads-bot-zestawy.json"; a.click();
+  a.download = "rivalcore-zestawy.json"; a.click();
 }
 $("setFile").onchange = async e => {
   const file = e.target.files[0]; if (!file) return;
@@ -4243,7 +4353,7 @@ function buildAiMd(o){
 
   // --- PROMPT
   L.push(`# Analiza reklam Meta: ${M}${multi ? " na tle konkurencji" : ""}`);
-  L.push(`\n> Plik wygenerowany przez Meta Ads Bot (${iso(todayUTC)}). Zawiera instrukcję dla AI i dane z Biblioteki Reklam Meta. Wklej całość do czatu z AI albo załącz jako plik.`);
+  L.push(`\n> Plik wygenerowany przez RivalCore — narzędzie BeDigital (${iso(todayUTC)}). Zawiera instrukcję dla AI i dane z Biblioteki Reklam Meta. Wklej całość do czatu z AI albo załącz jako plik.`);
   h(`## Instrukcja dla AI`);
   L.push(`Jesteś doświadczonym strategiem performance marketingu (Meta Ads) i analitykiem konkurencji. Poniżej są dane z Biblioteki Reklam Meta (Facebook i Instagram) dla marki **${M}**${multi ? ` i ${comps.length} ${comps.length === 1 ? "konkurenta" : "konkurentów"}: ${comps.map(r => `**${r.pageName}**`).join(", ")}` : ""}. Przygotuj pogłębioną analizę według zakresu i formy opisanych niżej.`);
   h(`### Zasady pracy z danymi`);
