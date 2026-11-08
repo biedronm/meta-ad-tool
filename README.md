@@ -1,8 +1,8 @@
 #  https://biedronm.github.io/meta-ad-tool/
 
-# Meta Ads Bot — README
+# RivalCore — README
 
-Narzędzie do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
+**RivalCore** to narzędzie agencji BeDigital (w parze z feedcore) do analizy reklam marek i konkurencji z **Biblioteki Reklam Meta** (Facebook, Instagram, Messenger, Audience Network). Jeden plik HTML — bez instalacji, bez serwera, bez opłat. Otwierasz w przeglądarce, wklejasz token, wpisujesz marki i dostajesz analizę z wykresami, raport PDF, Excel oraz plik dla AI.
 
 ---
 
@@ -45,7 +45,7 @@ Jeśli widzisz nazwy stron — wszystko działa. Ważne: weryfikacja, aplikacja 
 
 ## 2. Jak zrobić analizę
 
-1. Otwórz `meta-ads-bot.html` w Chrome lub Edge (dwuklik).
+1. Otwórz `meta-ads-bot.html` (plik narzędzia RivalCore) w Chrome lub Edge (dwuklik).
 2. Wklej **token** (opcjonalnie zaznacz „Zapamiętaj token na tym komputerze”).
 3. Wpisz **Twoją markę**. Pewniej: wklej **ID strony** albo link z Biblioteki Reklam (z `view_all_page_id=…`) — wtedy bot nie musi zgadywać strony po nazwie.
 4. Wybierz **obszar emisji** — kraje (kafelki, można kilka) albo „Cały świat”.
@@ -124,10 +124,12 @@ Na górze wybierasz **Porównanie** albo konkretną markę (liczba obok nazwy to
 
 ### Zakładki porównania
 
+**Wybór marek do porównania.** Pod nagłówkiem „Porównanie z konkurencją” są przyciski z nazwami marek („Porównuj:”). Kliknięcie ukrywa markę we wszystkich zakładkach porównania, a udziały liczą się wtedy tylko dla zaznaczonych marek (np. bez Lidla i Biedronki, żeby porównać się z hurtowniami). Twoja marka zostaje zawsze, w porównaniu muszą zostać co najmniej dwie marki, a kolory marek się nie zmieniają. PDF, Excel i pakiet do strategii nadal zawierają wszystkie marki.
+
 | Zakładka | Co zawiera |
 | --- | --- |
 | **Wnioski i rekomendacje** | Najważniejsze wnioski, rekomendacje z priorytetami, karty „marki w skrócie” |
-| **Udział w głosie** | Budżety marek z przedziałami 80% i 95%, udziały w wydatkach / reklamach / zasięgu, udział w zasięgu miesiąc po miesiącu, emitowane reklamy w czasie |
+| **Udział w głosie** | Budżety marek z przedziałami 80% i 95%, udziały w wydatkach / reklamach / zasięgu (z jednym miejscem po przecinku, przełącznik „Udział %” / „Wartości” pokazuje liczby bezwzględne), udział w zasięgu miesiąc po miesiącu, emitowane reklamy w czasie |
 | **Prawdopodobny budżet** | Budżety wszystkich marek obok siebie (przedziały 80% / 95%) i „piramidka” 50–99% dla każdej marki; przycisk „Pełna analiza budżetu tej marki” przenosi do zakładki marki z wykresem rozkładu i sprawdzaniem konkretnej kwoty |
 | **Kreacje i testy** | Formaty, testowanie, koncepty, DCO, evergreeny, platformy — marka obok marki |
 | **Przekaz i oferty** | „Konkurencja mówi, Ty nie”, Twoje wyróżniki, oferty, rabaty, ceny, CTA |
@@ -193,6 +195,7 @@ Przycisk **Raport PDF** → panel z ustawieniami:
 
 - tytuł, klient, autor, logo na okładkę, komentarz analityka,
 - wybór sekcji w trzech grupach (Ogólne / Porównanie / Strony każdej marki) i marek,
+- okładka: **ciemna** (styl BeDigital, do wysyłki PDF) albo **jasna** (do druku, oszczędza tusz),
 - gotowe zestawy: **Pełny raport** (~50 stron przy 4 markach) i **Skrót dla klienta** (~10 stron).
 
 Otworzy się okno drukowania — jako drukarkę wybierz **„Zapisz jako PDF”**. Jeśli tła się nie drukują, zaznacz „Grafika tła”.
