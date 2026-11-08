@@ -102,7 +102,8 @@ kbd,.kbd{font:500 11px var(--mono);padding:2px 6px;border-radius:5px;border:1px 
 .wrap{max-width:1080px;margin:0 auto;padding:0 16px 72px}
 
 /* ---------------------------------------------------------------- hero */
-.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:center;padding:44px 0 32px;border-bottom:1px solid var(--line)}
+.hero{position:relative;isolation:isolate;overflow:clip;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:center;padding:36px 0 20px;border-bottom:1px solid var(--line)}
+.hero-main{position:relative;z-index:1}
 .hero .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .hero .kicker::before{content:"";width:28px;height:1px;background:currentColor}
 header h1{margin:14px 0 0;font-size:42px;line-height:1.05;font-weight:400;letter-spacing:-.02em}
@@ -110,12 +111,15 @@ header h1::before{content:"";display:inline-block;width:.85em;height:.05em;min-h
 header p{margin:14px 0 0;color:var(--muted);max-width:560px;font-size:15px;line-height:1.6}
 .hero-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
 .hero-meta span{font:400 11.5px var(--mono);color:var(--muted);padding:3px 8px;border:1px solid var(--line);border-radius:6px}
-.hero-fig{position:relative;isolation:isolate;margin:0;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg);padding:14px 12px 0;overflow:hidden}
+.hero-fig{position:relative;isolation:isolate;margin:0 0 -20px 0;padding:0;border:0;background:none;overflow:visible;pointer-events:none}
+.hero-fig .detective{max-width:360px}
 /* poświata z key visuala BeDigital: pierścień niebieski + żar pomarańczowy + ziarno */
 .bd-orb::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 20% 15% at 70% 20%,rgba(224,112,63,.85),transparent 75%),
     radial-gradient(ellipse 48% 44% at 50% 56%,transparent 0%,transparent 52%,rgba(45,111,214,.85) 68%,rgba(30,80,160,.35) 82%,transparent 96%);
   filter:blur(10px)}
+.hero-fig.bd-orb::before{inset:-12% 0 -6% -16%}
+.hero-fig.bd-orb::after{inset:-10%;opacity:.16;-webkit-mask:radial-gradient(closest-side,#000 35%,transparent 100%);mask:radial-gradient(closest-side,#000 35%,transparent 100%)}
 .bd-orb::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.22;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .hero-fig figcaption{display:flex;justify-content:space-between;gap:8px;margin:0 -12px;padding:8px 12px;border-top:1px solid var(--line);background:var(--bg);font:400 10.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
@@ -147,7 +151,7 @@ header p{margin:14px 0 0;color:var(--muted);max-width:560px;font-size:15px;line-
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes peek{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
 @media (prefers-reduced-motion:reduce){.detective *{animation:none!important}}
-@media (max-width:760px){.hero{grid-template-columns:1fr;gap:24px;padding-top:28px}.hero-fig{max-width:340px;width:100%}header h1{font-size:32px}}
+@media (max-width:760px){.hero{grid-template-columns:1fr;gap:4px;padding-top:28px}.hero-fig{max-width:320px;width:100%;margin:0 auto -20px}header h1{font-size:32px}}
 
 /* ---------------------------------------------------------------- karty i nagłówki */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;margin-top:16px}
@@ -746,6 +750,29 @@ body.is-loading #status{display:none}
 .png-frame .pf-foot{display:flex;justify-content:space-between;gap:16px;margin-top:20px;padding-top:10px;border-top:1px solid var(--line);font:400 10.5px var(--mono);color:var(--faint)}
 .png-frame .two,.png-frame .three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
 @media print{#stratCard,.blkpng{display:none!important}}
+.kdctl{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-start;margin:0 0 12px}
+.kdbox{flex:1 1 320px;min-width:0;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg-2)}
+.kdbox > summary{margin:0;padding:8px 12px;font-size:12.5px;color:var(--text);flex-wrap:wrap}
+.kdbox .kdn{color:var(--muted);font-size:12px;margin-left:auto}
+.kdbox[open] > summary{border-bottom:1px solid var(--line)}
+.kdg{padding:10px 12px 0}
+.kdg > b{display:block;font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.kdchips{display:flex;flex-wrap:wrap;gap:5px}
+.kdctl label.kdchip,.kdchip{display:inline-flex;align-items:center;gap:6px;margin:0;padding:4px 9px;border:1px solid var(--line-2);border-radius:var(--r-sm);font-size:12px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);cursor:pointer;background:transparent}
+.kdchip input{width:auto;margin:0}
+.kdchip:hover{color:var(--text);border-color:var(--line-3)}
+.kdchip.on{color:var(--text);border-color:color-mix(in srgb,var(--c1) 55%,transparent);background:color-mix(in srgb,var(--c1) 9%,transparent)}
+.kdchip.kdu{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--accent-soft);cursor:default}
+.kdchip small{font:11px var(--mono);color:var(--muted)}
+.kdx{min-height:0;padding:0 2px;background:none!important;border:0;color:var(--muted);font-size:14px;line-height:1}
+.kdx:hover{color:var(--text)}
+.kdadd{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}
+.kdadd input{width:auto;padding:4px 8px;font-size:12px;min-height:0}
+.kdadd .kdName{width:200px;max-width:100%}
+.kdfoot{padding:10px 12px}
+.kdbox > .kdg:last-of-type{padding-bottom:12px}
+.rp .kdctl,.png-frame .kdctl,.png-src .kdctl{display:none!important}
+@media print{.kdctl{display:none!important}}
 .bdfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
 .bdfoot .bdlogo{height:16px;width:auto;color:var(--text)}
 .bdfoot > span:nth-child(2){font-weight:300;letter-spacing:.32em;color:var(--muted)}
@@ -855,7 +882,7 @@ body.is-loading #status{display:none}
       <p>Wpisz markę, a RivalCore sprawdzi, ile reklam puszcza, do kogo trafia, co komunikuje, które kreacje działają najdłużej i ile mniej więcej na to wydaje. Konkurencję też prześwietli.</p>
       <div class="hero-meta"><span>Meta Ad Library API</span><span>eksport PDF · XLSX · MD</span><span>bez serwera</span></div>
     </div>
-    <figure class="hero-fig bd-orb">
+    <figure class="hero-fig bd-orb" aria-hidden="false">
     <svg class="detective" viewBox="0 0 270 230" role="img" aria-label="Uśmiechnięty analityk BeDigital w bluzie z logo i czapce z daszkiem, z kotem na ręce i telefonem">
       <circle cx="132" cy="128" r="98" fill="var(--bg)" fill-opacity="0"/>
       <!-- unoszące się karty: wykres, reklama, polubienie -->
@@ -959,7 +986,6 @@ body.is-loading #status{display:none}
       <g class="dt-twinkle"><path d="M40 146 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 z" fill="var(--c5)"/></g>
       <g class="dt-twinkle dt-tw2"><path d="M196 196 l1.6 4.4 l4.4 1.6 l-4.4 1.6 l-1.6 4.4 l-1.6 -4.4 l-4.4 -1.6 l4.4 -1.6 z" fill="var(--c2)"/></g>
     </svg>
-      <figcaption><span>fig. 01 — analityk</span><span>kot na służbie</span></figcaption>
     </figure>
   </header>
   <div class="card marksbar" id="marksBar">
@@ -1579,6 +1605,7 @@ function parsePageId(v){
 }
 
 // ================================================================ słowniki analizy
+const MEME_NOTE = "„Grafika z tekstem (mem)” to wewnętrzna etykieta Meta (MEME). W dokumentacji API jest tylko na liście wartości, bez definicji. Z nazwy i z działania Biblioteki Reklam wynika, że chodzi o grafikę z nałożonym tekstem, czyli obrazek z napisem w środku. Tego nie da się potwierdzić w dokumentacji, a o przypisaniu decyduje automat po stronie Meta — RivalCore przejmuje tę klasyfikację, nie ogląda obrazków.";
 const MEDIA_NAMES = {VIDEO: "Wideo", IMAGE: "Grafika", MEME: "Grafika z tekstem (mem)", OTHER: "Inne (karuzela, katalog, tekst)"};
 const MEDIA_COLORS = {VIDEO: "var(--c3)", IMAGE: "var(--c0)", MEME: "var(--c5)", OTHER: "var(--a7)"};
 const PLAT_COLORS = {facebook: "var(--c0)", instagram: "var(--c3)", messenger: "var(--c6)", audience_network: "var(--c5)", threads: "var(--c7)", whatsapp: "var(--c2)", oculus: "var(--c4)"};
@@ -1638,6 +1665,63 @@ function keyDates(year){
 }
 const keyDatesAround = (from, to) => [new Date(from).getUTCFullYear() - 1, new Date(from).getUTCFullYear(), new Date(to).getUTCFullYear(), new Date(to).getUTCFullYear() + 1]
   .filter((y, i, a) => a.indexOf(y) === i).flatMap(keyDates).filter(k => k.t >= from && k.t <= to).sort((a,b) => a.t - b.t);
+
+
+// ================================================================ ważne daty na osi „Starty reklam tydzień po tygodniu” (wybiera użytkownik)
+function easterUTC(Y){
+  const a = Y % 19, b = Math.floor(Y / 100), c = Y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const hh = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - hh - k) % 7, m = Math.floor((a + 11 * hh + 22 * l) / 451);
+  const mo = Math.floor((hh + l - 7 * m + 114) / 31), da = ((hh + l - 7 * m + 114) % 31) + 1;
+  return Date.UTC(Y, mo - 1, da);
+}
+const kdFixed = (mo, d) => Y => Date.UTC(Y, mo, d);
+const kdBF = Y => { const nov1 = new Date(Date.UTC(Y, 10, 1)).getUTCDay(); return Date.UTC(Y, 10, 1 + ((4 - nov1 + 7) % 7) + 22); };
+const KD_DEFS = {
+  q1: ["Q1", kdFixed(0, 1), "q"], q2: ["Q2", kdFixed(3, 1), "q"], q3: ["Q3", kdFixed(6, 1), "q"], q4: ["Q4", kdFixed(9, 1), "q"],
+  wak: ["Początek wakacji", Y => { let t = Date.UTC(Y, 5, 21); while (new Date(t).getUTCDay() !== 5) t += DAY; return t; }],
+  szk: ["Początek roku szkolnego", Y => { let t = Date.UTC(Y, 8, 1); const d = new Date(t).getUTCDay(); return t + (d === 5 ? 3 : d === 6 ? 2 : d === 0 ? 1 : 0) * DAY; }],
+  babcia: ["Dzień Babci i Dziadka", kdFixed(0, 21)], walent: ["Walentynki", kdFixed(1, 14)], tlusty: ["Tłusty czwartek", Y => easterUTC(Y) - 52 * DAY],
+  kobiet: ["Dzień Kobiet", kdFixed(2, 8)], wielkanoc: ["Wielkanoc", easterUTC], majowka: ["Majówka", kdFixed(4, 1)], matki: ["Dzień Matki", kdFixed(4, 26)],
+  dziecka: ["Dzień Dziecka", kdFixed(5, 1)], cialo: ["Boże Ciało", Y => easterUTC(Y) + 60 * DAY], ojca: ["Dzień Ojca", kdFixed(5, 23)],
+  chlopaka: ["Dzień Chłopaka", kdFixed(8, 30)], halloween: ["Halloween", kdFixed(9, 31)], mikolajki: ["Mikołajki", kdFixed(11, 6)],
+  wigilia: ["Wigilia", kdFixed(11, 24)], sylwester: ["Sylwester", kdFixed(11, 31)],
+  singla: ["Dzień Singla 11.11", kdFixed(10, 11)], bf: ["Black Friday", kdBF], cm: ["Cyber Monday", Y => kdBF(Y) + 3 * DAY]
+};
+const KD_GROUPS = [["Kwartały", ["q1", "q2", "q3", "q4"]], ["Szkoła i wakacje", ["wak", "szk"]],
+  ["Święta i okazje", ["babcia", "walent", "tlusty", "kobiet", "wielkanoc", "majowka", "matki", "dziecka", "cialo", "ojca", "chlopaka", "halloween", "mikolajki", "wigilia", "sylwester"]],
+  ["Zakupy online", ["singla", "bf", "cm"]]];
+const KD_KEY = "rivalcoreKeyDates";
+const KD = (() => { try { const v = JSON.parse(store.get(KD_KEY) || "{}"); return {sel: new Set((v.sel || []).filter(k => KD_DEFS[k])), custom: Array.isArray(v.custom) ? v.custom.filter(c => c && /^\d{4}-\d\d-\d\d$/.test(c.d)) : []}; } catch(e){ return {sel: new Set(), custom: []}; } })();
+const saveKD = () => store.set(KD_KEY, JSON.stringify({sel: [...KD.sel], custom: KD.custom}));
+// wybrane daty w oknie [from, to): co roku dla dat stałych + własne daty jednorazowe
+function kdBetween(from, to){
+  const out = [], y0 = new Date(from).getUTCFullYear(), y1 = new Date(to).getUTCFullYear();
+  for (const k of KD.sel){ const [name, fn, kind] = KD_DEFS[k]; for (let Y = y0; Y <= y1; Y++){ const t = fn(Y); if (t >= from && t < to) out.push({name: kind === "q" ? `${name} ${Y}` : name, t, kind: kind || "d"}); } }
+  for (const c of KD.custom){ const t = Date.parse(c.d + "T00:00:00Z"); if (t >= from && t < to) out.push({name: c.name || c.d, t, kind: "u"}); }
+  return out.sort((a, b) => a.t - b.t);
+}
+function laneWindow(list){
+  const per = list[0] && list[0].period;
+  if (per){
+    const a = Date.parse(per.min + "T00:00:00Z"), b = Date.parse(per.max + "T00:00:00Z"), start = a - ((new Date(a).getUTCDay() + 6) % 7) * DAY;
+    return {start, weeks: Math.max(1, Math.floor((b - start) / DAY / 7) + 1), per};
+  }
+  const weeks = view.laneWeeks || 26, ref = todayUTC, refDow = (new Date(ref).getUTCDay() + 6) % 7;
+  return {start: ref - (refDow + (weeks - 1) * 7) * DAY, weeks, per: null};
+}
+function kdControls(list){
+  const w = laneWindow(list), nSel = KD.sel.size + KD.custom.length;
+  const chip = k => `<label class="kdchip${KD.sel.has(k) ? " on" : ""}"><input type="checkbox" data-kd="${k}" ${KD.sel.has(k) ? "checked" : ""}>${esc(KD_DEFS[k][0])}</label>`;
+  return `<div class="kdctl">
+    ${w.per ? `<span class="hint" style="margin:0">Zakres osi = wybrany okres (${esc(w.per.min)} – ${esc(w.per.max)}).</span>` : `<div class="segtog" role="group" aria-label="Zakres osi" style="margin:0">${[13, 26, 52].map(x => `<button data-lanew="${x}" class="${w.weeks === x ? "on" : ""}">${x} tyg.</button>`).join("")}</div>`}
+    <details class="kdbox"${view.kdOpen ? " open" : ""}><summary>Ważne daty na wykresie <span class="kdn">${nSel ? `${nSel} wybrane` : "żadne nie są zaznaczone"}</span></summary>
+      ${KD_GROUPS.map(([g, ks]) => `<div class="kdg"><b>${g}</b><div class="kdchips">${ks.map(chip).join("")}</div></div>`).join("")}
+      <div class="kdg"><b>Twoje daty</b><div class="kdchips">${KD.custom.map((c, i) => `<span class="kdchip on kdu">${esc(c.name || c.d)} <small>${esc(c.d)}</small><button type="button" class="kdx" data-kddel="${i}" aria-label="Usuń datę">×</button></span>`).join("")}
+        <span class="kdadd"><input type="date" class="kdDate" aria-label="Data"><input class="kdName" placeholder="nazwa, np. premiera kolekcji" aria-label="Nazwa daty"><button type="button" class="ghost mini" data-kdadd>Dodaj</button></span></div></div>
+      ${nSel ? `<div class="kdfoot"><button type="button" class="ghost mini" data-kdclear>Odznacz wszystkie</button></div>` : ""}
+    </details>
+  </div>`;
+}
 
 // ================================================================ przygotowanie reklam
 function domainOf(s){
@@ -2184,7 +2268,7 @@ const BLK_WHY = {
   "Najważniejsze w skrócie": ["x", "Zdania złożone automatycznie z liczb policzonych w analizie — szablony z wartościami, bez AI."],
   "Kalendarz startów reklam (ostatni rok)": ["d", "Każda kratka = dzień; kolor = liczba reklam, które tego dnia wystartowały (data startu z Meta)."],
   "Zasięg wg wieku i płci": ["d", "Rozkład zasięgu reklam według wieku i płci — dane z Meta (tylko emisja w UE), zsumowane po reklamach marki."],
-  "Formaty reklam": ["d", "Typ mediów (wideo / grafika / grafika z tekstem) z filtra Meta; udział = liczba reklam danego typu ÷ wszystkie."],
+  "Formaty reklam": ["d", "Typ mediów (wideo / grafika / grafika z tekstem) z filtra Meta; udział = liczba reklam danego typu ÷ wszystkie. „Grafika z tekstem (mem)” = etykieta MEME nadawana automatycznie przez Meta, bez definicji w dokumentacji."],
   "Udział w szac. wydatkach": ["p", "Szacowany koszt marki ÷ suma szacowanych kosztów wszystkich porównywanych marek."],
   "Prognoza wydatków": ["p", "Udział marki = jej szacowany koszt / mies. ÷ suma szacowanych kosztów porównywanych marek. Udział w zestawie, nie w całym rynku. Najedź na procent, żeby zobaczyć rachunek."],
   "Szacowane wydatki": ["p", "Udział marki = jej szacowany koszt / mies. ÷ suma szacowanych kosztów porównywanych marek. Udział w zestawie, nie w całym rynku. Najedź na procent, żeby zobaczyć rachunek."],
@@ -2443,23 +2527,31 @@ function stackArea100(keys, series){
     ${keys.map((k, i) => `<text x="${X(i)}" y="${H-8}" text-anchor="middle">${monL(k)}</text>`).join("")}</svg>`;
 }
 
-function swimlanes(list, {weeks = 26} = {}){
-  const ref = todayUTC, refDow = (new Date(ref).getUTCDay() + 6) % 7, start = ref - (refDow + (weeks - 1) * 7) * DAY;
-  const L = 130, R = 12, T = 36, rowH = 30, W = 640, H = T + list.length * rowH + 8, step = (W - L - R) / weeks;
+function swimlanes(list){
+  const {start, weeks} = laneWindow(list), end = start + weeks * 7 * DAY;
+  const kdl = kdBetween(start, end);
+  const L = 130, R = 12, W = 640, rowH = 30, step = (W - L - R) / weeks;
+  // etykiety dat: rozkładane na poziomy tak, żeby się nie nakładały (szerokość tekstu ~5,9 px na znak)
+  const ends = [], marks = kdl.map(k => { const x = L + ((k.t - start) / DAY / 7) * step, wd = k.name.length * 5.9 + 6;
+    const right = x + 3 + wd > W - 2, a = right ? x - 3 - wd : x + 3, b = right ? x - 3 : x + 3 + wd;
+    let lv = ends.findIndex(e => e < a); if (lv < 0){ lv = ends.length; ends.push(b); } else ends[lv] = b;
+    return {k, x, lv, right}; });
+  const T = marks.length ? 14 + ends.length * 12 + 6 : 18, H = T + list.length * rowH + 14;
+  const rMax = Math.max(2, Math.min(9, step * 0.42));
   const data = list.map(r => { const w = new Array(weeks).fill(0); for (const [t, v] of Object.entries(r.cal.launches)){ const i = Math.floor((+t - start) / DAY / 7); if (i >= 0 && i < weeks) w[i] += v; } return w; });
   const max = Math.max(1, ...data.flat());
-  let lastX = -1e9, lvl = 0;
-  const kd = keyDatesAround(start, ref).map(k => { const x = L + ((k.t - start) / DAY / 7) * step;
-    lvl = x - lastX < 90 ? 1 - lvl : 0; lastX = x;
-    return `<line x1="${x}" x2="${x}" y1="${T - 6 - lvl * 12}" y2="${H - 6}" stroke="var(--c1)" stroke-dasharray="3 3"/><text x="${x + 3}" y="${T - 10 - lvl * 12}" class="hl" style="fill:var(--c1)">${esc(k.name)}</text>`; }).join("");
+  const kd = marks.map(({k, x, lv, right}) => {
+    const col = k.kind === "q" ? "var(--muted)" : k.kind === "u" ? "var(--accent)" : "var(--c1)", ty = 14 + lv * 12;
+    return `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${ty + 3}" y2="${H - 12}" stroke="${col}" stroke-dasharray="${k.kind === "q" ? "1 3" : "3 3"}"><title>${esc(k.name)} · ${iso(k.t)}</title></line><text x="${(right ? x - 3 : x + 3).toFixed(1)}" y="${ty}" class="hl" text-anchor="${right ? "end" : "start"}" style="fill:${col}">${esc(k.name)}</text>`; }).join("");
   const months = []; let lm = -1;
   for (let w = 0; w < weeks; w++){ const m = new Date(start + w * 7 * DAY).getUTCMonth(); if (m !== lm){ months.push([w, m]); lm = m; } }
+  const minGap = 34 / step; let lastW = -1e9;
   return `<svg class="lc" viewBox="0 0 ${W} ${H}">
-    ${months.map(([w, m]) => `<text x="${L + w * step}" y="${H}" class="hl">${["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"][m]}</text>`).join("")}
+    ${months.filter(([w]) => { if (w - lastW < minGap) return false; lastW = w; return true; }).map(([w, m]) => `<text x="${L + w * step}" y="${H}" class="hl">${["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"][m]}</text>`).join("")}
     ${kd}
     ${list.map((r, i) => `<text x="0" y="${T + i * rowH + rowH / 2 + 4}" class="sl">${esc(r.pageName.length > 18 ? r.pageName.slice(0, 17) + "…" : r.pageName)}</text>
       <line x1="${L}" x2="${W - R}" y1="${T + i * rowH + rowH / 2}" y2="${T + i * rowH + rowH / 2}" stroke="var(--line)"/>
-      ${data[i].map((v, w) => v ? `<circle cx="${(L + (w + .5) * step).toFixed(1)}" cy="${T + i * rowH + rowH / 2}" r="${(2.5 + Math.sqrt(v / max) * 9).toFixed(1)}" fill="${color(i)}" fill-opacity=".8"><title>${esc(r.pageName)} · tydzień od ${iso(start + w * 7 * DAY)}: ${v} nowych reklam</title></circle>` : "").join("")}`).join("")}
+      ${data[i].map((v, w) => v ? `<circle cx="${(L + (w + .5) * step).toFixed(1)}" cy="${T + i * rowH + rowH / 2}" r="${(2 + Math.sqrt(v / max) * rMax).toFixed(1)}" fill="${color(i)}" fill-opacity=".8"><title>${esc(r.pageName)} · tydzień od ${iso(start + w * 7 * DAY)}: ${v} nowych reklam</title></circle>` : "").join("")}`).join("")}
   </svg>`;
 }
 
@@ -2710,7 +2802,7 @@ P.creative = (r, idx, pdf) => {
   return `${see(killTxt)}
     ${miniKpis("c", [[t.killRate == null ? "—" : t.killRate + "%", "wyłączonych w ≤7 dni"], [t.lifeMed == null ? "—" : t.lifeMed + " dni", "mediana życia zakończonych"], [String(t.concAvg).replace(".", ","), `średnio aktywnych naraz (maks. ${t.concMax})`], [t.batchAvg == null ? "—" : String(t.batchAvg).replace(".", ","), "nowych reklam na dzień startu"], [t.dco + "%", "z wieloma wariantami tekstu (DCO)"], [t.ageActive == null ? "—" : t.ageActive + " dni", "średni wiek aktywnych reklam"]])}
     <div class="two">
-      ${blk("[d]Formaty reklam", r.mediaLoaded ? donut(mediaParts, {center: `${r.s.wideo}%`, sub: "wideo"}) : `<div class="sub">Typ mediów nie był pobierany — włącz „Pobieraj typ mediów” w ustawieniach.</div>`)}
+      ${blk("[d]Formaty reklam", r.mediaLoaded ? donut(mediaParts, {center: `${r.s.wideo}%`, sub: "wideo"}) + `<div class="note">${MEME_NOTE}</div>` : `<div class="sub">Typ mediów nie był pobierany — włącz „Pobieraj typ mediów” w ustawieniach.</div>`)}
       ${blk("[d]Platformy", donut(platParts, {center: String(Object.keys(r.msg.plat).length), sub: "platformy"}) + `<div class="note">Udział w łącznej liczbie umieszczeń (reklama może być na kilku).</div>`)}
     </div>
     ${blk("[c]Jak długo żyją reklamy", colChart(t.lifeHist, {color: "var(--c4)"}) + `<div class="note">Liczba reklam wg długości emisji. Dużo krótkich = testowanie; dużo długich = sprawdzone kreacje.</div>`)}
@@ -3184,7 +3276,7 @@ C.sov = list => {
     ${blk("[c]Udział w zasięgu miesiąc po miesiącu", stackArea100(keys, list.map((r, i) => ({name: r.pageName, color: color(i), values: r.months.map(m => m.reach)}))) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div><div class="note">Udział każdej marki w łącznym zasięgu (zasięg reklamy rozłożony równomiernie na dni emisji).</div>`)}
     ${blk("[c]Emitowane reklamy miesiąc po miesiącu", lineChart(list) + `<div class="legend">${list.map((r,i) => `<span><i style="background:${color(i)}"></i>${esc(r.pageName)}</span>`).join("")}</div>`)}`;
 };
-C.creative = list => `${list.some(r => r.mediaLoaded) ? blk("[c]Formaty reklam", stack100(list, Object.keys(MEDIA_NAMES), r => r.mediaLoaded ? r.media : null, MEDIA_NAMES, MEDIA_COLORS)) : ""}
+C.creative = list => `${list.some(r => r.mediaLoaded) ? blk("[c]Formaty reklam", stack100(list, Object.keys(MEDIA_NAMES), r => r.mediaLoaded ? r.media : null, MEDIA_NAMES, MEDIA_COLORS) + `<div class="note">${MEME_NOTE}</div>`) : ""}
   <div class="two">
     ${blk("[c]Wyłączane w ciągu 7 dni (testowanie)", brandBars(list, r => r.testing.killRate, {unit: "%"}))}
     ${blk("[c]Mediana życia zakończonej reklamy", brandBars(list, r => r.testing.lifeMed, {unit: " dni"}))}
@@ -3236,7 +3328,8 @@ C.audience = list => {
 };
 C.calendar = list => {
   const busiest = list.map(r => { const i = r.cal.dow.indexOf(Math.max(...r.cal.dow)); const t = r.cal.dow.reduce((a,b) => a+b, 0); return {r, i, p: pct(r.cal.dow[i], t)}; });
-  return `${blk("[d]Starty reklam tydzień po tygodniu (ostatnie 26 tygodni)", swimlanes(list) + `<div class="note">Wielkość kropki = liczba nowych reklam w tygodniu. Przerywane linie = ważne daty sprzedażowe.</div>`)}
+  const lw = laneWindow(list), kdN = kdBetween(lw.start, lw.start + lw.weeks * 7 * DAY).length;
+  return `${blk(`[d]Starty reklam tydzień po tygodniu (${lw.per ? `wybrany okres: ${lw.per.min} – ${lw.per.max}` : `ostatnie ${lw.weeks} tygodni`})`, kdControls(list) + swimlanes(list) + `<div class="note">Wielkość kropki = liczba nowych reklam w tygodniu.${kdN ? " Linie przerywane = wybrane ważne daty (kropkowane = początek kwartału)." : ""}</div>`)}
     ${blk("[c]Ulubiony dzień startu", `<ul class="lines">${busiest.map((x, i) => `<li><span class="dot" style="background:${color(i)}"></span><b>${esc(x.r.pageName)}</b>: ${WEEKDAYS_FULL[x.i]} (${x.p}% startów)</li>`).join("")}</ul>`)}
     ${blk("[p]Fale startów w ostatnim roku", brandBars(list, r => r.camp.waves365))}`;
 };
@@ -3342,6 +3435,14 @@ function renderAll(){
   });
   card.querySelectorAll("button[data-bf]").forEach(b => b.onclick = () => { const u = +b.dataset.bf; view.hidden.has(u) ? view.hidden.delete(u) : view.hidden.add(u); renderAll(); });
   card.querySelectorAll("button[data-shareabs]").forEach(b => b.onclick = () => { view.shareAbs = b.dataset.shareabs === "1"; renderAll(); });
+  card.querySelectorAll("button[data-lanew]").forEach(b => b.onclick = () => { view.laneWeeks = +b.dataset.lanew; renderAll(); });
+  card.querySelectorAll(".kdbox").forEach(d => d.addEventListener("toggle", () => { view.kdOpen = d.open; }));
+  card.querySelectorAll("input[data-kd]").forEach(c => c.onchange = () => { c.checked ? KD.sel.add(c.dataset.kd) : KD.sel.delete(c.dataset.kd); saveKD(); view.kdOpen = true; renderAll(); });
+  card.querySelectorAll("button[data-kdadd]").forEach(b => b.onclick = () => { const box = b.closest(".kdctl"), d = box.querySelector(".kdDate").value, nm = box.querySelector(".kdName").value.trim();
+    if (!/^\d{4}-\d\d-\d\d$/.test(d)){ box.querySelector(".kdDate").focus(); return; }
+    KD.custom.push({d, name: nm.slice(0, 40) || d}); KD.custom.sort((a, c) => a.d.localeCompare(c.d)); saveKD(); view.kdOpen = true; renderAll(); });
+  card.querySelectorAll("button[data-kddel]").forEach(b => b.onclick = () => { KD.custom.splice(+b.dataset.kddel, 1); saveKD(); view.kdOpen = true; renderAll(); });
+  card.querySelectorAll("button[data-kdclear]").forEach(b => b.onclick = () => { KD.sel.clear(); KD.custom.length = 0; saveKD(); view.kdOpen = true; renderAll(); });
   card.querySelectorAll("button[data-gobud]").forEach(b => b.onclick = () => { view.top = +b.dataset.gobud; view.brandTab = "budget"; renderAll(); card.scrollIntoView({block: "start"}); });
   card.querySelectorAll("button[data-swap]").forEach(b => b.onclick = () => swapPage(+b.dataset.swap, b.dataset.id));
   if (!isCmp && active === "budget") wireProb(r);
